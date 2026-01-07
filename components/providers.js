@@ -1,0 +1,23 @@
+'use client'
+
+// ==========================================
+// PROVIDERS - Client Component Wrapper
+// ==========================================
+// This component wraps all client-side providers
+// It's used in the root layout to provide client-side functionality
+// while keeping the layout as a server component
+
+import { AuthProvider } from '@/context/AuthContext'
+
+export function Providers({ children }) {
+  return (
+    <AuthProvider>
+      {children}
+    </AuthProvider>
+  )
+}
+
+
+
+
+
