@@ -596,15 +596,21 @@ const Hero = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          {/* UPDATED: Added dark:text-white */}
-          <h1 className="text-5xl lg:text-7xl font-black text-gray-900 dark:text-white leading-tight mb-8 tracking-tighter drop-shadow-2xl transition-colors duration-300">
-            Your City. <br /> Your People. <br />
+          <h1 className="text-5xl lg:text-6xl font-black text-gray-900 dark:text-white leading-tight mb-8 tracking-tighter drop-shadow-2xl transition-colors duration-300">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">
-              Smart Connected.
-            </span>
+              Discover
+            </span>{" "}
+            Nearby. <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">
+              Connect
+            </span>{" "}
+            Locally. <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">
+              Decide
+            </span>{" "}
+            Smarter.
           </h1>
 
-          {/* UPDATED: Added dark:text-gray-300 */}
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-md leading-relaxed transition-colors duration-300">
             The all-in-one platform with AI at its core, discovering local gems, building real community connections, and making smarter decisions.
           </p>
@@ -616,7 +622,6 @@ const Hero = () => {
             >
               Start Exploring
             </a>
-            {/* UPDATED: Added dark mode styles for secondary button */}
             <a
               href="/signup"
               className="px-8 py-4 bg-gray-100 text-gray-900 border border-gray-300 dark:bg-white/10 dark:text-white dark:border-white/20 font-bold rounded-full hover:bg-gray-200 dark:hover:bg-white/20 transition-all text-center shadow-lg"
@@ -635,6 +640,7 @@ const Hero = () => {
     </section>
   );
 };
+
 
 const SectionBackgroundGlow = ({ children, className, id }) => (
   <section id={id} className={`relative py-24 px-6 overflow-hidden bg-white dark:bg-black transition-colors duration-300 ${className}`}>

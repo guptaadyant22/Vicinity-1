@@ -1,9 +1,9 @@
 'use client'
 
-
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import Script from 'next/script'
 import {
   FaStore, FaUser, FaArrowLeft, FaEye, FaEyeSlash, FaCheck,
   FaArrowRight, FaLock, FaEnvelope, FaPhone, FaMapPin, FaGlobe,
@@ -139,7 +139,6 @@ export default function SignupPage() {
     if (businessErrors[field]) setBusinessErrors(prev => ({ ...prev, [field]: '' }))
   }
 
-
   const handleCommunityInputChange = (field, value) => {
     setCommunityForm(prev => ({ ...prev, [field]: value }))
     if (communityErrors[field]) setCommunityErrors(prev => ({ ...prev, [field]: '' }))
@@ -239,6 +238,29 @@ export default function SignupPage() {
 
 
     try {
+      // Get reCAPTCHA token from visible checkbox
+      const token = await window.grecaptcha.getResponse()
+      
+      if (!token) {
+        setError('Please complete the reCAPTCHA verification.')
+        setIsLoading(false)
+        return
+      }
+
+      const verifyResponse = await fetch('/api/verify-recaptcha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      })
+
+      const verifyData = await verifyResponse.json()
+
+      if (!verifyData.success) {
+        setError('Bot verification failed. Please try again.')
+        setIsLoading(false)
+        return
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: businessForm.email.trim(),
         password: businessForm.password,
@@ -313,6 +335,29 @@ export default function SignupPage() {
 
 
     try {
+      // Get reCAPTCHA token from visible checkbox
+      const token = await window.grecaptcha.getResponse()
+      
+      if (!token) {
+        setError('Please complete the reCAPTCHA verification.')
+        setIsLoading(false)
+        return
+      }
+
+      const verifyResponse = await fetch('/api/verify-recaptcha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      })
+
+      const verifyData = await verifyResponse.json()
+
+      if (!verifyData.success) {
+        setError('Bot verification failed. Please try again.')
+        setIsLoading(false)
+        return
+      }
+
       const { error: authError } = await supabase.auth.signUp({
         email: communityForm.email.trim(),
         password: communityForm.password,
@@ -339,7 +384,7 @@ export default function SignupPage() {
   }
 
 
-  const isValidEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const isValidEmail = email => /^\S+@\S+\.\S+$/.test(email)
 
 
   const getPasswordStrength = password => {
@@ -349,12 +394,10 @@ export default function SignupPage() {
     return { level: 3, percentage: 100, color: '#10b981' }
   }
 
-
   return (
     <main className="min-h-screen relative flex flex-col bg-gray-50 dark:bg-[#050505] transition-colors duration-300 font-sans selection:bg-orange-500 selection:text-white">
       <GridBackground />
       <SignupNavbar />
-
 
       <div className="flex-1 flex items-center justify-center px-4 py-24 relative z-10">
         <AnimatePresence mode="wait">
@@ -404,6 +447,12 @@ export default function SignupPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* reCAPTCHA v2 Checkbox Script */}
+      <Script
+        src="https://www.google.com/recaptcha/api.js"
+        strategy="lazyOnload"
+      />
     </main>
   )
 }
@@ -462,7 +511,6 @@ const AccountCard = ({ icon: Icon, title, subtitle, features, onClick, gradient 
     </div>
   </motion.button>
 )
-
 
 const StepFormContainer = ({ accountType, currentStep, onBack, error, children }) => {
   const isBusiness = accountType === 'business'
@@ -530,7 +578,6 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
           </div>
         )}
 
-
         <div className="relative z-10">
           {children}
         </div>
@@ -541,8 +588,19 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
 
 
 const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, setShowPassword, showConfirmPassword, setShowConfirmPassword, getPasswordStrength, onNext, onPrev, onSubmit, isLoading }) => {
+  const recaptchaRef = useRef(null)
   const strength = getPasswordStrength(form.password)
 
+  useEffect(() => {
+    if (step === 5 && recaptchaRef.current && window.grecaptcha) {
+      setTimeout(() => {
+        window.grecaptcha.render(recaptchaRef.current, {
+          sitekey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+          theme: 'light'
+        })
+      }, 0)
+    }
+  }, [step])
 
   return (
     <form onSubmit={step === 5 ? onSubmit : (e) => { e.preventDefault(); onNext() }} className="space-y-6">
@@ -643,7 +701,6 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
           </div>
         )}
 
-
         {step === 5 && (
           <div className="space-y-5">
             <h3 className={`text-xl font-bold ${TEXT_MAIN} mb-6`}>Final Confirmation</h3>
@@ -664,10 +721,14 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
               <span className={`text-xs ${TEXT_MUTED} pt-0.5`}>I confirm this is a real business and agree to Vicinity's terms.</span>
             </div>
             {errors.isRealBusiness && <p className="text-xs text-red-500 dark:text-red-400">{errors.isRealBusiness}</p>}
+            
+            {/* VISIBLE reCAPTCHA v2 Checkbox */}
+            <div className="flex justify-center py-4">
+              <div ref={recaptchaRef}></div>
+            </div>
           </div>
         )}
       </motion.div>
-
 
       {/* Navigation Buttons */}
       <div className="flex gap-4 mt-8 pt-6">
@@ -694,8 +755,19 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
 
 
 const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors, showPassword, setShowPassword, showConfirmPassword, setShowConfirmPassword, getPasswordStrength, onNext, onPrev, onSubmit, isLoading }) => {
+  const recaptchaRef = useRef(null)
   const strength = getPasswordStrength(form.password)
 
+  useEffect(() => {
+    if (step === 4 && recaptchaRef.current && window.grecaptcha) {
+      setTimeout(() => {
+        window.grecaptcha.render(recaptchaRef.current, {
+          sitekey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+          theme: 'light'
+        })
+      }, 0)
+    }
+  }, [step])
 
   return (
     <form onSubmit={step === 4 ? onSubmit : (e) => { e.preventDefault(); onNext() }} className="space-y-6">
@@ -765,7 +837,6 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
               {errors.password && <p className="text-xs text-red-500 dark:text-red-400">{errors.password}</p>}
             </div>
 
-
             <div className="space-y-1.5">
               <label className={LABEL_STYLE}>
                 Confirm Password <span className="text-orange-500">*</span>
@@ -786,7 +857,6 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
             </div>
           </div>
         )}
-
 
         {step === 4 && (
           <div className="space-y-5">
@@ -809,6 +879,11 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
               <span className={`text-xs ${TEXT_MUTED} pt-0.5`}>I agree to the Community Guidelines.</span>
             </div>
             {errors.agreeToGuidelines && <p className="text-xs text-red-500 dark:text-red-400">{errors.agreeToGuidelines}</p>}
+            
+            {/* VISIBLE reCAPTCHA v2 Checkbox */}
+            <div className="flex justify-center py-4">
+              <div ref={recaptchaRef}></div>
+            </div>
           </div>
         )}
       </motion.div>
