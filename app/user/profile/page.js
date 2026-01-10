@@ -1,37 +1,33 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FaUser,
   FaMapMarkerAlt,
-  FaHeart,
   FaStar,
   FaEdit,
   FaCheck,
   FaTimes,
   FaTrash,
-  FaArrowLeft,
   FaExclamationTriangle,
   FaCalendar,
   FaSpinner,
+  FaArrowRight,
+  FaEnvelope,
+  FaHeart,
 } from 'react-icons/fa'
 
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 
-// --- THEMED CONSTANTS ---
-const THEME = {
-  accent: '#ff6f00',
-  accentGrad: 'from-orange-400 to-pink-500',
-}
-
-const VicinityLogo = ({ className = '', showText = true }) => (
+// --- OFFICIAL NAVBAR COMPONENT ---
+const VicinityLogo = ({ className = '', textClassName = '' }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="w-9 h-9">
-      <g className="fill-orange-500" fillRule="nonzero">
-        <g transform="translate(256,256) rotate(180) scale(5.33,5.33)">
+    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8">
+      <g fill="#ff6f00" fillRule="nonzero">
+        <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
           <path d="M5,45l4,-11l12,-12l-6,23z"></path>
           <path d="M25,18l8,27h10l-11,-33z"></path>
           <path d="M16.059,14.164l3.941,-11.164h8z"></path>
@@ -41,681 +37,694 @@ const VicinityLogo = ({ className = '', showText = true }) => (
         </g>
       </g>
     </svg>
-    {showText && <p className="font-black text-gray-900 dark:text-white text-xl tracking-tight leading-none">Vicinity</p>}
+    <span className={`font-black text-orange-500 dark:text-orange-400 text-xl tracking-tight ${textClassName}`}>Vicinity</span>
   </div>
 )
 
-const AnimatedBg = ({ bgRef }) => (
-  <div ref={bgRef} className="fixed inset-0 -z-10 overflow-hidden bg-gray-50 dark:bg-[#080808] transition-colors duration-300">
-    <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.03] text-gray-900 dark:text-white" 
-         style={{ backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`, backgroundSize: '120px 120px', maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)' }} />
-    
-    {/* Top gradient circle */}
-    <div 
-      className="absolute -top-[380px] left-1/2 -translate-x-1/2 w-[1200px] h-[700px] rounded-full blur-[160px] mix-blend-multiply dark:mix-blend-normal" 
-      style={{ 
-        background: 'radial-gradient(circle at 50% 50%, rgba(255,111,0,0.15), rgba(236,72,153,0.10), transparent 70%)',
-        opacity: 1,
-      }} 
-    />
-
-    {/* Bottom gradient circle */}
-    <div 
-      className="absolute -bottom-[300px] right-[-200px] w-[900px] h-[900px] rounded-full blur-[150px] mix-blend-multiply dark:mix-blend-normal" 
-      style={{ 
-        background: 'radial-gradient(circle at 50% 50%, rgba(255,111,0,0.2), rgba(236,72,153,0.15), transparent 70%)',
-        opacity: 0.8,
-      }} 
-    />
-    
-    {/* Light Mode Overlay (Hidden in Dark Mode) */}
-    <div className="absolute inset-0 bg-white/30 dark:hidden" 
-         style={{ background: 'radial-gradient(circle at 50% 20%, transparent 0%, rgba(255,255,255,0.8) 100%)' }} />
-
-    {/* Dark Mode Overlay (Hidden in Light Mode) */}
-    <div className="absolute inset-0 hidden dark:block bg-black/80" 
-         style={{ background: 'radial-gradient(circle at 50% 20%, transparent 0%, rgba(0,0,0,0.8) 100%)' }} />
-  </div>
-)
-
-const Header = ({ onBack }) => (
-  <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
-    <div className="w-full max-w-6xl bg-white/80 dark:bg-black/30 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl p-3 shadow-2xl pointer-events-auto flex items-center justify-between pl-6 pr-3 hover:bg-white/90 dark:hover:bg-black/40 transition-all">
-      <VicinityLogo showText={true} />
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onBack}
-        className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 rounded-xl hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-all"
-      >
-        <FaArrowLeft size={14} /> Back
-      </motion.button>
-    </div>
-  </motion.nav>
-)
-
-const ProfileCard = ({ name, joinedDate, city }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="relative rounded-3xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-xl shadow-2xl"
-  >
-    <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-[100px] opacity-20 dark:opacity-30" style={{ background: 'radial-gradient(circle, rgba(255,111,0,0.2), transparent 70%)' }} />
-    <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full blur-[80px] opacity-20 dark:opacity-30" style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.2), transparent 70%)' }} />
-    
-    <div className="relative z-10 p-10">
-      <div className="flex flex-col md:flex-row items-center gap-8">
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="w-32 h-32 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-white text-6xl font-black shadow-2xl shadow-orange-500/40"
-        >
-          👤
-        </motion.div>
-        
-        <div className="flex-1 text-center md:text-left">
-          <h1 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter mb-4">
-            {name}
-          </h1>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-center md:justify-start gap-3 text-gray-600 dark:text-gray-300">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30">
-                <FaCalendar className="text-orange-500 dark:text-orange-400" size={16} />
-              </div>
-              <span className="text-sm">Joined {joinedDate}</span>
-            </div>
-            {city && (
-              <div className="flex items-center justify-center md:justify-start gap-3 text-gray-600 dark:text-gray-300">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-pink-100 dark:bg-pink-500/20 border border-pink-200 dark:border-pink-500/30">
-                  <FaMapMarkerAlt className="text-pink-500 dark:text-pink-400" size={16} />
-                </div>
-                <span className="text-sm">{city}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-)
-
-const StatCard = ({ label, value, icon: Icon, color = 'orange' }) => {
-  const colorMap = {
-    orange: { bg: 'bg-orange-50 dark:bg-orange-500/10', border: 'border-orange-200 dark:border-orange-500/20', icon: 'text-orange-600 dark:text-orange-400' },
-    pink: { bg: 'bg-pink-50 dark:bg-pink-500/10', border: 'border-pink-200 dark:border-pink-500/20', icon: 'text-pink-600 dark:text-pink-400' },
-    purple: { bg: 'bg-purple-50 dark:bg-purple-500/10', border: 'border-purple-200 dark:border-purple-500/20', icon: 'text-purple-600 dark:text-purple-400' },
-  }
-  
-  const colors = colorMap[color] || colorMap.orange
+const Navbar = () => {
+  const router = useRouter()
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, scale: 1.02 }}
-      className={`relative rounded-2xl overflow-hidden border ${colors.border} ${colors.bg} backdrop-blur-xl p-6 shadow-lg hover:shadow-2xl transition-all`}
-    >
-      <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 hover:opacity-100 transition-opacity" style={{ background: `radial-gradient(circle, rgba(255,111,0,0.1), transparent 70%)` }} />
-      
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div className={`flex items-center justify-center w-12 h-12 rounded-xl ${colors.bg} border ${colors.border}`}>
-            <Icon className={colors.icon} size={20} />
-          </div>
-          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{label}</span>
-        </div>
-        <p className="text-3xl font-black text-gray-900 dark:text-white">{value}</p>
+    <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
+      <div className="w-full max-w-5xl bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-gray-300/20 dark:border-white/15 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2 hover:bg-white/50 dark:hover:bg-black/50 transition-all duration-300">
+        <VicinityLogo />
+        
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => router.push('/user/dashboard')}
+          className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold rounded-xl hover:scale-105 transition-transform shadow-lg shadow-orange-500/20 flex items-center gap-2"
+        >
+          Dashboard <FaArrowRight size={12} />
+        </motion.button>
       </div>
-    </motion.div>
+    </motion.nav>
   )
 }
 
-const EditField = ({ label, value, icon: Icon, isEditing, onEdit, onChange }) => (
-  <motion.div layout className="space-y-3">
-    <div className="flex items-center justify-between">
-      <label className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest flex items-center gap-2">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30">
-          <Icon className="text-orange-500 dark:text-orange-400" size={14} />
-        </div>
-        {label}
-      </label>
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onEdit}
-        className="p-2 rounded-lg bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-all"
-      >
-        {isEditing ? <FaTimes size={14} /> : <FaEdit size={14} />}
-      </motion.button>
-    </div>
-    
-    {isEditing ? (
-      <motion.input
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-white dark:bg-black/40 border border-orange-500/40 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm"
-        placeholder="Enter value..."
-      />
-    ) : (
-      <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-gradient-to-br dark:from-white/5 dark:to-white/2 p-4">
-        <p className="text-lg font-semibold text-gray-800 dark:text-white">{value || 'Not set'}</p>
+// --- ANIMATED BACKGROUND ---
+const AnimatedBg = () => (
+  <div className="fixed inset-0 -z-10 overflow-hidden bg-white dark:bg-[#0a0a0a] transition-colors duration-300">
+    <div 
+      className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]" 
+      style={{ 
+        backgroundImage: `linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)`, 
+        backgroundSize: '120px 120px', 
+      }} 
+    />
+    <div 
+      className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[160px] opacity-40 dark:opacity-50 -translate-x-1/3 translate-y-1/3" 
+      style={{ 
+        background: 'radial-gradient(circle at 50% 50%, rgba(255,111,0,0.2), rgba(236,72,153,0.1), transparent 70%)',
+      }} 
+    />
+  </div>
+)
+
+// --- CONFIRMATION MODAL ---
+const ConfirmationModal = ({ title, message, confirmText, cancelText, onConfirm, onCancel, isDanger = false }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+  >
+    <motion.div
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.95, opacity: 0 }}
+      className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/15 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{title}</h3>
+      <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">{message}</p>
+      <div className="flex gap-4">
+        <button
+          onClick={onCancel}
+          className="flex-1 px-4 py-3 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-900 dark:text-white font-bold rounded-lg transition-all"
+        >
+          {cancelText}
+        </button>
+        <button
+          onClick={onConfirm}
+          className={`flex-1 px-4 py-3 font-bold rounded-lg transition-all text-white ${
+            isDanger
+              ? 'bg-red-500 hover:bg-red-600'
+              : 'bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600'
+          }`}
+        >
+          {confirmText}
+        </button>
       </div>
-    )}
+    </motion.div>
   </motion.div>
 )
 
-const Modal = ({ title, description, children, isOpen, onClose, variant = 'default' }) => (
-  <AnimatePresence>
-    {isOpen && (
-      <>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 30 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 30 }}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 max-w-md w-full mx-4"
-        >
-          <div className={`rounded-3xl border backdrop-blur-xl shadow-2xl p-8 ${variant === 'danger' ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-500/40' : 'bg-white/90 dark:bg-black/60 border-gray-200 dark:border-white/10'}`}>
-            <div className="flex items-center gap-3 mb-4">
-              {variant === 'danger' && <FaExclamationTriangle className="text-red-500 dark:text-red-400 flex-shrink-0" size={28} />}
-              <h3 className={`text-2xl font-black ${variant === 'danger' ? 'text-red-700 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{title}</h3>
-            </div>
-            <p className={`${variant === 'danger' ? 'text-red-600 dark:text-gray-300' : 'text-gray-600 dark:text-gray-300'} mb-6 text-sm leading-relaxed`}>{description}</p>
-            {children}
-          </div>
-        </motion.div>
-      </>
-    )}
-  </AnimatePresence>
-)
-
+// --- MAIN PROFILE PAGE ---
 export default function UserProfilePage() {
-  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+  const { user, loading: authLoading, logout } = useAuth()
   const supabase = createClient()
-  const bgRef = useRef(null)
 
+  const [userData, setUserData] = useState(null)
+  const [businessData, setBusinessData] = useState(null)
+  const [reviewCount, setReviewCount] = useState(0)
+  const [savedPlaces, setSavedPlaces] = useState([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [profileData, setProfileData] = useState({
-    name: '',
-    city: '',
-    interestedBusinesses: '',
-    joinedDate: '',
-  })
+  const [editingField, setEditingField] = useState(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [error, setError] = useState(null)
+  const [showDeleteReviewsModal, setShowDeleteReviewsModal] = useState(false)
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
 
-  const [editingFields, setEditingFields] = useState({
-    name: false,
-    city: false,
-    interestedBusinesses: false,
-  })
+  const INTEREST_OPTIONS = ['Restaurants & Food', 'Shopping & Retail', 'Home Services', 'Health & Wellness', 'Professional Services']
 
-  const [deleteReviewsModal, setDeleteReviewsModal] = useState(false)
-  const [deleteAccountModal, setDeleteAccountModal] = useState(false)
-  const [deletingReviews, setDeletingReviews] = useState(false)
-  const [deletingAccount, setDeletingAccount] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
-
-  const [stats, setStats] = useState({
-    totalReviews: 0,
-    avgRating: 0,
-    totalSaved: 0,
-  })
-
-  // --- OVERSCROLL FIX ---
+  // Fetch user data
   useEffect(() => {
-    // This helper ensures the overscroll background matches the theme
-    // eliminating white padding when scrolling past the content in dark mode
-    const updateBodyColor = () => {
-      const isDark = document.documentElement.classList.contains('dark')
-      document.body.style.backgroundColor = isDark ? '#080808' : '#f9fafb'
-    }
+    if (!user || authLoading) return
 
-    updateBodyColor()
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          updateBodyColor()
-        }
-      })
-    })
-    
-    observer.observe(document.documentElement, { attributes: true })
-    return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!authLoading && !user) router.push('/login')
-  }, [user, authLoading, router])
-
-  useEffect(() => {
-    if (!user) return
-
-    const fetchData = async () => {
+    const fetchUserData = async () => {
       try {
         setLoading(true)
+        setError(null)
 
-        const { data: userData } = await supabase.auth.getUser()
-        const userMeta = userData?.user?.user_metadata || {}
-
-        const joinedDate = new Date(user.created_at)
-        const formattedDate = joinedDate.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-
-        setProfileData({
-          name: userMeta.full_name || userMeta.name || 'User',
-          city: userMeta.city || '',
-          interestedBusinesses: userMeta.interested_businesses?.join(', ') || '',
-          joinedDate: formattedDate,
-        })
-
-        const { data: reviewsData } = await supabase
-          .from('reviews')
-          .select('rating')
-          .eq('user_id', user.id)
-
-        if (reviewsData) {
-          const avgRating =
-            reviewsData.length > 0
-              ? (reviewsData.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsData.length).toFixed(1)
-              : 0
-
-          setStats((prev) => ({
-            ...prev,
-            totalReviews: reviewsData.length,
-            avgRating: avgRating,
-          }))
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        
+        if (!authUser) {
+          router.push('/login')
+          return
         }
+
+        const authMetadata = authUser.user_metadata || {}
+        const userType = authMetadata.user_type || 'community'
+        const fullname = authMetadata.fullname || authMetadata.full_name || authUser.email?.split('@')[0] || 'User'
+        const city = authMetadata.city || ''
+        const zip = authMetadata.zip || authMetadata.zipCode || ''
+        const interests = authMetadata.interests || []
+
+        setUserData({
+          id: authUser.id,
+          email: authUser.email,
+          fullname: fullname,
+          city: city,
+          zip: zip,
+          interests: interests,
+          userType: userType,
+          createdAt: authUser.created_at,
+        })
+
+        if (userType === 'business') {
+          const { data: businessData } = await supabase
+            .from('businesses')
+            .select('*')
+            .eq('owner_id', authUser.id)
+            .single()
+
+          if (businessData) {
+            setBusinessData(businessData)
+          }
+        }
+
+        const { count: reviewsCount } = await supabase
+          .from('reviews')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', authUser.id)
+
+        setReviewCount(reviewsCount || 0)
 
         const { data: savedData } = await supabase
-          .from('favorites')
-          .select('id')
-          .eq('user_id', user.id)
+          .from('saved_places')
+          .select('*')
+          .eq('user_id', authUser.id)
 
-        if (savedData) {
-          setStats((prev) => ({
-            ...prev,
-            totalSaved: savedData.length,
-          }))
-        }
+        setSavedPlaces(savedData || [])
       } catch (err) {
-        console.error('Error fetching profile:', err)
+        console.error('Error fetching user data:', err)
+        setError('Failed to load profile data')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
-  }, [user, supabase])
+    fetchUserData()
+  }, [user, authLoading, supabase, router])
 
-  const handleEditToggle = (field) => {
-    setEditingFields((prev) => ({
-      ...prev,
-      [field]: !prev[field],
-    }))
-  }
-
-  const handleSaveProfile = async () => {
-    if (!user) return
-
-    try {
-      setSaving(true)
-      setSuccessMessage('')
-
-      const businessesArray = profileData.interestedBusinesses
-        .split(',')
-        .map((b) => b.trim())
-        .filter((b) => b.length > 0)
-
-      const { error: authError } = await supabase.auth.updateUser({
-        data: {
-          full_name: profileData.name,
-          city: profileData.city,
-          interested_businesses: businessesArray,
-        },
-      })
-
-      if (authError) throw authError
-
-      const { error: reviewsError } = await supabase
-        .from('reviews')
-        .update({ user_name: profileData.name })
-        .eq('user_id', user.id)
-
-      if (reviewsError) throw reviewsError
-
-      setEditingFields({
-        name: false,
-        city: false,
-        interestedBusinesses: false,
-      })
-
-      setSuccessMessage('✅ Profile updated successfully!')
-      setTimeout(() => setSuccessMessage(''), 3000)
-    } catch (err) {
-      console.error('Error saving profile:', err)
-      alert('Failed to save profile. Please try again.')
-    } finally {
-      setSaving(false)
+  // Save field function
+  const saveField = async (field, value) => {
+    if (!value.trim()) {
+      setError(`${field} cannot be empty`)
+      return
     }
-  }
 
-  const handleDeleteAllReviews = async () => {
-    if (!user) return
+    if (value === userData[field]) {
+      setEditingField(null)
+      return
+    }
 
     try {
-      setDeletingReviews(true)
+      setIsSaving(true)
+      setError(null)
 
-      const { error } = await supabase.from('reviews').delete().eq('user_id', user.id)
+      const updateData = { [field]: value.trim() }
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: updateData
+      })
 
-      if (error) throw error
+      if (updateError) throw updateError
 
-      setStats((prev) => ({
+      setUserData(prev => ({
         ...prev,
-        totalReviews: 0,
-        avgRating: 0,
+        [field]: value.trim()
       }))
 
-      setDeleteReviewsModal(false)
-      setSuccessMessage('✅ All reviews deleted!')
-      setTimeout(() => setSuccessMessage(''), 3000)
+      if (userData.userType === 'business' && businessData && field === 'fullname') {
+        await supabase
+          .from('businesses')
+          .update({ owner_name: value.trim() })
+          .eq('id', businessData.id)
+      }
+
+      setSaveSuccess(true)
+      setEditingField(null)
+      setTimeout(() => setSaveSuccess(false), 2000)
+    } catch (err) {
+      console.error('Error updating:', err)
+      setError(`Failed to update ${field}. Please try again.`)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Save interests
+  const saveInterests = async (interests) => {
+    try {
+      setIsSaving(true)
+      setError(null)
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { interests }
+      })
+
+      if (updateError) throw updateError
+
+      setUserData(prev => ({
+        ...prev,
+        interests
+      }))
+
+      setSaveSuccess(true)
+      setEditingField(null)
+      setTimeout(() => setSaveSuccess(false), 2000)
+    } catch (err) {
+      console.error('Error updating interests:', err)
+      setError('Failed to update interests. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Delete all reviews
+  const handleDeleteAllReviews = async () => {
+    try {
+      setIsSaving(true)
+      setError(null)
+
+      await supabase.from('reviews').delete().eq('user_id', userData.id)
+
+      setReviewCount(0)
+      setSaveSuccess(true)
+      setShowDeleteReviewsModal(false)
+      setTimeout(() => setSaveSuccess(false), 2000)
     } catch (err) {
       console.error('Error deleting reviews:', err)
-      alert('Failed to delete reviews. Please try again.')
+      setError('Failed to delete reviews. Please try again.')
     } finally {
-      setDeletingReviews(false)
+      setIsSaving(false)
     }
   }
 
+  // Delete account
   const handleDeleteAccount = async () => {
-    if (!user) return
-
     try {
-      setDeletingAccount(true)
+      setIsSaving(true)
+      setError(null)
 
-      await supabase.from('reviews').delete().eq('user_id', user.id)
-      await supabase.from('favorites').delete().eq('user_id', user.id)
-
-      const { error } = await supabase.auth.admin.deleteUser(user.id)
-
-      if (error) throw error
+      await supabase.from('reviews').delete().eq('user_id', userData.id)
+      await supabase.from('saved_places').delete().eq('user_id', userData.id)
+      
+      if (userData.userType === 'business' && businessData) {
+        await supabase.from('businesses').delete().eq('owner_id', userData.id)
+      }
 
       await supabase.auth.signOut()
+      logout()
       router.push('/')
-      router.refresh()
     } catch (err) {
       console.error('Error deleting account:', err)
-      alert('Failed to delete account. Please try again.')
+      setError('Failed to delete account.')
     } finally {
-      setDeletingAccount(false)
+      setIsSaving(false)
     }
   }
 
-  const isEditing = Object.values(editingFields).some((v) => v)
-  const hasChanges = isEditing
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+        <AnimatedBg />
+        <FaSpinner className="text-4xl text-orange-500 animate-spin" />
+      </div>
+    )
+  }
 
-  if (authLoading || !user) return <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors" />
+  if (!user || !userData) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+        <AnimatedBg />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">Please log in to view your profile</p>
+          <button onClick={() => router.push('/login')} className="px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-bold">
+            Go to Login
+          </button>
+        </motion.div>
+      </div>
+    )
+  }
+
+  const joinDate = new Date(userData.createdAt).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 
   return (
-    <div className="min-h-screen text-gray-900 dark:text-gray-200 font-sans selection:bg-orange-500/30 selection:text-white relative bg-gray-50 dark:bg-[#080808] transition-colors duration-300">
-      <AnimatedBg bgRef={bgRef} />
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white transition-colors duration-300 font-sans">
+      <AnimatedBg />
+      <Navbar />
 
-      <Header onBack={() => router.push('/user/dashboard')} />
+      <main className="w-full pt-32 pb-16 px-4 md:px-6 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          {/* Messages */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl text-red-700 dark:text-red-300 flex items-start gap-3"
+              >
+                <FaExclamationTriangle className="flex-shrink-0 mt-1" />
+                <span className="font-medium">{error}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      <main className="max-w-6xl mx-auto px-6 py-10 pt-28 relative z-10">
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mb-8 p-4 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-3"
-          >
-            <FaCheck size={20} />
-            {successMessage}
-          </motion.div>
-        )}
+          <AnimatePresence>
+            {saveSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-6 p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-xl text-green-700 dark:text-green-300 flex items-start gap-3"
+              >
+                <FaCheck className="flex-shrink-0 mt-1" />
+                <span className="font-medium">Profile updated successfully!</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {/* Profile Card */}
-        <section className="mb-12">
-          <ProfileCard 
-            name={profileData.name} 
-            joinedDate={profileData.joinedDate}
-            city={profileData.city}
-          />
-        </section>
-
-        {/* Stats Grid */}
-        <section className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard 
-            label="Reviews" 
-            value={stats.totalReviews}
-            icon={FaStar}
-            color="orange"
-          />
-          <StatCard 
-            label="Avg Rating" 
-            value={stats.avgRating}
-            icon={FaHeart}
-            color="pink"
-          />
-          <StatCard 
-            label="Saved Places" 
-            value={stats.totalSaved}
-            icon={FaMapMarkerAlt}
-            color="purple"
-          />
-        </section>
-
-        {/* Edit Profile Section */}
-        <section className="mb-12">
+          {/* Profile Card - Full Width with Location Info */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative rounded-3xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-xl p-10 shadow-xl"
+            className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-3xl p-8 md:p-12 mb-12 shadow-xl"
           >
-            <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-[100px] opacity-20 dark:opacity-30" style={{ background: 'radial-gradient(circle, rgba(255,111,0,0.2), transparent 70%)' }} />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-10">
-                <h2 className="text-4xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30">
-                    <FaEdit className="text-orange-500 dark:text-orange-400" size={20} />
-                  </div>
-                  Edit Profile
-                </h2>
-                {hasChanges && (
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    onClick={handleSaveProfile}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-black rounded-xl hover:scale-105 transition-transform disabled:opacity-50 shadow-lg shadow-orange-500/40"
-                  >
-                    {saving ? <FaSpinner className="animate-spin" size={16} /> : <FaCheck size={16} />}
-                    {saving ? 'Saving...' : 'Save'}
-                  </motion.button>
-                )}
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+              {/* Avatar */}
+              <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-5xl font-bold shadow-lg flex-shrink-0">
+                {userData.fullname.charAt(0).toUpperCase()}
               </div>
 
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <EditField
-                    label="Full Name"
-                    icon={FaUser}
-                    value={profileData.name}
-                    isEditing={editingFields.name}
-                    onEdit={() => handleEditToggle('name')}
-                    onChange={(value) => setProfileData((prev) => ({ ...prev, name: value }))}
-                  />
+              {/* Info */}
+              <div className="flex-1 text-center md:text-left space-y-6 w-full">
+                {/* Name */}
+                {editingField === 'fullname' ? (
+                  <div className="flex items-center gap-2 justify-center md:justify-start">
+                    <input
+                      type="text"
+                      defaultValue={userData.fullname}
+                      onChange={e => setUserData(prev => ({ ...prev, fullname: e.target.value }))}
+                      onBlur={e => saveField('fullname', e.target.value)}
+                      className="flex-1 px-4 py-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => setEditingField(null)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400 rounded-lg"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 justify-center md:justify-start">
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                      {userData.fullname}
+                    </h1>
+                    <button
+                      onClick={() => setEditingField('fullname')}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 text-orange-500 dark:text-orange-400 rounded-lg transition-all"
+                    >
+                      <FaEdit size={16} />
+                    </button>
+                  </div>
+                )}
 
-                  <EditField
-                    label="City"
-                    icon={FaMapMarkerAlt}
-                    value={profileData.city}
-                    isEditing={editingFields.city}
-                    onEdit={() => handleEditToggle('city')}
-                    onChange={(value) => setProfileData((prev) => ({ ...prev, city: value }))}
-                  />
+                {/* Meta */}
+                <div className="flex items-center gap-4 flex-wrap justify-center md:justify-start">
+                  <span className="px-3 py-1 bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 rounded-full text-xs font-semibold">
+                    {userData.userType === 'business' ? '🏢 Business' : '👤 Community'}
+                  </span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <FaCalendar size={14} />
+                    Joined {joinDate}
+                  </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest flex items-center gap-2">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30">
-                        <FaHeart className="text-orange-500 dark:text-orange-400" size={14} />
-                      </div>
-                      Interested Businesses
-                    </label>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleEditToggle('interestedBusinesses')}
-                      className="p-2 rounded-lg bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-all"
-                    >
-                      {editingFields.interestedBusinesses ? <FaTimes size={14} /> : <FaEdit size={14} />}
-                    </motion.button>
+                {/* Location Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                  {/* City */}
+                  <div className="space-y-2">
+                    {editingField === 'city' ? (
+                      <>
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">City</label>
+                        <div className="flex items-center gap-2">
+                          <FaMapMarkerAlt className="text-orange-500 dark:text-orange-400 flex-shrink-0" />
+                          <input
+                            type="text"
+                            defaultValue={userData.city}
+                            onChange={e => setUserData(prev => ({ ...prev, city: e.target.value }))}
+                            onBlur={e => saveField('city', e.target.value)}
+                            className="flex-1 px-3 py-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            autoFocus
+                          />
+                          <button onClick={() => setEditingField(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded">
+                            <FaTimes size={12} />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">City</label>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <FaMapMarkerAlt className="text-orange-500 dark:text-orange-400" />
+                            <span className="font-medium text-gray-900 dark:text-white">{userData.city || 'Not set'}</span>
+                          </div>
+                          <button onClick={() => setEditingField('city')} className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-500 rounded transition-all">
+                            <FaEdit size={12} />
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  
-                  {editingFields.interestedBusinesses ? (
-                    <motion.textarea
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      value={profileData.interestedBusinesses}
-                      onChange={(e) => setProfileData((prev) => ({ ...prev, interestedBusinesses: e.target.value }))}
-                      className="w-full bg-white dark:bg-black/40 border border-orange-500/40 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm"
-                      placeholder="Enter business types (e.g., Coffee, Pizza, Bars)"
-                      rows={4}
-                    />
-                  ) : (
-                    <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-gradient-to-br dark:from-white/5 dark:to-white/2 p-4">
-                      <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
-                        {profileData.interestedBusinesses || 'No interested businesses set'}
-                      </p>
-                    </div>
-                  )}
+
+                  {/* ZIP Code */}
+                  <div className="space-y-2">
+                    {editingField === 'zip' ? (
+                      <>
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ZIP Code</label>
+                        <div className="flex items-center gap-2">
+                          <FaMapMarkerAlt className="text-pink-500 dark:text-pink-400 flex-shrink-0" />
+                          <input
+                            type="text"
+                            defaultValue={userData.zip}
+                            onChange={e => setUserData(prev => ({ ...prev, zip: e.target.value }))}
+                            onBlur={e => saveField('zip', e.target.value)}
+                            className="flex-1 px-3 py-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                            autoFocus
+                          />
+                          <button onClick={() => setEditingField(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded">
+                            <FaTimes size={12} />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ZIP Code</label>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <FaMapMarkerAlt className="text-pink-500 dark:text-pink-400" />
+                            <span className="font-medium text-gray-900 dark:text-white">{userData.zip || 'Not set'}</span>
+                          </div>
+                          <button onClick={() => setEditingField('zip')} className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-500 rounded transition-all">
+                            <FaEdit size={12} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </motion.div>
-        </section>
 
-        {/* Danger Zone */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-black text-red-600 dark:text-red-400 mb-6 flex items-center gap-3">
-            <FaExclamationTriangle size={28} /> Danger Zone
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setDeleteReviewsModal(true)}
-              className="relative rounded-2xl overflow-hidden border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/50 transition-all group p-6 text-left"
+          {/* Bento Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-max">
+            {/* Email & Interests Card - Full Width Top Left */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="md:col-span-2 bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all space-y-6"
             >
-              <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.1), transparent 70%)' }} />
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30">
-                    <FaTrash className="text-red-600 dark:text-red-400" size={18} />
-                  </div>
-                  <h3 className="text-lg font-black text-red-700 dark:text-red-300">Delete All Reviews</h3>
+              {/* Email */}
+              <div>
+                <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Email</h2>
+                <div className="flex items-center gap-3">
+                  <FaEnvelope className="text-orange-500 dark:text-orange-400 flex-shrink-0" />
+                  <span className="font-medium text-gray-900 dark:text-white break-all">{userData.email}</span>
                 </div>
-                <p className="text-sm text-red-600/70 dark:text-red-300/70">Remove all your reviews permanently.</p>
               </div>
-            </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setDeleteAccountModal(true)}
-              className="relative rounded-2xl overflow-hidden border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/50 transition-all group p-6 text-left"
-            >
-              <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.1), transparent 70%)' }} />
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30">
-                    <FaTrash className="text-red-600 dark:text-red-400" size={18} />
+              {/* Interests - Community Only */}
+              {userData.userType === 'community' && (
+                <div className="pt-4 border-t border-gray-200 dark:border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Interests</h2>
+                    {editingField !== 'interests' && (
+                      <button onClick={() => setEditingField('interests')} className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-500 rounded transition-all">
+                        <FaEdit size={14} />
+                      </button>
+                    )}
                   </div>
-                  <h3 className="text-lg font-black text-red-700 dark:text-red-300">Delete Account</h3>
+
+                  {editingField === 'interests' ? (
+                    <div className="space-y-3">
+                      {INTEREST_OPTIONS.map(interest => (
+                        <label key={interest} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10">
+                          <input
+                            type="checkbox"
+                            checked={userData.interests.includes(interest)}
+                            onChange={(e) => {
+                              const newInterests = e.target.checked
+                                ? [...userData.interests, interest]
+                                : userData.interests.filter(i => i !== interest)
+                              setUserData(prev => ({ ...prev, interests: newInterests }))
+                            }}
+                            className="w-4 h-4 accent-orange-500 cursor-pointer"
+                          />
+                          <span className="text-sm font-medium">{interest}</span>
+                        </label>
+                      ))}
+                      <div className="flex gap-2 pt-3">
+                        <button
+                          onClick={() => saveInterests(userData.interests)}
+                          className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold text-sm transition-all"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingField(null)}
+                          className="flex-1 py-2 bg-gray-300 dark:bg-white/20 hover:bg-gray-400 dark:hover:bg-white/30 text-gray-700 dark:text-white rounded-lg font-semibold text-sm transition-all"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {userData.interests.length > 0 ? (
+                        userData.interests.map(interest => (
+                          <span key={interest} className="px-3 py-1 bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 rounded-full text-xs font-semibold">
+                            {interest}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-xs text-gray-500">No interests added</p>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-red-600/70 dark:text-red-300/70">Permanently delete everything.</p>
+              )}
+
+              {/* Business Info - For business owners */}
+              {userData.userType === 'business' && businessData && (
+                <div className="pt-4 border-t border-gray-200 dark:border-white/10">
+                  <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Business</h2>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Name</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{businessData.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Type</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{businessData.type}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Reviews Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center mx-auto mb-3">
+                  <FaStar className="text-orange-500 dark:text-orange-400 text-lg" />
+                </div>
+                <div className="text-3xl font-bold text-orange-500 dark:text-orange-400 mb-1">
+                  {reviewCount}
+                </div>
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Reviews</p>
               </div>
-            </motion.button>
+            </motion.div>
+
+            {/* Saved Places Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center mx-auto mb-3">
+                  <FaHeart className="text-pink-500 dark:text-pink-400 text-lg" />
+                </div>
+                <div className="text-3xl font-bold text-pink-500 dark:text-pink-400 mb-1">
+                  {savedPlaces.length}
+                </div>
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Saved</p>
+              </div>
+            </motion.div>
+
+            {/* Danger Zone Card - Full Width Bottom with Delete Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="md:col-span-2 lg:col-span-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+            >
+              <h2 className="text-sm font-bold text-red-700 dark:text-red-300 uppercase tracking-wider mb-6 flex items-center gap-2">
+                <FaExclamationTriangle size={14} /> Danger Zone
+              </h2>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Delete Reviews Button */}
+                {reviewCount > 0 && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowDeleteReviewsModal(true)}
+                    className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    <FaTrash size={14} /> Delete {reviewCount} Reviews
+                  </motion.button>
+                )}
+
+                {/* Delete Account Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowDeleteAccountModal(true)}
+                  className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-all text-sm flex items-center justify-center gap-2"
+                >
+                  <FaTrash size={14} /> Delete Account
+                </motion.button>
+              </div>
+            </motion.div>
           </div>
-        </section>
+        </div>
       </main>
 
-      {/* Delete Reviews Modal */}
-      <Modal
-        title="Delete All Reviews?"
-        description="This will permanently delete all your reviews. This action cannot be undone."
-        isOpen={deleteReviewsModal}
-        onClose={() => setDeleteReviewsModal(false)}
-        variant="danger"
-      >
-        <div className="flex gap-3">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setDeleteReviewsModal(false)}
-            className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-700 dark:text-white font-bold hover:bg-gray-200 dark:hover:bg-black/50 transition-all"
-          >
-            Cancel
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleDeleteAllReviews}
-            disabled={deletingReviews}
-            className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {deletingReviews ? <FaSpinner className="animate-spin" /> : <FaTrash size={14} />}
-            {deletingReviews ? 'Deleting...' : 'Delete'}
-          </motion.button>
-        </div>
-      </Modal>
+      {/* Modals */}
+      <AnimatePresence>
+        {showDeleteReviewsModal && (
+          <ConfirmationModal
+            title="Delete All Reviews"
+            message="Are you sure you want to delete all your reviews? This action cannot be undone."
+            confirmText="Delete"
+            cancelText="Cancel"
+            onConfirm={handleDeleteAllReviews}
+            onCancel={() => setShowDeleteReviewsModal(false)}
+            isDanger={true}
+          />
+        )}
 
-      {/* Delete Account Modal */}
-      <Modal
-        title="Delete Account?"
-        description="This will permanently delete your account and all associated data including reviews, saved places, and profile information."
-        isOpen={deleteAccountModal}
-        onClose={() => setDeleteAccountModal(false)}
-        variant="danger"
-      >
-        <div className="flex gap-3">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setDeleteAccountModal(false)}
-            className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-700 dark:text-white font-bold hover:bg-gray-200 dark:hover:bg-black/50 transition-all"
-          >
-            Cancel
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleDeleteAccount}
-            disabled={deletingAccount}
-            className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {deletingAccount ? <FaSpinner className="animate-spin" /> : <FaTrash size={14} />}
-            {deletingAccount ? 'Deleting...' : 'Delete'}
-          </motion.button>
-        </div>
-      </Modal>
+        {showDeleteAccountModal && (
+          <ConfirmationModal
+            title="Delete Account"
+            message="Are you absolutely sure? This will permanently delete your account and all data. This cannot be undone."
+            confirmText="Delete Account"
+            cancelText="Cancel"
+            onConfirm={handleDeleteAccount}
+            onCancel={() => setShowDeleteAccountModal(false)}
+            isDanger={true}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

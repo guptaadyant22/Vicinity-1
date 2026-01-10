@@ -1,5 +1,6 @@
 'use client'
 
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,16 +12,19 @@ import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 import Aurora from '../../../components/Aurora'
 
+
 // --- THEMED CONSTANTS ---
 const GLASS_BG = "bg-white/80 dark:bg-black/50 backdrop-blur-md border-b border-gray-200 dark:border-white/10"
 const GLASS_CARD = "bg-white dark:bg-black/50 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-xl shadow-gray-200/50 dark:shadow-black/40 transition-all hover:shadow-2xl"
-const GLASS_MODAL = "bg-white dark:bg-black/50 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl p-8 max-w-sm w-full shadow-2xl shadow-gray-200/50 dark:shadow-black/40"
+const GLASS_MODAL = "bg-white dark:bg-black/50 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-gray-200/50 dark:shadow-black/40"
 const GLASS_INPUT = "w-full px-4 py-2 bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-all"
+
 
 export default function BusinessSettingsPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const supabase = createClient()
+
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -33,18 +37,22 @@ export default function BusinessSettingsPage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
-  // UPDATED: Removed 'photos', kept Business, Reviews, Favorites
+
+  // UPDATED: Added 'deals' option
   const [exportOptions, setExportOptions] = useState({
     businessInfo: true,
     reviews: true,
+    deals: true,
     favorites: true,
     dateRange: 'lifetime'
   })
+
 
   const [customDateRange, setCustomDateRange] = useState({
     startDate: '',
     endDate: ''
   })
+
 
   useEffect(() => {
     if (!authLoading && user === null) {
@@ -52,10 +60,12 @@ export default function BusinessSettingsPage() {
     }
   }, [authLoading, user, router])
 
+
   const handleDeleteAccount = async () => {
     if (!user) return
     setIsDeleting(true)
     setError(null)
+
 
     try {
       const { error: businessError } = await supabase
@@ -64,6 +74,7 @@ export default function BusinessSettingsPage() {
         .eq('owner_id', user.id)
       
       if (businessError) throw businessError
+
 
       await supabase.auth.signOut()
       setSuccess('Account deleted successfully')
@@ -77,31 +88,38 @@ export default function BusinessSettingsPage() {
     }
   }
 
+
   const handleUpdatePassword = async () => {
     if (!newPassword || !confirmPassword) {
       setError('Please fill in all password fields')
       return
     }
 
+
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match')
       return
     }
+
 
     if (newPassword.length < 6) {
       setError('Password must be at least 6 characters')
       return
     }
 
+
     setIsUpdatingPassword(true)
     setError(null)
+
 
     try {
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       })
 
+
       if (updateError) throw updateError
+
 
       setSuccess('Password updated successfully!')
       setShowPasswordModal(false)
@@ -116,9 +134,11 @@ export default function BusinessSettingsPage() {
     }
   }
 
+
   const getDateRange = () => {
     const today = new Date()
     const startDate = new Date()
+
 
     switch (exportOptions.dateRange) {
       case 'week':
@@ -145,19 +165,23 @@ export default function BusinessSettingsPage() {
         }
     }
 
+
     return {
       start: startDate,
       end: today
     }
   }
 
+
   const handleExportData = async () => {
     if (!user) return
     setIsExporting(true)
     setError(null)
 
+
     try {
       const dateRange = getDateRange()
+
 
       // 1. Fetch Business Info
       const { data: businessData, error: businessError } = await supabase
@@ -166,10 +190,14 @@ export default function BusinessSettingsPage() {
         .eq('owner_id', user.id)
         .single()
 
+
       if (businessError) throw businessError
 
+
       let reviewsData = []
+      let dealsData = []
       let favoritesData = []
+
 
       // 2. Fetch Reviews (Schema: reviews table)
       if (exportOptions.reviews) {
@@ -183,7 +211,21 @@ export default function BusinessSettingsPage() {
         reviewsData = data || []
       }
 
-      // 3. Fetch Favorites (Schema: favorites table)
+
+      // 3. Fetch Deals (NEW - Schema: deals table)
+      if (exportOptions.deals) {
+        const { data } = await supabase
+          .from('deals')
+          .select('*')
+          .eq('business_id', businessData.id)
+          .gte('created_at', dateRange.start.toISOString())
+          .lte('created_at', dateRange.end.toISOString())
+          .order('created_at', { ascending: false })
+        dealsData = data || []
+      }
+
+
+      // 4. Fetch Favorites (Schema: favorites table)
       if (exportOptions.favorites) {
         const { data } = await supabase
           .from('favorites')
@@ -194,9 +236,11 @@ export default function BusinessSettingsPage() {
         favoritesData = data || []
       }
 
+
       const reportData = {
         business: exportOptions.businessInfo ? businessData : null,
         reviews: reviewsData,
+        deals: dealsData,
         favorites: favoritesData,
         exportOptions: exportOptions,
         dateRange: {
@@ -206,11 +250,14 @@ export default function BusinessSettingsPage() {
         generatedAt: new Date().toISOString()
       }
 
+
       await generateAdvancedPDFReport(reportData, businessData.name)
+
 
       setSuccess('Data exported successfully!')
       setShowExportModal(false)
       setTimeout(() => setSuccess(null), 3000)
+
 
     } catch (err) {
       console.error('Export error:', err)
@@ -219,6 +266,7 @@ export default function BusinessSettingsPage() {
       setIsExporting(false)
     }
   }
+
 
   const generateAdvancedPDFReport = async (reportData, businessName) => {
     try {
@@ -229,7 +277,9 @@ export default function BusinessSettingsPage() {
       const margin = 15
       const contentWidth = pageWidth - margin * 2
 
+
       let yPosition = margin
+
 
       const addPageIfNeeded = (spaceNeeded = 20) => {
         if (yPosition + spaceNeeded > pageHeight - 20) {
@@ -240,6 +290,7 @@ export default function BusinessSettingsPage() {
         return false
       }
 
+
       const addHeading = (title) => {
         addPageIfNeeded(15)
         doc.setFontSize(14)
@@ -248,11 +299,13 @@ export default function BusinessSettingsPage() {
         yPosition += 10
       }
 
+
       // Title Page
       doc.setFontSize(24)
       doc.setTextColor(255, 111, 0)
       doc.text('BUSINESS DATA EXPORT', pageWidth / 2, yPosition, { align: 'center' })
       yPosition += 20
+
 
       doc.setFontSize(11)
       doc.setTextColor(100)
@@ -263,12 +316,15 @@ export default function BusinessSettingsPage() {
       doc.text(`Business: ${businessName}`, margin, yPosition)
       yPosition += 20
 
+
       // Business Information Section
       if (reportData.business) {
         addHeading('BUSINESS INFORMATION')
 
+
         doc.setFontSize(11)
         doc.setTextColor(0)
+
 
         const businessFields = [
           ['Business Name', reportData.business.name],
@@ -285,6 +341,7 @@ export default function BusinessSettingsPage() {
           ['Created Date', new Date(reportData.business.created_at).toLocaleDateString()]
         ]
 
+
         businessFields.forEach(([label, value]) => {
           addPageIfNeeded(6)
           const wrappedValue = doc.splitTextToSize(String(value), contentWidth - 60)
@@ -293,12 +350,14 @@ export default function BusinessSettingsPage() {
           yPosition += Math.max(6, wrappedValue.length * 5) + 2
         })
 
+
         if (reportData.business.description) {
           addPageIfNeeded(30)
           doc.setFontSize(11)
           doc.setTextColor(255, 111, 0)
           doc.text('Description:', margin, yPosition)
           yPosition += 7
+
 
           doc.setFontSize(10)
           doc.setTextColor(0)
@@ -308,39 +367,124 @@ export default function BusinessSettingsPage() {
         }
       }
 
+
       // Reviews Section
       if (reportData.reviews && reportData.reviews.length > 0) {
         addHeading('CUSTOMER REVIEWS')
 
+
+        doc.setFontSize(10)
+        doc.setTextColor(100)
+        doc.text(`Total Reviews: ${reportData.reviews.length}`, margin, yPosition)
+        yPosition += 8
+
+
         let reviewsCount = 0
         reportData.reviews.forEach((review, index) => {
-          if (reviewsCount >= 30) return
+          if (reviewsCount >= 30) {
+            addPageIfNeeded(10)
+            doc.setFontSize(9)
+            doc.setTextColor(150)
+            doc.text(`... and ${reportData.reviews.length - 30} more reviews (see full data for complete list)`, margin, yPosition)
+            return
+          }
           addPageIfNeeded(25)
 
-          doc.setFontSize(12)
+
+          doc.setFontSize(11)
           doc.setTextColor(255, 111, 0)
           doc.text(`Review #${index + 1}`, margin, yPosition)
-          yPosition += 7
+          yPosition += 6
+
 
           doc.setFontSize(10)
           doc.setTextColor(0)
           doc.text(`Rating: ${review.rating || 'N/A'}/5 stars`, margin, yPosition)
-          yPosition += 6
+          yPosition += 5
           doc.text(`Date: ${new Date(review.created_at).toLocaleDateString()}`, margin, yPosition)
-          yPosition += 6
+          yPosition += 5
           doc.text(`Reviewer: ${review.user_name || 'Anonymous'}`, margin, yPosition)
-          yPosition += 7
+          yPosition += 6
 
-          doc.setFontSize(10)
-          // Safety check for null review text
+
+          doc.setFontSize(9)
           const reviewText = review.text || review.comment || 'No written comment'
           const wrappedReview = doc.splitTextToSize(String(reviewText), contentWidth)
           doc.text(wrappedReview, margin, yPosition)
-          yPosition += wrappedReview.length * 5 + 10
+          yPosition += wrappedReview.length * 4 + 8
+
 
           reviewsCount++
         })
       }
+
+
+      // Deals Section (NEW)
+      if (reportData.deals && reportData.deals.length > 0) {
+        addHeading('ACTIVE DEALS & PROMOTIONS')
+
+
+        doc.setFontSize(10)
+        doc.setTextColor(100)
+        doc.text(`Total Deals: ${reportData.deals.length}`, margin, yPosition)
+        yPosition += 8
+
+
+        reportData.deals.forEach((deal, index) => {
+          addPageIfNeeded(30)
+
+
+          doc.setFontSize(11)
+          doc.setTextColor(255, 111, 0)
+          doc.text(`Deal #${index + 1}: ${deal.title || 'Untitled Deal'}`, margin, yPosition)
+          yPosition += 7
+
+
+          doc.setFontSize(10)
+          doc.setTextColor(0)
+
+
+          if (deal.discount_type && deal.discount_value) {
+            const discountDisplay = deal.discount_type === 'percentage' 
+              ? `${deal.discount_value}% OFF`
+              : `$${deal.discount_value} OFF`
+            doc.text(`Discount: ${discountDisplay}`, margin, yPosition)
+            yPosition += 5
+          }
+
+
+          if (deal.original_price && deal.discounted_price) {
+            doc.text(`Price: $${deal.original_price} → $${deal.discounted_price}`, margin, yPosition)
+            yPosition += 5
+          }
+
+
+          doc.text(`Status: ${deal.is_active ? 'Active' : 'Inactive'}`, margin, yPosition)
+          yPosition += 5
+
+
+          if (deal.expiry_date) {
+            doc.text(`Expires: ${new Date(deal.expiry_date).toLocaleDateString()}`, margin, yPosition)
+            yPosition += 5
+          }
+
+
+          doc.text(`Created: ${new Date(deal.created_at).toLocaleDateString()}`, margin, yPosition)
+          yPosition += 6
+
+
+          if (deal.description) {
+            doc.setFontSize(9)
+            const wrappedDesc = doc.splitTextToSize(String(deal.description), contentWidth)
+            doc.text(wrappedDesc, margin, yPosition)
+            yPosition += wrappedDesc.length * 4 + 10
+          }
+
+
+          yPosition += 3
+        })
+      }
+
 
       // Favorites Section
       if (reportData.favorites && reportData.favorites.length > 0) {
@@ -350,36 +494,50 @@ export default function BusinessSettingsPage() {
         doc.text(`Total Users who favorited: ${reportData.favorites.length}`, margin, yPosition)
         yPosition += 10
         
-        // List last 10 favorites
         doc.setFontSize(9)
-        reportData.favorites.slice(0, 10).forEach(fav => {
+        const favCount = Math.min(reportData.favorites.length, 20)
+        reportData.favorites.slice(0, favCount).forEach((fav, idx) => {
             addPageIfNeeded(6)
-            doc.text(`- Favorited on: ${new Date(fav.created_at).toLocaleDateString()}`, margin + 5, yPosition)
+            doc.text(`${idx + 1}. Favorited on: ${new Date(fav.created_at).toLocaleDateString()}`, margin + 5, yPosition)
             yPosition += 6
         })
+
+
+        if (reportData.favorites.length > 20) {
+          yPosition += 2
+          doc.setFontSize(8)
+          doc.setTextColor(150)
+          doc.text(`... and ${reportData.favorites.length - 20} more favorites`, margin + 5, yPosition)
+        }
       }
 
+
       // Summary Page
-      addPageIfNeeded(60)
+      addPageIfNeeded(80)
       doc.setFontSize(14)
       doc.setTextColor(255, 111, 0)
       doc.text('EXPORT SUMMARY', margin, yPosition)
       yPosition += 12
 
+
       doc.setFontSize(11)
       doc.setTextColor(0)
+
 
       const currentRatingDisplay = reportData.business && reportData.business.rating 
         ? `${reportData.business.rating}/5 stars` 
         : 'N/A'
 
+
       const summaryData = [
         ['Business Information', reportData.business ? 'Included' : 'Not Included'],
         ['Current Business Rating', currentRatingDisplay],
         ['Total Reviews', String(reportData.reviews?.length || 0)],
+        ['Total Deals', String(reportData.deals?.length || 0)],
         ['Total Favorites', String(reportData.favorites?.length || 0)],
         ['Export Date Range', `${reportData.dateRange.start} to ${reportData.dateRange.end}`]
       ]
+
 
       summaryData.forEach(([label, value]) => {
         addPageIfNeeded(6)
@@ -387,11 +545,14 @@ export default function BusinessSettingsPage() {
         yPosition += 7
       })
 
+
       yPosition += 10
+
 
       doc.setFontSize(9)
       doc.setTextColor(150)
       doc.text('This is an official data export from Vicinity Business Platform', margin, yPosition)
+
 
       doc.save(`${businessName}_export_${new Date().toISOString().split('T')[0]}.pdf`)
     } catch (err) {
@@ -400,12 +561,14 @@ export default function BusinessSettingsPage() {
     }
   }
 
+
   const toggleExportOption = (option) => {
     setExportOptions(prev => ({
       ...prev,
       [option]: !prev[option]
     }))
   }
+
 
   if (authLoading) {
     return (
@@ -414,6 +577,7 @@ export default function BusinessSettingsPage() {
       </div>
     )
   }
+
 
   return (
     <BusinessLayout>
@@ -431,12 +595,14 @@ export default function BusinessSettingsPage() {
         </div>
       </div>
 
+
       <div className={`h-20 ${GLASS_BG} flex items-center px-8 relative z-10 transition-colors`}>
         <div>
           <h1 className="text-2xl font-black text-gray-900 dark:text-white">Settings</h1>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Manage your account</p>
         </div>
       </div>
+
 
       <AnimatePresence>
         {error && (
@@ -461,8 +627,10 @@ export default function BusinessSettingsPage() {
         )}
       </AnimatePresence>
 
+
       <main className="flex-1 overflow-y-auto relative z-10">
         <div className="max-w-3xl mx-auto p-8 pb-20">
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             
@@ -478,7 +646,7 @@ export default function BusinessSettingsPage() {
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Export Your Data</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Download your business data with custom filters</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Download your business data with custom filters and comprehensive reports</p>
               <motion.button
                 onClick={() => setShowExportModal(true)}
                 whileHover={{ scale: 1.05 }}
@@ -489,6 +657,7 @@ export default function BusinessSettingsPage() {
                 Configure Export
               </motion.button>
             </motion.div>
+
 
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
@@ -514,7 +683,9 @@ export default function BusinessSettingsPage() {
               </motion.button>
             </motion.div>
 
+
           </div>
+
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }} 
@@ -534,6 +705,7 @@ export default function BusinessSettingsPage() {
               </div>
             </div>
 
+
             <div className="bg-white dark:bg-black/70 backdrop-blur-sm rounded-xl p-6 border border-red-100 dark:border-red-500/20">
               <div className="mb-4">
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2">Delete Account</h3>
@@ -551,10 +723,13 @@ export default function BusinessSettingsPage() {
               </motion.button>
             </div>
 
+
           </motion.div>
+
 
         </div>
       </main>
+
 
       {/* EXPORT DATA MODAL */}
       <AnimatePresence>
@@ -570,16 +745,17 @@ export default function BusinessSettingsPage() {
               initial={{ scale: 0.95, opacity: 0 }} 
               animate={{ scale: 1, opacity: 1 }} 
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-black/50 backdrop-blur-md border border-blue-200 dark:border-blue-500/30 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl dark:shadow-black/40"
+              className={`${GLASS_MODAL} max-h-[90vh] overflow-y-auto`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 mx-auto mb-4">
                 <FaDownload size={20} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 text-center">Configure Data Export</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed text-center">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">Configure Data Export</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm leading-relaxed text-center">
                 Choose what data to include and the date range for your export
               </p>
+
 
               <div className="mb-8">
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -603,6 +779,7 @@ export default function BusinessSettingsPage() {
                   ))}
                 </div>
 
+
                 {exportOptions.dateRange === 'custom' && (
                   <div className="mt-4 space-y-3">
                     <input
@@ -621,12 +798,14 @@ export default function BusinessSettingsPage() {
                 )}
               </div>
 
+
               <div className="mb-8">
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Data to Include</h4>
                 <div className="space-y-3">
                   {[
-                    { key: 'businessInfo', label: 'Business Information', desc: 'All business details, current rating, description & more' },
-                    { key: 'reviews', label: 'Customer Reviews', desc: 'All ratings and customer feedback' },
+                    { key: 'businessInfo', label: 'Business Information', desc: 'Business details, rating, description & created date' },
+                    { key: 'reviews', label: 'Customer Reviews', desc: 'All ratings, feedback & reviewer information' },
+                    { key: 'deals', label: 'Deals & Promotions', desc: 'Active deals, discounts, pricing & expiry dates' },
                     { key: 'favorites', label: 'Favorites Data', desc: 'Users who have saved your business' }
                   ].map(item => (
                     <motion.button
@@ -639,7 +818,7 @@ export default function BusinessSettingsPage() {
                           <p className="text-sm font-bold text-gray-900 dark:text-white">{item.label}</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.desc}</p>
                         </div>
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 ml-3 ${
                           exportOptions[item.key] 
                             ? 'bg-orange-500 border-orange-600' 
                             : 'bg-gray-300 dark:bg-gray-600 border-gray-400 dark:border-gray-700'
@@ -651,6 +830,7 @@ export default function BusinessSettingsPage() {
                   ))}
                 </div>
               </div>
+
 
               <div className="flex gap-3">
                 <motion.button 
@@ -686,6 +866,7 @@ export default function BusinessSettingsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* UPDATE PASSWORD MODAL */}
       <AnimatePresence>
@@ -729,6 +910,7 @@ export default function BusinessSettingsPage() {
                 />
               </div>
 
+
               <div className="flex gap-3">
                 <motion.button 
                   onClick={() => setShowPasswordModal(false)}
@@ -763,6 +945,7 @@ export default function BusinessSettingsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* DELETE CONFIRMATION MODAL */}
       <AnimatePresence>

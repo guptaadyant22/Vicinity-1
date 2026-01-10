@@ -22,39 +22,57 @@ export default function RootLayout({ children }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style>{`
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          html, body { width: 100%; height: 100%; }
-          .custom-loading { position: fixed; inset: 0; background: linear-gradient(to bottom right, #0a0a0a, #1a1a1a, #0f0f0f); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.5s ease-out; }
-          .custom-loading.hidden { opacity: 0; pointer-events: none; }
-          .loading-content { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; }
-          .loading-logo { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 20px rgba(255, 111, 0, 0.4)); }
-          .loading-text { color: #f97316; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; }
-          .loading-dots { display: flex; gap: 8px; margin-top: 16px; justify-content: center; }
-          .dot { width: 8px; height: 8px; background: linear-gradient(135deg, #ff6f00 0%, #ff8533 100%); border-radius: 50%; animation: bounce 1.4s infinite; will-change: transform; }
-          .dot:nth-child(2) { animation-delay: 0.2s; }
-          .dot:nth-child(3) { animation-delay: 0.4s; }
-          @keyframes bounce { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-8px); opacity: 1; } }
-          body.loading-active { overflow: hidden; }
-          html { scroll-behavior: smooth; }
-          *:focus-visible { outline: 2px solid #ff6f00; outline-offset: 2px; }
-        `}</style>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (!localStorage.getItem('theme') || localStorage.getItem('theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+              } else {
+                document.documentElement.classList.remove('dark');
+              }
+            `,
+          }}
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              html, body { width: 100%; height: 100%; }
+              .custom-loading { position: fixed; inset: 0; background: #ffffff; z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.5s ease-out; overflow: hidden; }
+              html.dark .custom-loading { background: linear-gradient(to bottom right, #0a0a0a, #1a1a1a, #0f0f0f); }
+              .custom-loading.hidden { opacity: 0; pointer-events: none; }
+              .custom-loading::before { content: ''; position: absolute; bottom: -20%; left: -20%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(255, 111, 0, 0.3) 0%, transparent 70%); border-radius: 50%; filter: blur(80px); animation: float-pulse 8s ease-in-out infinite; }
+              .custom-loading::after { content: ''; position: absolute; top: -15%; right: -15%; width: 700px; height: 700px; background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%); border-radius: 50%; filter: blur(90px); animation: float-pulse 10s ease-in-out infinite 1s; }
+              @keyframes float-pulse { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 0.9; } }
+              .loading-content { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; position: relative; z-index: 10; }
+              .loading-logo { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 20px rgba(255, 111, 0, 0.4)); }
+              .loading-text { color: #f97316; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; }
+              .loading-dots { display: flex; gap: 8px; margin-top: 16px; justify-content: center; }
+              .dot { width: 8px; height: 8px; background: linear-gradient(135deg, #ff6f00 0%, #ff8533 100%); border-radius: 50%; animation: bounce 1.4s infinite; will-change: transform; }
+              .dot:nth-child(2) { animation-delay: 0.2s; }
+              .dot:nth-child(3) { animation-delay: 0.4s; }
+              @keyframes bounce { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-8px); opacity: 1; } }
+              body.loading-active { overflow: hidden; }
+              html { scroll-behavior: smooth; }
+              *:focus-visible { outline: 2px solid #ff6f00; outline-offset: 2px; }
+            `,
+          }}
+        />
       </head>
       <body suppressHydrationWarning className="font-sans antialiased bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white transition-colors duration-300 relative">
         <ThemeProvider>
           <AuthProvider>
             {children}
             
-            {/* FLOATING ACTION BUTTONS */}
-            <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-4 items-center">
-              
-              {/* Dynamic AIChat */}
-              <AIChat />
-
-              {/* Theme Toggle */}
+            {/* THEME TOGGLE – TOP RIGHT */}
+            <div className="fixed top-2 right-6 z-50">
               <ThemeToggle />
             </div>
 
+            {/* CHAT – BOTTOM RIGHT */}
+            <div className="fixed bottom-6 right-6 z-50">
+              <AIChat />
+            </div>      
           </AuthProvider>
         </ThemeProvider>
 

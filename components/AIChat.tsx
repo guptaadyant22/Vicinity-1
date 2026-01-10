@@ -1,10 +1,11 @@
-// components/AIChat.tsx - FIXED DARK/LIGHT MODE
+// components/AIChat.tsx - USES WEBSITE DARK/LIGHT MODE
 
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { FaRobot, FaTimes, FaPaperPlane, FaSpinner, FaMoon, FaSun } from 'react-icons/fa'
+import { FaRobot, FaTimes, FaPaperPlane, FaSpinner } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 
 interface Message {
   id: string
@@ -15,21 +16,16 @@ interface Message {
 
 export default function AIChat() {
   const { session, loading, userType } = useAuth()
+  const { isDark } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
-    // Check system preference
-    if (typeof window !== 'undefined') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setIsDarkMode(prefersDark)
-    }
   }, [])
 
   useEffect(() => {
@@ -159,7 +155,7 @@ export default function AIChat() {
     }
   }
 
-  const theme = isDarkMode ? colors.dark : colors.light
+  const theme = isDark ? colors.dark : colors.light
 
   return (
     <>
@@ -213,7 +209,7 @@ export default function AIChat() {
             flexDirection: 'column',
             zIndex: 9998,
             overflow: 'hidden',
-            boxShadow: isDarkMode 
+            boxShadow: isDark 
               ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 111, 0, 0.15)'
               : '0 20px 60px rgba(0, 0, 0, 0.1), 0 0 40px rgba(255, 111, 0, 0.1)',
             animation: 'slideUp 0.3s ease',
@@ -236,30 +232,6 @@ export default function AIChat() {
                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>Vicinity AI</h3>
               </div>
             </div>
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: 'none',
-                color: 'white',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-              }}
-              title={isDarkMode ? 'Light mode' : 'Dark mode'}
-            >
-              {isDarkMode ? <FaSun size={14} /> : <FaMoon size={14} />}
-            </button>
           </div>
 
           {/* Messages */}
@@ -299,7 +271,7 @@ export default function AIChat() {
                   }}
                 >
                   {msg.role === 'assistant' ? (
-                    <FormattedText content={msg.content} isDarkMode={isDarkMode} />
+                    <FormattedText content={msg.content} isDarkMode={isDark} />
                   ) : (
                     msg.content
                   )}
@@ -414,7 +386,7 @@ export default function AIChat() {
             }
 
             input::placeholder {
-              color: ${isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'};
+              color: ${isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'};
             }
           `}</style>
         </div>
@@ -468,8 +440,4 @@ function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: b
       })}
     </div>
   )
-}
-
-function getHeaderSubtitle(): string {
-  return '✨ Your AI Assistant'
 }

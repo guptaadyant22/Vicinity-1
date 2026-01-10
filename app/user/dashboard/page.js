@@ -7,6 +7,7 @@ import {
   FaHeart, FaStar, FaFilter, FaClock, FaUserCheck, FaStore,
   FaGripHorizontal, FaListUl, FaTimes, FaChevronDown,
   FaChevronLeft, FaChevronRight, FaSearch, FaSpinner,
+  FaMapMarkerAlt, FaTag,
 } from 'react-icons/fa'
 
 import BusinessCard from '../../../components/BusinessCard'
@@ -85,6 +86,14 @@ const formatBusinessType = (type) => {
   return type
 }
 
+// HELPER FUNCTION TO CHECK IF DEAL IS EXPIRED
+const isDealExpired = (expiryDate) => {
+  if (!expiryDate) return false
+  const now = new Date()
+  const expiry = new Date(expiryDate)
+  return expiry < now
+}
+
 const VicinityLogo = ({ className = '', showText = true }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="w-9 h-9">
@@ -123,7 +132,7 @@ const Header = ({ savedCount, onLogout }) => {
 
   return (
     <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
-      <div className="w-full max-w-5xl bg-white/80 dark:bg-black/40 backdrop-blur-2xl border border-gray-200 dark:border-white/15 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2 hover:bg-white/90 dark:hover:bg-black/50 transition-all">
+      <div className="w-full max-w-5xl bg-white/80 dark:bg-black/40 backdrop-blur-2xl border border-gray-200/60 dark:border-white/15 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2 hover:bg-white/90 dark:hover:bg-black/50 transition-all">
         <VicinityLogo showText={true} />
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-300">
           <a href="/user/dashboard" className="hover:text-gray-900 dark:hover:text-white transition-colors relative group">Browse<span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" /></a>
@@ -149,7 +158,7 @@ const Header = ({ savedCount, onLogout }) => {
 const StatCard = ({ label, value, icon: Icon, color, delay }) => {
   const t = statTheme[color] || statTheme.orange
   return (
-    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} whileHover={{ y: -4 }} className="group relative p-6 rounded-2xl overflow-hidden border border-gray-200 dark:border-white/15 bg-white/80 dark:bg-black/40 backdrop-blur-2xl shadow-lg hover:shadow-xl transition-all hover:bg-white/90 dark:hover:bg-black/50">
+    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} whileHover={{ y: -4 }} className="group relative p-6 rounded-2xl overflow-hidden border border-gray-200/60 dark:border-white/15 bg-white/60 dark:bg-black/40 backdrop-blur-2xl shadow-lg hover:shadow-xl dark:shadow-none transition-all hover:bg-white/80 dark:hover:bg-black/50">
       <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[70px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-multiply dark:mix-blend-normal" style={{ background: `radial-gradient(circle, ${t.glow}, transparent 65%)` }} />
       <div className="relative z-10 flex items-center gap-4">
         <div className={`p-3.5 rounded-xl border backdrop-blur-lg ${t.iconWrap}`}><Icon size={22} /></div>
@@ -160,8 +169,8 @@ const StatCard = ({ label, value, icon: Icon, color, delay }) => {
 }
 
 const SkeletonCard = ({ viewMode }) => (
-  <div className={`rounded-2xl bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/15 overflow-hidden backdrop-blur-2xl ${viewMode === 'list' ? 'flex h-80' : 'h-[400px]'}`}>
-    <div className={`${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'w-full h-56'} bg-gray-200 dark:bg-black/50 animate-pulse`} />
+  <div className={`rounded-2xl bg-gray-100/50 dark:bg-black/40 border border-gray-200/50 dark:border-white/15 overflow-hidden backdrop-blur-2xl ${viewMode === 'list' ? 'flex h-80' : 'h-[400px]'}`}>
+    <div className={`${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'w-full h-56'} bg-gradient-to-br from-gray-200 to-gray-300 dark:from-black/50 dark:to-black/30 animate-pulse`} />
     <div className={`${viewMode === 'list' ? 'flex-1 p-6' : 'w-full'} p-5 space-y-3`}>
       <div className="h-6 w-3/4 bg-gray-200 dark:bg-black/50 rounded animate-pulse" />
       <div className="h-4 w-1/2 bg-gray-200 dark:bg-black/50 rounded animate-pulse" />
@@ -206,7 +215,6 @@ export default function UserDashboardPage() {
   const router = useRouter()
   const supabase = createClient()
   const bgRef = useRef(null)
-  const gradientRef = useRef(null)
 
   const [loading, setLoading] = useState(true)
   const [businesses, setBusinesses] = useState([])
@@ -219,6 +227,9 @@ export default function UserDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [aiSearchLoading, setAiSearchLoading] = useState(false)
   const [aiSearchResults, setAiSearchResults] = useState(null)
+  const [userData, setUserData] = useState(null)
+  const [hasDealsFilter, setHasDealsFilter] = useState(false)
+  const [businessesWithDeals, setBusinessesWithDeals] = useState(new Set())
 
   const [categoryFilter, setCategoryFilter] = useState(null)
   const [openNowFilter, setOpenNowFilter] = useState(false)
@@ -251,6 +262,32 @@ export default function UserDashboardPage() {
   useEffect(() => {
     if (!authLoading && !user) router.push('/login')
   }, [user, authLoading, router])
+
+  useEffect(() => {
+    if (!user) return
+
+    const fetchUserData = async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        
+        if (!authUser) return
+
+        const userMetadata = authUser.user_metadata || {}
+        const fullName = userMetadata.fullname || userMetadata.full_name || 'Traveler'
+        const firstName = fullName.split(' ')[0]
+        const city = userMetadata.city || ''
+
+        setUserData({
+          name: firstName,
+          city: city,
+        })
+      } catch (err) {
+        console.error('Error fetching user data:', err)
+      }
+    }
+
+    fetchUserData()
+  }, [user, supabase])
 
   useEffect(() => {
     if (!user) return
@@ -297,6 +334,34 @@ export default function UserDashboardPage() {
           .map(([type]) => type)
 
         setAvailableCategories(topCategories)
+
+        // FETCH ALL DEALS - MATCHING THE BUSINESS CARD LOGIC
+        const dealsWithBusinesses = new Set()
+        
+        for (const business of formattedBusinesses) {
+          try {
+            const { data: deals, error: dealsError } = await supabase
+              .from('deals')
+              .select('id, title, discount_type, discount_value, is_active, expiry_date')
+              .eq('business_id', business.id)
+              .eq('is_active', true)
+              .order('created_at', { ascending: false })
+              .limit(1)
+
+            if (!dealsError && deals && deals.length > 0) {
+              const deal = deals[0]
+              
+              // CHECK IF DEAL HAS EXPIRED - EXACT SAME LOGIC AS BUSINESS CARD
+              if (!isDealExpired(deal.expiry_date)) {
+                dealsWithBusinesses.add(business.id)
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching deals for business ${business.id}:`, error)
+          }
+        }
+
+        setBusinessesWithDeals(dealsWithBusinesses)
 
         const businessesWithUpdatedRatings = await Promise.all(
           formattedBusinesses.map(async (business) => {
@@ -481,6 +546,11 @@ export default function UserDashboardPage() {
       result = result.filter(b => isBusinessOpenNow(b.hours))
     }
 
+    // DEALS FILTER - ONLY SHOW BUSINESSES WITH ACTIVE, NON-EXPIRED DEALS
+    if (hasDealsFilter) {
+      result = result.filter(b => businessesWithDeals.has(b.id))
+    }
+
     if (sortOption === 'highest-rated') {
       result.sort((a, b) => {
         const ratingA = parseFloat(a.rating) || 0
@@ -502,13 +572,13 @@ export default function UserDashboardPage() {
     }
 
     return result
-  }, [businessesWithRatings, categoryFilter, openNowFilter, sortOption, aiSearchResults])
+  }, [businessesWithRatings, categoryFilter, openNowFilter, sortOption, aiSearchResults, hasDealsFilter, businessesWithDeals])
 
   const totalPages = Math.max(1, Math.ceil(filteredBusinesses.length / PAGE_SIZE))
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [categoryFilter, openNowFilter, sortOption, aiSearchResults])
+  }, [categoryFilter, openNowFilter, sortOption, aiSearchResults, hasDealsFilter])
 
   const paginatedBusinesses = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE
@@ -549,10 +619,11 @@ export default function UserDashboardPage() {
     setSortOption('default')
     setSearchQuery('')
     setAiSearchResults(null)
+    setHasDealsFilter(false)
     setCurrentPage(1)
   }
 
-  const activeFilterCount = (categoryFilter ? 1 : 0) + (openNowFilter ? 1 : 0) + (aiSearchResults !== null ? 1 : 0)
+  const activeFilterCount = (categoryFilter ? 1 : 0) + (openNowFilter ? 1 : 0) + (aiSearchResults !== null ? 1 : 0) + (hasDealsFilter ? 1 : 0)
 
   const stats = {
     total: businesses.length,
@@ -563,7 +634,7 @@ export default function UserDashboardPage() {
     saved: savedIds.size,
   }
 
-  if (authLoading || !user) return <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors" />
+  if (authLoading || !user) return <div className="min-h-screen bg-gray-50 dark:bg-[#080808] transition-colors" />
 
   return (
     <div className="min-h-screen text-gray-900 dark:text-gray-200 font-sans selection:bg-orange-500/25 selection:text-white relative bg-gray-50 dark:bg-[#080808] transition-colors duration-300">
@@ -578,12 +649,20 @@ export default function UserDashboardPage() {
       <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
         <section className="mb-16 text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-10">
           <div className="max-w-2xl">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter mb-6 leading-[0.9]">
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
               Ready to explore, <br />
               <span className={`text-transparent bg-clip-text bg-gradient-to-r ${THEME.accentGrad}`}>
-                {user?.user_metadata?.full_name?.split(' ')[0] || 'Traveler'}?
+                {userData?.name || 'Traveler'}?
               </span>
             </motion.h1>
+            {userData?.city && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mt-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100/70 dark:bg-orange-500/15 border border-orange-200/80 dark:border-orange-500/30 shadow-sm dark:shadow-none">
+                  <FaMapMarkerAlt className="text-orange-600 dark:text-orange-400" size={14} />
+                  <span className="text-sm font-semibold text-orange-700 dark:text-orange-300">{userData.city}</span>
+                </div>
+              </motion.div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4 w-full lg:w-auto">
             <StatCard label="Places" value={stats.total} icon={FaStore} color="orange" delay={0.1} />
@@ -598,7 +677,7 @@ export default function UserDashboardPage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-              className="w-full p-3 rounded-lg bg-white dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-between shadow-sm"
+              className="w-full p-3 rounded-lg bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-white/80 dark:hover:text-white dark:hover:bg-black/50 transition-all shadow-sm flex items-center justify-between"
             >
               <div className="flex items-center gap-2">
                 <FaFilter size={14} />
@@ -621,7 +700,7 @@ export default function UserDashboardPage() {
                 transition={{ duration: 0.2 }}
                 className="lg:w-72 flex-shrink-0"
               >
-                <div className="sticky top-28 rounded-2xl p-6 border border-gray-200 dark:border-white/15 bg-white/80 dark:bg-black/40 backdrop-blur-2xl shadow-lg space-y-6">
+                <div className="sticky top-28 rounded-2xl p-6 border border-gray-200/60 dark:border-white/15 bg-white/60 dark:bg-black/40 backdrop-blur-2xl shadow-lg dark:shadow-none space-y-6">
                   <div className="flex items-center justify-between lg:block">
                     <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                       <FaFilter size={12} className="text-orange-500 dark:text-orange-400" /> Filters
@@ -647,7 +726,7 @@ export default function UserDashboardPage() {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="px-3 py-2 bg-blue-100 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-xs text-blue-600 dark:text-blue-300 font-bold text-center"
+                      className="px-3 py-2 bg-blue-100/60 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 rounded-lg text-xs text-blue-600 dark:text-blue-300 font-bold text-center"
                     >
                       🎯 {activeFilterCount} active filter{activeFilterCount > 1 ? 's' : ''}
                     </motion.div>
@@ -663,7 +742,7 @@ export default function UserDashboardPage() {
                             className={`px-2 py-2.5 rounded-lg text-xs font-bold transition-all text-center ${
                               categoryFilter === type
                                 ? 'bg-gradient-to-r from-orange-500/80 to-pink-500/80 text-white shadow-md'
-                                : 'bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
+                                : 'bg-gray-100/70 dark:bg-black/40 border border-gray-200/60 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
                             }`}
                           >
                             {formatBusinessType(type)}
@@ -686,8 +765,8 @@ export default function UserDashboardPage() {
                           onClick={() => setSortOption(opt.id)}
                           className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${
                             sortOption === opt.id
-                              ? 'bg-orange-100 dark:bg-orange-500/15 border border-orange-200 dark:border-orange-500/30 text-orange-600 dark:text-orange-300'
-                              : 'bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
+                              ? 'bg-orange-100/70 dark:bg-orange-500/15 border border-orange-200/60 dark:border-orange-500/30 text-orange-600 dark:text-orange-300'
+                              : 'bg-gray-100/70 dark:bg-black/40 border border-gray-200/60 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
                           }`}
                         >
                           {opt.label}
@@ -701,8 +780,8 @@ export default function UserDashboardPage() {
                       onClick={() => setOpenNowFilter(!openNowFilter)}
                       className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
                         openNowFilter
-                          ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/25 text-emerald-600 dark:text-emerald-300'
-                          : 'bg-gray-100 dark:bg-black/40 border-gray-200 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
+                          ? 'bg-emerald-100/70 dark:bg-emerald-500/10 border-emerald-200/60 dark:border-emerald-500/25 text-emerald-600 dark:text-emerald-300'
+                          : 'bg-gray-100/70 dark:bg-black/40 border-gray-200/60 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       <span className="text-sm font-bold flex items-center gap-2">
@@ -711,6 +790,28 @@ export default function UserDashboardPage() {
                       <div className={`w-10 h-5 rounded-full relative transition-colors ${openNowFilter ? 'bg-emerald-500' : 'bg-gray-400 dark:bg-gray-700'}`}>
                         <motion.div
                           animate={{ left: openNowFilter ? 24 : 4 }}
+                          className="absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm"
+                          transition={{ duration: 0.2 }}
+                        />
+                      </div>
+                    </button>
+                  </FilterSection>
+
+                  <FilterSection title="Deals">
+                    <button
+                      onClick={() => setHasDealsFilter(!hasDealsFilter)}
+                      className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
+                        hasDealsFilter
+                          ? 'bg-red-100/70 dark:bg-red-500/10 border-red-200/60 dark:border-red-500/25 text-red-600 dark:text-red-300'
+                          : 'bg-gray-100/70 dark:bg-black/40 border-gray-200/60 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span className="text-sm font-bold flex items-center gap-2">
+                        <FaTag size={14} /> Has Deals
+                      </span>
+                      <div className={`w-10 h-5 rounded-full relative transition-colors ${hasDealsFilter ? 'bg-red-500' : 'bg-gray-400 dark:bg-gray-700'}`}>
+                        <motion.div
+                          animate={{ left: hasDealsFilter ? 24 : 4 }}
                           className="absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm"
                           transition={{ duration: 0.2 }}
                         />
@@ -728,7 +829,7 @@ export default function UserDashboardPage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   onClick={() => setFilterOpen(!filterOpen)}
-                  className="hidden lg:flex p-2.5 rounded-lg bg-white dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors shadow-sm"
+                  className="hidden lg:flex p-2.5 rounded-lg bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:text-gray-900 hover:bg-white/80 dark:hover:text-white dark:hover:bg-black/50 transition-all shadow-sm"
                   title="Toggle filters"
                 >
                   <FaFilter size={14} />
@@ -738,7 +839,7 @@ export default function UserDashboardPage() {
                   ✨ Discover Nearby
                 </h2>
 
-                <div className="flex gap-2 bg-white dark:bg-black/40 p-1.5 rounded-xl border border-gray-200 dark:border-white/15 shadow-sm">
+                <div className="flex gap-2 bg-white/60 dark:bg-black/40 p-1.5 rounded-xl border border-gray-200/60 dark:border-white/15 shadow-sm">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setViewMode('grid')}
@@ -773,7 +874,7 @@ export default function UserDashboardPage() {
                     placeholder="Search by taste, mood, cuisine... (try 'tacos', 'cozy coffee', 'healthy breakfast')"
                     value={searchQuery}
                     onChange={handleSearchInputChange}
-                    className="w-full pl-10 pr-12 py-3.5 rounded-lg bg-white dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/30 transition-all shadow-sm"
+                    className="w-full pl-10 pr-12 py-3.5 rounded-lg bg-white/70 dark:bg-black/40 border border-gray-200/60 dark:border-white/15 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/30 transition-all shadow-sm"
                   />
                   {aiSearchLoading ? (
                     <FaSpinner className="absolute right-4 top-1/2 -translate-y-1/2 text-orange-500 animate-spin" size={16} />
@@ -841,8 +942,8 @@ export default function UserDashboardPage() {
                         disabled={currentPage === 1}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all ${
                           currentPage === 1
-                            ? 'bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                            : 'bg-white dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:border-orange-500/50 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-black/50 shadow-sm'
+                            ? 'bg-gray-100/60 dark:bg-black/20 border border-gray-200/60 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                            : 'bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:border-orange-500/50 hover:text-gray-900 hover:bg-white/80 dark:hover:text-white dark:hover:bg-black/50 shadow-sm transition-all'
                         }`}
                       >
                         <FaChevronLeft size={12} /> Previous
@@ -860,7 +961,7 @@ export default function UserDashboardPage() {
                               className={`w-10 h-10 rounded-lg font-bold text-sm transition-all ${
                                 page === currentPage
                                   ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/40'
-                                  : 'bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
+                                  : 'bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
                               }`}
                             >
                               {page}
@@ -876,7 +977,7 @@ export default function UserDashboardPage() {
                               className={`w-10 h-10 rounded-lg font-bold text-sm transition-all ${
                                 currentPage === 1
                                   ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/40'
-                                  : 'bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
+                                  : 'bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
                               }`}
                             >
                               1
@@ -900,7 +1001,7 @@ export default function UserDashboardPage() {
                                   className={`w-10 h-10 rounded-lg font-bold text-sm transition-all ${
                                     page === currentPage
                                       ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/40'
-                                      : 'bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
+                                      : 'bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
                                   }`}
                                 >
                                   {page}
@@ -919,7 +1020,7 @@ export default function UserDashboardPage() {
                               className={`w-10 h-10 rounded-lg font-bold text-sm transition-all ${
                                 currentPage === totalPages
                                   ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/40'
-                                  : 'bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
+                                  : 'bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/10 text-gray-500 dark:text-gray-300 hover:border-orange-500/30 hover:text-gray-900 dark:hover:text-white'
                               }`}
                             >
                               {totalPages}
@@ -936,8 +1037,8 @@ export default function UserDashboardPage() {
                         disabled={currentPage === totalPages}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all ${
                           currentPage === totalPages
-                            ? 'bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                            : 'bg-white dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:border-orange-500/50 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-black/50 shadow-sm'
+                            ? 'bg-gray-100/60 dark:bg-black/20 border border-gray-200/60 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                            : 'bg-white/60 dark:bg-black/40 border border-gray-200/60 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:border-orange-500/50 hover:text-gray-900 hover:bg-white/80 dark:hover:text-white dark:hover:bg-black/50 shadow-sm transition-all'
                         }`}
                       >
                         Next <FaChevronRight size={12} />

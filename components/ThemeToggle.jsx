@@ -10,21 +10,23 @@ const ThemeToggle = () => {
 
   return (
     <motion.button
-      className={`fixed bottom-6 left-6 z-[9999] p-3 rounded-full shadow-2xl backdrop-blur-md border transition-all duration-300 group
+      className={`
+        z-[9999] p-2 rounded-full shadow-2xl backdrop-blur-md border 
+        transition-all duration-300 group
         ${isDark 
           ? 'bg-black/40 border-white/10 text-yellow-400 hover:bg-black/60 hover:border-yellow-400/50' 
           : 'bg-white/80 border-gray-200 text-orange-500 hover:bg-white hover:border-orange-200'
         }
       `}
       onClick={toggleTheme}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.92 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       aria-label="Toggle Theme"
     >
-      <div className="relative w-6 h-6 flex items-center justify-center">
+      <div className="relative w-5 h-5 flex items-center justify-center">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={isDark ? 'dark' : 'light'}
@@ -33,15 +35,25 @@ const ThemeToggle = () => {
             exit={{ y: 20, opacity: 0, rotate: 90 }}
             transition={{ duration: 0.2 }}
           >
-            {isDark ? <FaMoon className="text-xl" /> : <FaSun className="text-xl" />}
+            {isDark ? (
+              <FaMoon className="text-lg" />
+            ) : (
+              <FaSun className="text-lg" />
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Optional: Tooltip on Hover */}
-      <span className={`absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none
-        ${isDark ? 'bg-white text-black' : 'bg-black text-white'}
-      `}>
+      {/* Tooltip on the LEFT of the button */}
+      <span
+        className={`
+          absolute right-full mr-3 top-1/2 -translate-y-1/2 
+          px-2 py-1 rounded text-xs font-bold 
+          opacity-0 group-hover:opacity-100 
+          transition-opacity duration-200 whitespace-nowrap pointer-events-none
+          ${isDark ? 'bg-white text-black' : 'bg-black text-white'}
+        `}
+      >
         {isDark ? 'Light Mode' : 'Dark Mode'}
       </span>
     </motion.button>
@@ -49,4 +61,3 @@ const ThemeToggle = () => {
 }
 
 export default ThemeToggle
-

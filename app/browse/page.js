@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -19,7 +19,6 @@ import {
 
 import { createClient } from '../../lib/supabase'
 import BusinessCard from '../../components/BusinessCard'
-import Navbar from '../../components/Navbar'
 
 // Helper for category names
 const CATEGORY_MAP = {
@@ -185,7 +184,6 @@ export default function BrowsePage() {
 
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value)
-    // If user clears input manually, reset AI results to fall back to basic search
     if (!e.target.value.trim()) {
       setAiSearchResults(null)
     }
@@ -214,15 +212,14 @@ export default function BrowsePage() {
       setCurrentPage(1)
     } catch (error) {
       console.error('AI Search error:', error)
-      // Fallback: Just let basic search handle it if AI fails
       setAiSearchResults(null)
     } finally {
       setAiSearchLoading(false)
     }
   }
 
-  // --- UNIFIED FILTERING LOGIC ---
-  const filteredBusinesses = useMemo(() => {
+  // --- UNIFIED FILTERING AND SORTING LOGIC ---
+  const filteredAndSortedBusinesses = useMemo(() => {
     // 1. Determine base list: AI Results OR Full List
     let result = aiSearchResults !== null ? [...aiSearchResults] : [...businesses]
 
@@ -241,19 +238,31 @@ export default function BrowsePage() {
       result = result.filter(b => b.type === categoryFilter)
     }
 
-    // 4. Apply Sorting
+    // 4. APPLY SORTING - THIS IS THE KEY PART
     if (sortOption === 'highest-rated') {
-      result.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0))
+      result = result.sort((a, b) => {
+        const ratingA = parseFloat(a.rating) || 0
+        const ratingB = parseFloat(b.rating) || 0
+        return ratingB - ratingA
+      })
     } else if (sortOption === 'most-reviewed') {
-      result.sort((a, b) => (parseInt(b.review_count) || 0) - (parseInt(a.review_count) || 0))
+      result = result.sort((a, b) => {
+        const countA = parseInt(a.review_count) || 0
+        const countB = parseInt(b.review_count) || 0
+        return countB - countA
+      })
     } else if (sortOption === 'newest') {
-      result.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+      result = result.sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        return dateB - dateA
+      })
     }
 
     return result
   }, [businesses, categoryFilter, sortOption, aiSearchResults, searchQuery])
 
-  const totalPages = Math.max(1, Math.ceil(filteredBusinesses.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedBusinesses.length / PAGE_SIZE))
 
   useEffect(() => {
     setCurrentPage(1)
@@ -261,11 +270,11 @@ export default function BrowsePage() {
 
   const paginatedBusinesses = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE
-    return filteredBusinesses.slice(start, start + PAGE_SIZE)
-  }, [filteredBusinesses, currentPage])
+    return filteredAndSortedBusinesses.slice(start, start + PAGE_SIZE)
+  }, [filteredAndSortedBusinesses, currentPage])
 
   const startIndex = (currentPage - 1) * PAGE_SIZE + 1
-  const endIndex = Math.min(currentPage * PAGE_SIZE, filteredBusinesses.length)
+  const endIndex = Math.min(currentPage * PAGE_SIZE, filteredAndSortedBusinesses.length)
 
   const clearAllFilters = () => {
     setCategoryFilter(null)
@@ -275,7 +284,6 @@ export default function BrowsePage() {
     setCurrentPage(1)
   }
 
-  // Count active filters (Category + Search + AI)
   const activeFilterCount = (categoryFilter ? 1 : 0) + (searchQuery ? 1 : 0)
 
   const handleRestrictedAction = () => {
@@ -286,7 +294,36 @@ export default function BrowsePage() {
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-sans selection:bg-orange-500/25 selection:text-orange-900 dark:selection:text-white relative transition-colors duration-300">
       <AnimatedBg />
       
-      <Navbar />
+      {/* ===== SIMPLIFIED NAVBAR - LOGIN/SIGNUP ONLY ===== */}
+      <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
+        <div className="w-full max-w-5xl bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-gray-300/20 dark:border-white/15 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2 hover:bg-white/50 dark:hover:bg-black/50 transition-all duration-300">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8">
+              <g fill="#ff6f00" fillRule="nonzero">
+                <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
+                  <path d="M5,45l4,-11l12,-12l-6,23z"></path>
+                  <path d="M25,18l8,27h10l-11,-33z"></path>
+                  <path d="M16.059,14.164l3.941,-11.164h8z"></path>
+                  <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
+                  <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
+                  <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
+                </g>
+              </g>
+            </svg>
+            <span className="font-black text-orange-500 dark:text-orange-400 text-xl tracking-tight">Vicinity</span>
+          </div>
+          
+          {/* Spacer */}
+          <div className="flex-1"></div>
+          
+          {/* Right Actions - Login/Signup Only */}
+          <div className="flex items-center gap-2">
+            <a href="/login" className="px-5 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">Log In</a>
+            <a href="/signup" className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold rounded-xl hover:scale-105 transition-transform shadow-lg shadow-orange-500/20">Get Started</a>
+          </div>
+        </div>
+      </motion.nav>
 
       <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
         <section className="mb-16 text-center lg:text-left">
@@ -394,9 +431,9 @@ export default function BrowsePage() {
                     <div className="space-y-2">
                       {[
                         { id: 'default', label: 'Default' },
-                        { id: 'highest-rated', label: 'Highest Rated' },
-                        { id: 'most-reviewed', label: 'Most Reviewed' },
-                        { id: 'newest', label: 'Newest' },
+                        { id: 'highest-rated', label: '⭐ Highest Rated' },
+                        { id: 'most-reviewed', label: '💬 Most Reviewed' },
+                        { id: 'newest', label: '✨ Newest' },
                       ].map((opt) => (
                         <button
                           key={opt.id}
@@ -486,7 +523,7 @@ export default function BrowsePage() {
                 </div>
                 {aiSearchResults !== null && (
                   <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between">
-                    <span>🤖 AI Search: Found <span className="text-orange-500 dark:text-orange-400 font-bold">{filteredBusinesses.length}</span> results</span>
+                    <span>🤖 AI Search: Found <span className="text-orange-500 dark:text-orange-400 font-bold">{filteredAndSortedBusinesses.length}</span> results</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -504,7 +541,7 @@ export default function BrowsePage() {
               <div className="flex items-center justify-between px-1">
                 <div className="text-sm">
                   <span className="text-gray-500 dark:text-gray-300 font-medium">
-                    Showing <span className="text-orange-500 dark:text-orange-400 font-bold">{startIndex}–{endIndex}</span> of <span className="text-gray-900 dark:text-white font-bold">{filteredBusinesses.length}</span>
+                    Showing <span className="text-orange-500 dark:text-orange-400 font-bold">{startIndex}–{endIndex}</span> of <span className="text-gray-900 dark:text-white font-bold">{filteredAndSortedBusinesses.length}</span>
                   </span>
                 </div>
               </div>
@@ -513,26 +550,23 @@ export default function BrowsePage() {
                 <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
                   {[1, 2, 3, 4, 5, 6].map((i) => <SkeletonCard key={i} viewMode={viewMode} />)}
                 </div>
-              ) : filteredBusinesses.length > 0 ? (
+              ) : filteredAndSortedBusinesses.length > 0 ? (
                 <>
                   <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
                     {paginatedBusinesses.map((business) => (
                       <div key={business.id} className="relative group cursor-pointer">
-                        {/* 1. OVERLAY THAT CAPTURES ALL CLICKS */}
                         <div 
                           onClick={handleRestrictedAction}
                           className="absolute inset-0 z-10"
                         />
                         
-                        {/* 2. THE CARD ITSELF (No clickable links inside) */}
                         <BusinessCard
                           business={business}
                           isSaved={false}
-                          onSave={() => {}} // Disabled prop
+                          onSave={() => {}}
                           viewMode={viewMode}
                         />
 
-                        {/* 3. VISUAL HINT */}
                         <div className="absolute top-2 right-2 z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-md text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                           <FaLock size={10} /> Sign in to view
                         </div>

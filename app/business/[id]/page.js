@@ -10,11 +10,29 @@ import {
   FaMapPin, FaExternalLinkAlt, FaCalendar, FaQuoteLeft
 } from 'react-icons/fa'
 import { createClient } from '../../../lib/supabase'
-import Navbar from '../../../components/Navbar' // IMPORTED NAVBAR
 
 // --- CONSTANTS ---
 const DAYS_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&h=800&fit=crop'
+
+// --- VICINITY LOGO COMPONENT (from Navbar file) ---
+const VicinityLogo = ({ className = "", textClassName = "" }) => ( 
+  <div className={`flex items-center gap-2.5 ${className}`}> 
+    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8"> 
+      <g fill="#ff6f00" fillRule="nonzero"> 
+        <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)"> 
+          <path d="M5,45l4,-11l12,-12l-6,23z"></path> 
+          <path d="M25,18l8,27h10l-11,-33z"></path> 
+          <path d="M16.059,14.164l3.941,-11.164h8z"></path> 
+          <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path> 
+          <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path> 
+          <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path> 
+        </g> 
+      </g> 
+    </svg> 
+    <span className={`font-black text-gray-900 dark:text-white text-xl tracking-tight ${textClassName}`}>Vicinity</span> 
+  </div> 
+)
 
 // --- BACKGROUND COMPONENT (THEMED) ---
 const Background = () => (
@@ -373,9 +391,15 @@ export default function BusinessDetailPage() {
             },
             (payload) => {
               if (payload.eventType === 'INSERT') {
-                setReviews((prev) => [payload.new, ...prev])
-                setSuccess('✨ New review received!')
+  // CHECK IF REVIEW ALREADY EXISTS IN STATE TO AVOID DUPLICATES
+  setReviews((prev) => {
+    const reviewExists = prev.some((r) => r.id === payload.new.id)
+    if (reviewExists) return prev
+    return [payload.new, ...prev]
+        })
+  setSuccess('✨ New review received!')
                 setTimeout(() => setSuccess(null), 3000)
+
               } else if (payload.eventType === 'UPDATE') {
                 setReviews((prev) => 
                   prev.map((r) => (r.id === payload.new.id ? payload.new : r))
@@ -653,8 +677,33 @@ export default function BusinessDetailPage() {
         )}
       </AnimatePresence>
 
-      {/* NAVBAR */}
-      <Navbar />
+      {/* INLINE BACK NAVBAR - USES VICINITY LOGO + BACK BUTTON */}
+      <motion.nav 
+        initial={{ y: -100 }} 
+        animate={{ y: 0 }} 
+        className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4"
+      >
+        <div className="w-full max-w-5xl bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border border-gray-300 dark:border-white/10 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2">
+          
+          {/* VICINITY LOGO */}
+          <VicinityLogo />
+          
+          {/* SPACER */}
+          <div className="flex-1" />
+          
+          {/* BACK BUTTON - RIGHT SIDE */}
+          <motion.button
+            onClick={() => window.history.back()}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            className="flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-all shadow-md hover:shadow-lg"
+          >
+            <FaArrowLeft size={14} />
+            <span>Back</span>
+          </motion.button>
+          
+        </div>
+      </motion.nav>
 
       {/* HERO HEADER WITH COVER IMAGE */}
       <div className="relative h-[65vh] min-h-[500px] overflow-hidden pt-20">

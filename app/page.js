@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, useMotionValue, useTransform, useTime, useAnimationFrame } from 'framer-motion'
+import { motion, useMotionValue, useTransform, useTime, useAnimationFrame,AnimatePresence  } from 'framer-motion'
 import {
   FaStore, FaStar, FaRocket, FaMapMarkerAlt, 
   FaUserFriends, FaBolt, FaSearch, FaCommentDots, 
@@ -9,12 +9,13 @@ import {
   FaCompass, FaUser, FaCalendarAlt, FaTag,
   FaMusic, FaGamepad, FaCamera, FaCoffee,
   FaDumbbell, FaBook, FaBrain, FaChartLine,
-  FaCheck
+  FaCheck,FaChevronDown 
 } from 'react-icons/fa'
 
 import Navbar from '../components/Navbar'
 import { useTheme } from '../context/ThemeContext'
 import LightPillar from '../components/LightPillar'
+
 
 const VicinityLogo = ({ className = "", textClassName = "" }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
@@ -38,61 +39,72 @@ const CleanWhiteBackground = () => {
   return (
     <div className="absolute inset-0 w-full h-full bg-white overflow-hidden pointer-events-none">
       
-      {/* 1. The "Vicinity" Grid 
-          A sharper, technical grid that fades out at the edges */}
+      {/* 1. Primary Gradient Beam - Orange from bottom-left */}
+      <motion.div 
+        animate={{ 
+          opacity: [0.6, 0.9, 0.6],
+          scale: [1, 1.2, 1],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-1/4 -left-1/4 w-[700px] h-[700px] bg-gradient-to-tr from-orange-400/70 via-orange-300/50 to-transparent rounded-full blur-[80px]"
+      />
+
+      {/* 2. Secondary Gradient Beam - Pink/Rose from top-right */}
+      <motion.div 
+        animate={{ 
+          opacity: [0.5, 0.85, 0.5],
+          scale: [1, 1.15, 1],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] bg-gradient-to-bl from-pink-400/60 via-rose-300/40 to-transparent rounded-full blur-[90px]"
+      />
+
+      {/* 3. Tertiary Accent - Purple from top-left */}
+      <motion.div 
+        animate={{ 
+          opacity: [0.4, 0.7, 0.4],
+          x: [0, 40, 0],
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        className="absolute top-1/4 -left-1/3 w-[600px] h-[600px] bg-gradient-to-br from-purple-400/50 via-purple-300/30 to-transparent rounded-full blur-[100px]"
+      />
+
+      {/* 4. Subtle Grid Pattern */}
       <div 
-        className="absolute inset-0 opacity-[0.3]" 
+        className="absolute inset-0 opacity-[0.2]" 
         style={{ 
           backgroundImage: `
-            linear-gradient(to right, #e5e7eb 1px, transparent 1px), 
-            linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)
+            linear-gradient(to right, #9ca3af 1px, transparent 1px), 
+            linear-gradient(to bottom, #9ca3af 1px, transparent 1px)
           `, 
-          backgroundSize: '50px 50px',
-          maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)'
+          backgroundSize: '80px 80px',
+          maskImage: 'radial-gradient(circle at center, black 50%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 50%, transparent 100%)'
         }} 
       />
 
-      {/* 2. BOLD SHAPE: The Orange Beam (Connection)
-          Instead of a circle, this is a massive angled beam of light 
-          sweeping up from the bottom-left */}
-      <motion.div 
-        animate={{ 
-          x: [0, 20, 0],
-          y: [0, -20, 0],
-          opacity: [0.6, 0.8, 0.6],
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -bottom-[20%] -left-[10%] w-[70%] h-[150%] bg-gradient-to-tr from-orange-200/60 via-orange-100/30 to-transparent transform rotate-12 blur-[80px]"
-      />
-
-      {/* 3. BOLD SHAPE: The Pink Flow (Community)
-          A contrasting angular wash coming from the top-right 
-          to create a beautiful intersection of colors in the middle */}
-      <motion.div 
-        animate={{ 
-          x: [0, -30, 0],
-          y: [0, 20, 0],
-          opacity: [0.5, 0.7, 0.5],
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute -top-[20%] -right-[10%] w-[80%] h-[120%] bg-gradient-to-bl from-pink-200/50 via-rose-100/30 to-transparent transform -rotate-6 blur-[90px]"
-      />
-
-      {/* 4. Dynamic "Data Stream" Accent 
-          A subtle, sharper line that adds a 'tech' feel without being overwhelming */}
+      {/* 5. Animated Accent Line */}
       <motion.div 
         animate={{ 
           opacity: [0.3, 0.6, 0.3],
-          scaleY: [1, 1.2, 1],
+          scaleY: [1, 1.4, 1],
         }}
-        transition={{ duration: 5, repeat: Infinity }}
-        className="absolute top-0 right-1/3 w-[1px] h-full bg-gradient-to-b from-transparent via-orange-300/50 to-transparent blur-[1px]"
+        transition={{ duration: 6, repeat: Infinity }}
+        className="absolute top-1/3 right-1/4 w-[3px] h-2/5 bg-gradient-to-b from-transparent via-orange-400/70 to-transparent blur-sm"
       />
 
-      {/* 5. Glass Polish Overlay 
-          Ensures the text remains perfectly readable by washing out the center slightly */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/40 to-white/80" />
+      {/* 6. Center Glow - Warm overlay */}
+      <motion.div 
+        animate={{ 
+          opacity: [0.6, 0.85, 0.6],
+          scale: [1, 1.08, 1],
+        }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-to-r from-orange-200/50 via-pink-200/40 to-purple-200/40 rounded-full blur-[130px]"
+      />
+
+      {/* 7. Light Readability Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/10 to-white/20" />
     </div>
   )
 }
@@ -1163,7 +1175,182 @@ const HowItWorks = () => {
     </SectionBackgroundGlow>
   )
 }
+const FAQ = () => {
+  const [openIndex, setOpenIndex] = useState(null)
+  const time = useTime()
+  const scale = useTransform(time, [0, 4000, 8000], [1, 1.2, 1])
 
+  const faqs = [
+    {
+      question: "What is Vicinity?",
+      answer: "Vicinity is a platform designed to empower local communities by connecting people with nearby opportunities, events, and services through AI-powered discovery."
+    },
+    {
+      question: "How does Vicinity use AI?",
+      answer: "Our AI technology analyzes your location and preferences to surface the most relevant local opportunities, making community discovery personalized and effortless."
+    },
+    {
+      question: "Is my location data safe?",
+      answer: "Yes, your privacy is our priority. All location data is encrypted and handled according to our privacy policy. You have full control over your location sharing settings."
+    },
+    {
+      question: "How much does Vicinity cost?",
+      answer: "Vicinity offers a free tier with essential features, plus premium plans for individuals and businesses looking for advanced features and priority support."
+    },
+    {
+      question: "Can businesses use Vicinity?",
+      answer: "Absolutely! Vicinity helps local businesses connect with their community through targeted visibility and engagement tools designed for growth."
+    },
+    {
+      question: "How do I get started?",
+      answer: "Simply sign up with your email or social account, set your location preferences, and start discovering local opportunities tailored just for you."
+    }
+  ]
+
+  const toggleFAQ = (index) => {
+    setOpenIndex(openIndex === index ? null : index)
+  }
+
+  return (
+    <section id="faq" className="bg-white dark:bg-black relative py-12 px-6 overflow-hidden transition-colors duration-300 min-h-screen flex items-center">
+      {/* Enhanced Animated Background - Cut off at bottom-left */}
+      <motion.div 
+        style={{ scale }} 
+        className="absolute -bottom-40 -left-40 sm:-bottom-56 sm:-left-56 md:-bottom-64 md:-left-64 w-[400px] sm:w-[600px] md:w-[800px] h-[400px] sm:h-[600px] md:h-[800px] bg-gradient-to-tr from-orange-500/30 to-purple-600/30 rounded-full blur-[120px]" 
+      />
+
+      {/* Premium Background */}
+      <div className="absolute inset-0 -z-20">
+        {/* Grid Pattern */}
+        <motion.div
+          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
+          style={{
+            backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)`,
+            backgroundSize: '100px 100px',
+          }}
+          animate={{ backgroundPosition: ['0px 0px', '100px 100px'] }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        />
+        
+        {/* Animated Orbs */}
+        <motion.div
+          className="absolute top-10 right-1/4 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-gradient-to-br from-blue-600/20 to-transparent rounded-full blur-[120px]"
+          animate={{
+            opacity: [0.3, 0.6, 0.3],
+            x: [0, 50, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        
+        <motion.div
+          className="absolute top-1/4 left-1/3 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-gradient-to-tl from-purple-600/15 to-transparent rounded-full blur-[120px]"
+          animate={{
+            opacity: [0.2, 0.5, 0.2],
+            x: [0, -50, 0],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+
+        {/* Center Glow */}
+        <motion.div
+          className="absolute top-1/3 right-1/3 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-orange-500/10 rounded-full blur-[150px]"
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+
+      <div className="w-full max-w-4xl mx-auto relative z-10">
+        {/* Section Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500/20 to-purple-500/20 border border-orange-500/50 mb-3">
+            <div className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400 animate-pulse" />
+            <span className="text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">Have Questions?</span>
+          </div>
+          
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
+            Frequently Asked <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-purple-500">Questions</span>
+          </h2>
+          
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-xl mx-auto px-2">
+            Everything you need to know about Vicinity
+          </p>
+        </motion.div>
+
+        {/* FAQ Items */}
+        <div className="space-y-3">
+          {faqs.map((faq, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
+              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+              className="group relative bg-white dark:bg-black/60 backdrop-blur-xl border border-gray-300 dark:border-orange-500/20 rounded-xl sm:rounded-2xl overflow-hidden hover:border-orange-500/60 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-orange-500/10"
+            >
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/20 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500 bg-gradient-to-br from-orange-500/15 to-transparent rounded-xl sm:rounded-2xl" />
+
+              <button
+                onClick={() => toggleFAQ(index)}
+                className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between text-left relative z-10 group/button"
+              >
+                <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white pr-4 group-hover/button:text-orange-600 dark:group-hover/button:text-orange-300 transition-colors">
+                  {faq.question}
+                </span>
+                <motion.div
+                  animate={{ rotate: openIndex === index ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex-shrink-0 text-orange-500 dark:text-orange-400 text-sm"
+                >
+                  <FaChevronDown />
+                </motion.div>
+              </button>
+
+              {/* Answer */}
+              <AnimatePresence>
+                {openIndex === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="border-t border-gray-200 dark:border-orange-500/10 overflow-hidden relative z-10"
+                  >
+                    <p className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {faq.answer}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 const Footer = () => (
   <footer className="relative py-20 border-t border-gray-300 dark:border-white/10 text-gray-900 dark:text-white z-10 bg-white dark:bg-[#050505] transition-colors duration-300">
     <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -1200,6 +1387,7 @@ export default function LandingPage() {
       <Hero />
       <AIBenefitsSection />
       <HowItWorks />
+      <FAQ />
       <Footer />
     </main>
   )

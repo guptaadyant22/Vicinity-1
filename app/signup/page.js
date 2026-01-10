@@ -1,5 +1,6 @@
 'use client'
 
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,7 +10,41 @@ import {
   FaBuilding, FaStar, FaPlus
 } from 'react-icons/fa'
 import { createClient } from '../../lib/supabase'
-import Navbar from '../../components/Navbar' // Using the shared Navbar
+
+
+// --- NAVBAR COMPONENT ---
+const VicinityLogo = ({ className = "", textClassName = "" }) => (
+  <div className={`flex items-center gap-2.5 ${className}`}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8">
+      <g fill="#ff6f00" fillRule="nonzero">
+        <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
+          <path d="M5,45l4,-11l12,-12l-6,23z"></path>
+          <path d="M25,18l8,27h10l-11,-33z"></path>
+          <path d="M16.059,14.164l3.941,-11.164h8z"></path>
+          <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
+          <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
+          <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
+        </g>
+      </g>
+    </svg>
+    <span className={`font-black text-orange-500 dark:text-orange-400 text-xl tracking-tight ${textClassName}`}>Vicinity</span>
+  </div>
+)
+
+
+const SignupNavbar = () => (
+  <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
+    <div className="w-full max-w-5xl bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-gray-300/20 dark:border-white/15 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2 hover:bg-white/50 dark:hover:bg-black/50 transition-all duration-300">
+      <VicinityLogo />
+      
+      <div className="flex items-center gap-2">
+        <a href="/login" className="px-5 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">Log In</a>
+        <a href="/" className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold rounded-xl hover:scale-105 transition-transform shadow-lg shadow-orange-500/20">Home</a>
+      </div>
+    </div>
+  </motion.nav>
+)
+
 
 // --- THEMED CONSTANTS ---
 const GLASS_CARD = "bg-white/90 dark:bg-[#1a1a1a] backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-colors duration-300"
@@ -17,6 +52,7 @@ const TEXT_MAIN = "text-gray-900 dark:text-white"
 const TEXT_MUTED = "text-gray-600 dark:text-gray-400"
 const LABEL_STYLE = "block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
 const INPUT_STYLE = "w-full py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/10 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20"
+
 
 // --- GRID BACKGROUND (THEME AWARE) ---
 const GridBackground = () => (
@@ -28,6 +64,7 @@ const GridBackground = () => (
   </div>
 )
 
+
 const BUSINESS_TYPES = [
   'Restaurant', 'Cafe', 'Food Truck', 'Bakery', 'Retail Store', 'Clothing Store',
   'Bookstore', 'Gift Shop', 'Hair Salon', 'Spa', 'Gym', 'Yoga Studio',
@@ -36,8 +73,10 @@ const BUSINESS_TYPES = [
   'Entertainment Venue', 'Arcade', 'Cinema', 'Escape Room', 'Other'
 ]
 
+
 const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
 const INTEREST_OPTIONS = ['Restaurants & Food', 'Shopping & Retail', 'Home Services', 'Health & Wellness', 'Professional Services']
+
 
 const BUSINESS_STEPS = [
   { id: 1, label: 'Personal Info', icon: FaUser },
@@ -47,12 +86,14 @@ const BUSINESS_STEPS = [
   { id: 5, label: 'Confirm', icon: FaCheck }
 ]
 
+
 const COMMUNITY_STEPS = [
   { id: 1, label: 'Profile', icon: FaUser },
   { id: 2, label: 'Interests', icon: FaStar },
   { id: 3, label: 'Security', icon: FaLock },
   { id: 4, label: 'Confirm', icon: FaCheck }
 ]
+
 
 export default function SignupPage() {
   const supabase = createClient()
@@ -61,23 +102,28 @@ export default function SignupPage() {
   const [error, setError] = useState(null)
   const [currentStep, setCurrentStep] = useState(1)
 
+
   const [businessForm, setBusinessForm] = useState({
     name: '', businessName: '', email: '', website: '', phone: '',
     businessType: '', customBusinessType: '', streetAddress: '', city: '', state: '', zipCode: '',
     password: '', confirmPassword: '', isRealBusiness: false,
   })
 
+
   const [communityForm, setCommunityForm] = useState({
     name: '', email: '', city: '', zipCode: '',
     password: '', confirmPassword: '', interests: [], agreeToGuidelines: false,
   })
+
 
   const [businessErrors, setBusinessErrors] = useState({})
   const [communityErrors, setCommunityErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+
   const router = useRouter()
+
 
   const handleAccountTypeSelect = type => {
     setAccountType(type)
@@ -87,15 +133,18 @@ export default function SignupPage() {
     setError(null)
   }
 
+
   const handleBusinessInputChange = (field, value) => {
     setBusinessForm(prev => ({ ...prev, [field]: value }))
     if (businessErrors[field]) setBusinessErrors(prev => ({ ...prev, [field]: '' }))
   }
 
+
   const handleCommunityInputChange = (field, value) => {
     setCommunityForm(prev => ({ ...prev, [field]: value }))
     if (communityErrors[field]) setCommunityErrors(prev => ({ ...prev, [field]: '' }))
   }
+
 
   const handleInterestToggle = interest => {
     setCommunityForm(prev => ({
@@ -105,6 +154,7 @@ export default function SignupPage() {
         : [...prev.interests, interest],
     }))
   }
+
 
   const validateBusinessStep = (step) => {
     const errors = {}
@@ -130,6 +180,7 @@ export default function SignupPage() {
     return errors
   }
 
+
   const validateCommunityStep = (step) => {
     const errors = {}
     if (step === 1) {
@@ -147,15 +198,18 @@ export default function SignupPage() {
     return errors
   }
 
+
   const handleNextStep = () => {
     const isBusiness = accountType === 'business'
     const maxSteps = isBusiness ? 5 : 4
     const errors = isBusiness ? validateBusinessStep(currentStep) : validateCommunityStep(currentStep)
 
+
     if (Object.keys(errors).length > 0) {
       isBusiness ? setBusinessErrors(errors) : setCommunityErrors(errors)
       return
     }
+
 
     if (currentStep < maxSteps) {
       setCurrentStep(currentStep + 1)
@@ -163,13 +217,16 @@ export default function SignupPage() {
     }
   }
 
+
   const handlePrevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
+
   const handleBusinessSubmit = async e => {
     e.preventDefault()
     setError(null)
+
 
     const errors = validateBusinessStep(5)
     if (Object.keys(errors).length > 0) {
@@ -177,7 +234,9 @@ export default function SignupPage() {
       return
     }
 
+
     setIsLoading(true)
+
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -186,18 +245,23 @@ export default function SignupPage() {
         options: { data: { user_type: 'business', fullname: businessForm.name } },
       })
 
+
       if (authError) throw authError
       const userId = authData.user?.id
       if (!userId) throw new Error('No user ID returned')
+
 
       const { error: signinError } = await supabase.auth.signInWithPassword({
         email: businessForm.email.trim(), 
         password: businessForm.password,
       })
 
+
       if (signinError) throw signinError
 
+
       const finalBusinessType = businessForm.businessType === 'Other' ? businessForm.customBusinessType : businessForm.businessType
+
 
       const { error: dbError } = await supabase
         .from('businesses')
@@ -221,7 +285,9 @@ export default function SignupPage() {
           }
         ])
 
+
       if (dbError) throw new Error('Account created, but failed to save business profile.')
+
 
       router.push('/business/profile')
     } catch (err) {
@@ -230,9 +296,11 @@ export default function SignupPage() {
     }
   }
 
+
   const handleCommunitySubmit = async e => {
     e.preventDefault()
     setError(null)
+
 
     const errors = validateCommunityStep(4)
     if (Object.keys(errors).length > 0) {
@@ -240,7 +308,9 @@ export default function SignupPage() {
       return
     }
 
+
     setIsLoading(true)
+
 
     try {
       const { error: authError } = await supabase.auth.signUp({
@@ -249,13 +319,17 @@ export default function SignupPage() {
         options: { data: { user_type: 'community', fullname: communityForm.name, city: communityForm.city, zip: communityForm.zipCode, interests: communityForm.interests } },
       })
 
+
       if (authError) throw authError
+
 
       const { error: signinError } = await supabase.auth.signInWithPassword({
         email: communityForm.email.trim(), password: communityForm.password,
       })
 
+
       if (signinError) throw signinError
+
 
       router.push('/user/dashboard')
     } catch (err) {
@@ -264,7 +338,9 @@ export default function SignupPage() {
     }
   }
 
+
   const isValidEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
 
   const getPasswordStrength = password => {
     if (!password) return { level: 0, percentage: 0, color: '#333' }
@@ -273,10 +349,12 @@ export default function SignupPage() {
     return { level: 3, percentage: 100, color: '#10b981' }
   }
 
+
   return (
     <main className="min-h-screen relative flex flex-col bg-gray-50 dark:bg-[#050505] transition-colors duration-300 font-sans selection:bg-orange-500 selection:text-white">
       <GridBackground />
-      <Navbar />
+      <SignupNavbar />
+
 
       <div className="flex-1 flex items-center justify-center px-4 py-24 relative z-10">
         <AnimatePresence mode="wait">
@@ -330,6 +408,7 @@ export default function SignupPage() {
   )
 }
 
+
 const AccountTypeSelection = ({ onSelect }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -355,6 +434,7 @@ const AccountTypeSelection = ({ onSelect }) => (
     </div>
   </motion.div>
 )
+
 
 const AccountCard = ({ icon: Icon, title, subtitle, features, onClick, gradient }) => (
   <motion.button
@@ -383,10 +463,12 @@ const AccountCard = ({ icon: Icon, title, subtitle, features, onClick, gradient 
   </motion.button>
 )
 
+
 const StepFormContainer = ({ accountType, currentStep, onBack, error, children }) => {
   const isBusiness = accountType === 'business'
   const steps = isBusiness ? BUSINESS_STEPS : COMMUNITY_STEPS
   const gradient = isBusiness ? 'from-orange-500 to-pink-500' : 'from-indigo-500 to-purple-600'
+
 
   return (
     <motion.div
@@ -397,6 +479,7 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
       <button onClick={onBack} className={`flex items-center gap-2 ${TEXT_MUTED} hover:text-orange-500 dark:hover:text-white mb-8 transition-colors text-sm font-medium`}>
         <FaArrowLeft /> Back to selection
       </button>
+
 
       {/* Step Indicator */}
       <div className="mb-8">
@@ -434,9 +517,11 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
         </div>
       </div>
 
+
       <div className={GLASS_CARD}>
         <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${gradient}`} />
         <div className={`absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br ${gradient} opacity-10 blur-3xl rounded-full animate-pulse`} />
+
 
         {error && (
           <div className="mb-6 p-4 bg-red-100 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 rounded-xl text-red-600 dark:text-red-300 text-sm flex items-center gap-3">
@@ -444,6 +529,7 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
             {error}
           </div>
         )}
+
 
         <div className="relative z-10">
           {children}
@@ -453,8 +539,10 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
   )
 }
 
+
 const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, setShowPassword, showConfirmPassword, setShowConfirmPassword, getPasswordStrength, onNext, onPrev, onSubmit, isLoading }) => {
   const strength = getPasswordStrength(form.password)
+
 
   return (
     <form onSubmit={step === 5 ? onSubmit : (e) => { e.preventDefault(); onNext() }} className="space-y-6">
@@ -471,6 +559,7 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
             <Input label="Email Address" type="email" required value={form.email} onChange={e => onInputChange('email', e.target.value)} error={errors.email} icon={FaEnvelope} />
           </div>
         )}
+
 
         {step === 2 && (
           <div className="space-y-5">
@@ -495,6 +584,7 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
           </div>
         )}
 
+
         {step === 3 && (
           <div className="space-y-5">
             <h3 className={`text-xl font-bold ${TEXT_MAIN} mb-6`}>Business Location</h3>
@@ -506,6 +596,7 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
             <Select label="State" required value={form.state} onChange={e => onInputChange('state', e.target.value)} error={errors.state} options={US_STATES} />
           </div>
         )}
+
 
         {step === 4 && (
           <div className="space-y-5">
@@ -530,6 +621,7 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
               {errors.password && <p className="text-xs text-red-500 dark:text-red-400">{errors.password}</p>}
             </div>
 
+
             <div className="space-y-1.5">
               <label className={LABEL_STYLE}>
                 Confirm Password <span className="text-orange-500">*</span>
@@ -550,6 +642,7 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
             </div>
           </div>
         )}
+
 
         {step === 5 && (
           <div className="space-y-5">
@@ -575,6 +668,7 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
         )}
       </motion.div>
 
+
       {/* Navigation Buttons */}
       <div className="flex gap-4 mt-8 pt-6">
         {step > 1 && (
@@ -598,8 +692,10 @@ const BusinessStepForm = ({ step, form, onInputChange, errors, showPassword, set
   )
 }
 
+
 const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors, showPassword, setShowPassword, showConfirmPassword, setShowConfirmPassword, getPasswordStrength, onNext, onPrev, onSubmit, isLoading }) => {
   const strength = getPasswordStrength(form.password)
+
 
   return (
     <form onSubmit={step === 4 ? onSubmit : (e) => { e.preventDefault(); onNext() }} className="space-y-6">
@@ -618,6 +714,7 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
             <Input label="ZIP Code (Optional)" value={form.zipCode} onChange={e => onInputChange('zipCode', e.target.value)} error={errors.zipCode} placeholder="Optional" />
           </div>
         )}
+
 
         {step === 2 && (
           <div className="space-y-5">
@@ -644,6 +741,7 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
           </div>
         )}
 
+
         {step === 3 && (
           <div className="space-y-5">
             <h3 className={`text-xl font-bold ${TEXT_MAIN} mb-6`}>Secure Your Account</h3>
@@ -667,6 +765,7 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
               {errors.password && <p className="text-xs text-red-500 dark:text-red-400">{errors.password}</p>}
             </div>
 
+
             <div className="space-y-1.5">
               <label className={LABEL_STYLE}>
                 Confirm Password <span className="text-orange-500">*</span>
@@ -687,6 +786,7 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
             </div>
           </div>
         )}
+
 
         {step === 4 && (
           <div className="space-y-5">
@@ -713,6 +813,7 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
         )}
       </motion.div>
 
+
       {/* Navigation Buttons */}
       <div className="flex gap-4 mt-8 pt-6">
         {step > 1 && (
@@ -736,6 +837,7 @@ const CommunityStepForm = ({ step, form, onInputChange, onInterestToggle, errors
   )
 }
 
+
 const Input = ({ label, required, error, icon: Icon, ...props }) => {
   return (
     <div className="space-y-1.5">
@@ -755,6 +857,7 @@ const Input = ({ label, required, error, icon: Icon, ...props }) => {
     </div>
   )
 }
+
 
 const Select = ({ label, required, error, options, placeholder = "Select...", ...props }) => {
   return (

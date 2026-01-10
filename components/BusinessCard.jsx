@@ -33,10 +33,7 @@ const shimmer = (w, h) => `
 const toBase64 = (str) =>
   typeof window === 'undefined' ? Buffer.from(str).toString('base64') : window.btoa(str)
 
-// PLACEHOLDER IMAGE
 const placeholderImage = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f5f5f5' width='400' height='300'/%3E%3Crect fill='%23ff6f00' x='0' y='0' width='400' height='6'/%3E%3Crect fill='%23ff6f00' x='0' y='294' width='400' height='6'/%3E%3Ctext x='200' y='130' text-anchor='middle' fill='%23ff6f00' font-size='32' font-weight='bold' font-family='Arial, sans-serif'%3EBUSINESS%3C/text%3E%3Ctext x='200' y='170' text-anchor='middle' fill='%23999' font-size='14' font-family='Arial, sans-serif'%3ENo Image Available%3C/text%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='%23ff6f00' stroke-width='2'/%3E%3Ccircle cx='340' cy='240' r='25' fill='none' stroke='%23ff6f00' stroke-width='2'/%3E%3C/svg%3E`
-
-/* ================= TIME PARSING HELPERS ================= */
 
 const parseTime = (timeStr) => {
   if (!timeStr || typeof timeStr !== 'string') return null
@@ -65,8 +62,6 @@ const parseTime = (timeStr) => {
     return null
   }
 }
-
-/* ================= GET BUSINESS STATUS ================= */
 
 const getBusinessStatus = (hours) => {
   if (!hours || typeof hours !== 'string') {
@@ -133,6 +128,14 @@ const getBusinessStatus = (hours) => {
   }
 }
 
+// HELPER FUNCTION TO CHECK IF DEAL IS EXPIRED
+const isDealExpired = (expiryDate) => {
+  if (!expiryDate) return false
+  const now = new Date()
+  const expiry = new Date(expiryDate)
+  return expiry < now
+}
+
 export default function BusinessCard({ business, isSaved, onSave, isTrending, viewMode = 'grid' }) {
   const [isLoading, setIsLoading] = useState(false)
   const [rating, setRating] = useState(parseFloat(business.rating || 0))
@@ -170,45 +173,63 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
     fetchReviews()
   }, [business.id, supabase])
 
-  // FETCH DEALS FROM SUPABASE
+  // FETCH DEALS FROM SUPABASE WITH EXPIRATION CHECK
   useEffect(() => {
     const fetchDeals = async () => {
       try {
-        const { data: deals } = await supabase
+        const { data: deals, error } = await supabase
           .from('deals')
-          .select('id, title, discount_type, discount_value, is_active, end_date') // Added end_date to selection
+          .select('id, title, discount_type, discount_value, is_active, expiry_date')
           .eq('business_id', business.id)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
           .limit(1)
 
+        if (error) {
+          console.error('Error fetching deals:', error)
+          setHasDeal(false)
+          setDealInfo(null)
+          return
+        }
+
         if (deals && deals.length > 0) {
           const deal = deals[0]
           
-          // Check expiration
-          const now = new Date()
-          if (deal.end_date && new Date(deal.end_date) < now) {
+          // CHECK IF DEAL HAS EXPIRED - USING EXPIRY_DATE
+          if (isDealExpired(deal.expiry_date)) {
             setHasDeal(false)
             setDealInfo(null)
-          } else {
-            setHasDeal(true)
-            setDealInfo(deal)
+            return
           }
+          
+          // DEAL IS VALID, NOT EXPIRED, AND IS_ACTIVE = TRUE
+          setHasDeal(true)
+          setDealInfo(deal)
+        } else {
+          // NO ACTIVE DEALS FOUND
+          setHasDeal(false)
+          setDealInfo(null)
         }
       } catch (error) {
         console.error('Error fetching deals:', error)
+        setHasDeal(false)
+        setDealInfo(null)
       }
     }
 
     fetchDeals()
+    
+    // REFRESH DEALS EVERY MINUTE TO CHECK FOR EXPIRATION OR HIDDEN STATUS
+    const interval = setInterval(fetchDeals, 60 * 1000)
+    return () => clearInterval(interval)
   }, [business.id, supabase])
 
-  // Check business status based on hours
+  // CHECK BUSINESS STATUS BASED ON HOURS
   useEffect(() => {
     const status = getBusinessStatus(business.hours)
     setBusinessStatus(status)
 
-    // Update status every minute
+    // UPDATE STATUS EVERY MINUTE
     const interval = setInterval(() => {
       setBusinessStatus(getBusinessStatus(business.hours))
     }, 60000)
@@ -334,7 +355,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
               </h3>
             </div>
 
-            {/* RATING DISPLAY - NOW REAL TIME */}
+            {/* RATING DISPLAY */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border flex-shrink-0
               bg-orange-50 border-orange-100 
               dark:bg-yellow-500/10 dark:border-yellow-500/20">
@@ -367,28 +388,30 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
             </p>
           )}
 
-          {/* DEAL TAG - SMALL & LIGHT */}
-          {hasDeal && dealInfo && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mb-3 px-2 py-1 rounded-md w-fit
-              bg-orange-50 border border-orange-200 shadow-sm shadow-orange-100
-              dark:bg-orange-100 dark:border-orange-300 dark:shadow-orange-200/40"
-            >
-              <p className="text-[11px] font-bold flex items-center gap-1.5 text-orange-800 dark:text-orange-900">
-                {getDealEmoji()} {getDealLabel()}
-              </p>
-            </motion.div>
-          )}
-
-          {/* REVIEWS INFO - NOW REAL TIME */}
+          {/* REVIEWS INFO */}
           <div className="mb-4 pb-4 border-b border-gray-100 dark:border-white/5">
             <p className="text-xs text-gray-500 dark:text-gray-300 font-medium">
               <span className="text-emerald-600 dark:text-green-400 font-bold">{reviewCount}</span> {reviewText}
             </p>
           </div>
         </div>
+
+        {/* DEAL TAG - BLUE COLOR & SMALLER SIZE */}
+        {hasDeal && dealInfo && !isDealExpired(dealInfo.expiry_date) && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+            transition={{ delay: 0.2 }}
+            className="mb-3 px-2 py-1.5 rounded-lg 
+            bg-gradient-to-r from-blue-500 to-blue-600 border border-blue-400/80
+            shadow-lg shadow-blue-500/30 w-fit"
+          >
+            <p className="text-[10px] font-black flex items-center gap-1 text-white">
+              {getDealEmoji()} {getDealLabel()}
+            </p>
+          </motion.div>
+        )}
 
         {/* ACTION BUTTONS */}
         <div className={`grid gap-2 ${viewMode === 'list' ? 'grid-cols-3' : 'grid-cols-2'}`}>
