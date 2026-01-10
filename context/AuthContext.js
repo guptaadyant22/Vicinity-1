@@ -1,9 +1,12 @@
 'use client'
 
+
 import { createContext, useContext, useEffect, useState } from 'react'
 import { createClient } from '../lib/supabase'
 
+
 const AuthContext = createContext()
+
 
 export function AuthProvider({ children }) {
   const supabase = createClient()
@@ -13,6 +16,7 @@ export function AuthProvider({ children }) {
   const [userType, setUserType] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
 
   useEffect(() => {
     console.log('🔐 Setting up Supabase auth state listener...')
@@ -27,6 +31,7 @@ export function AuthProvider({ children }) {
         setLoading(false)
       }
     })
+
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔐 Auth state changed:', event, session?.user?.id || 'no user')
@@ -46,11 +51,13 @@ export function AuthProvider({ children }) {
       }
     })
 
+
     return () => {
       console.log('🔐 Cleaning up Supabase auth state listener...')
       subscription.unsubscribe()
     }
   }, [])
+
 
   const fetchUserData = async (authUser) => {
     try {
@@ -66,16 +73,19 @@ export function AuthProvider({ children }) {
         return
       }
 
+
       console.log('✅ Auth user:', {
         id: user.id,
         email: user.email,
         user_metadata: user.user_metadata
       })
 
+
       // Get user_type from auth metadata first
       const typeFromAuth = user.user_metadata?.user_type || 'user'
       setUserType(typeFromAuth)
       console.log('✅ User type:', typeFromAuth)
+
 
       setUserData({
         id: user.id,
@@ -84,6 +94,7 @@ export function AuthProvider({ children }) {
         fullname: user.user_metadata?.fullname || user.email.split('@')[0],
         city: user.user_metadata?.city || null,
       })
+
 
       setError(null)
     } catch (err) {
@@ -95,6 +106,32 @@ export function AuthProvider({ children }) {
       setLoading(false)
     }
   }
+
+
+ const signInWithGoogle = async () => {
+  try {
+    console.log('🔐 Starting Google OAuth sign-in...')
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+      },
+    })
+    
+    if (error) {
+      console.error('❌ Google Sign-In Error:', error)
+      setError(error)
+      return
+    }
+    
+    console.log('✅ Google OAuth initiated')
+  } catch (err) {
+    console.error('❌ Google OAuth Error:', err)
+    setError(err)
+  }
+}
+
 
   const logout = async () => {
     try {
@@ -110,6 +147,7 @@ export function AuthProvider({ children }) {
     }
   }
 
+
   const value = {
     session,
     user,
@@ -118,8 +156,10 @@ export function AuthProvider({ children }) {
     loading,
     error,
     logout,
+    signInWithGoogle,
     supabase,
   }
+
 
   if (loading) {
     return (
@@ -129,8 +169,10 @@ export function AuthProvider({ children }) {
     )
   }
 
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
+
 
 export const useAuth = () => {
   const context = useContext(AuthContext)

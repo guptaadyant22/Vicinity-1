@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaEye, FaEyeSlash, FaArrowLeft, FaExclamationCircle } from 'react-icons/fa'
 import { createClient } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
+
 
 // --- THEMED CONSTANTS ---
 const GLASS_NAV = "bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-lg transition-colors duration-300"
@@ -18,6 +20,7 @@ const TEXT_MAIN = "text-gray-900 dark:text-white"
 const TEXT_MUTED = "text-gray-600 dark:text-gray-400"
 const LABEL_STYLE = "block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
 
+
 // --- GRID BACKGROUND (THEME AWARE) ---
 const GridBackground = () => (
   <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none bg-gray-50 dark:bg-[#050505] transition-colors duration-300 text-gray-300 dark:text-[#444]">
@@ -28,6 +31,7 @@ const GridBackground = () => (
     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-50/80 dark:via-[#050505]/80 to-gray-50 dark:to-[#050505]" />
   </div>
 )
+
 
 // --- VICINITY LOGO (THEMED) ---
 const VicinityLogo = ({ className = "", textClassName = "" }) => (
@@ -48,6 +52,7 @@ const VicinityLogo = ({ className = "", textClassName = "" }) => (
   </div>
 )
 
+
 // --- NAVBAR (LOCAL & THEMED) ---
 const Navbar = () => (
   <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
@@ -61,6 +66,7 @@ const Navbar = () => (
   </motion.nav>
 )
 
+
 const ERROR_MESSAGES = {
   EMAIL_REQUIRED: 'Email address is required',
   EMAIL_INVALID: 'Please enter a valid email address',
@@ -69,24 +75,31 @@ const ERROR_MESSAGES = {
   GENERIC_ERROR: 'Something went wrong. Please try again.',
 }
 
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
 
+
   const router = useRouter()
   const supabase = createClient()
+  const { signInWithGoogle } = useAuth()
+
 
   const isValidEmail = email => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
 
+
   const validateForm = () => {
     const errors = {}
+
 
     if (!email.trim()) {
       errors.email = ERROR_MESSAGES.EMAIL_REQUIRED
@@ -94,18 +107,22 @@ export default function LoginPage() {
       errors.email = ERROR_MESSAGES.EMAIL_INVALID
     }
 
+
     if (!password.trim()) {
       errors.password = ERROR_MESSAGES.PASSWORD_REQUIRED
     }
 
+
     return errors
   }
+
 
   const clearError = () => {
     setTimeout(() => {
       setError('')
     }, 5000)
   }
+
 
   const handleEmailChange = e => {
     setEmail(e.target.value)
@@ -117,6 +134,7 @@ export default function LoginPage() {
     }
   }
 
+
   const handlePasswordChange = e => {
     setPassword(e.target.value)
     if (fieldErrors.password) {
@@ -127,11 +145,14 @@ export default function LoginPage() {
     }
   }
 
+
   const handleSubmit = async e => {
     e.preventDefault()
 
+
     setError('')
     setFieldErrors({})
+
 
     const errors = validateForm()
     if (Object.keys(errors).length > 0) {
@@ -139,13 +160,16 @@ export default function LoginPage() {
       return
     }
 
+
     setIsLoading(true)
+
 
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password,
       })
+
 
       if (signInError) {
         if (
@@ -160,6 +184,7 @@ export default function LoginPage() {
         clearError()
         return
       }
+
 
       if (data?.user) {
         const userType = data.user.user_metadata?.user_type || 'community'
@@ -181,10 +206,26 @@ export default function LoginPage() {
     }
   }
 
+
+  const handleGoogleSignIn = async () => {
+  setIsGoogleLoading(true)
+  try {
+    await signInWithGoogle()
+    // Don't set isGoogleLoading to false - the page will redirect
+  } catch (err) {
+    console.error('Error:', err)
+    setError('Google sign-in failed. Please try again.')
+    setIsGoogleLoading(false)
+    clearError()
+  }
+}
+
+
   return (
     <main className="min-h-screen relative flex flex-col bg-gray-50 dark:bg-[#050505] transition-colors duration-300 font-sans selection:bg-orange-500 selection:text-white">
       <GridBackground />
       <Navbar />
+
 
       <div className="flex-1 flex items-center justify-center px-4 py-24 relative z-10">
         <motion.div
@@ -198,6 +239,7 @@ export default function LoginPage() {
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-pink-500" />
             <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500/10 dark:bg-orange-600/20 opacity-20 dark:opacity-5 blur-3xl rounded-full animate-pulse pointer-events-none" />
             <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-600/20 opacity-20 dark:opacity-5 blur-3xl rounded-full animate-pulse pointer-events-none" />
+
 
             {/* Header Section */}
             <div className="text-center mb-10 relative z-10">
@@ -219,6 +261,7 @@ export default function LoginPage() {
               </motion.p>
             </div>
 
+
             {/* Error Message */}
             <AnimatePresence>
               {error && (
@@ -234,6 +277,39 @@ export default function LoginPage() {
               )}
             </AnimatePresence>
 
+
+            {/* Google Sign In Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleGoogleSignIn}
+              disabled={isGoogleLoading || isLoading}
+              className="w-full mb-6 bg-white dark:bg-white/10 hover:bg-gray-50 dark:hover:bg-white/15 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white font-bold py-3.5 rounded-xl shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-3 relative z-10"
+            >
+              {isGoogleLoading ? (
+                <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Sign In with Google
+                </>
+              )}
+            </motion.button>
+
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 mb-6 relative z-10">
+              <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+              <span className={`text-xs font-medium ${TEXT_MUTED}`}>OR</span>
+              <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+            </div>
+
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
               <Input
@@ -243,8 +319,9 @@ export default function LoginPage() {
                 onChange={handleEmailChange}
                 placeholder="you@example.com"
                 error={fieldErrors.email}
-                disabled={isLoading}
+                disabled={isLoading || isGoogleLoading}
               />
+
 
               <div className="space-y-1.5">
                 <label className={LABEL_STYLE}>Password</label>
@@ -254,7 +331,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={handlePasswordChange}
                     placeholder="••••••••"
-                    disabled={isLoading}
+                    disabled={isLoading || isGoogleLoading}
                     className={`${GLASS_INPUT_BASE} ${GLASS_INPUT_THEME} ${
                       fieldErrors.password ? GLASS_INPUT_ERROR : GLASS_INPUT_NORMAL
                     }`}
@@ -270,13 +347,14 @@ export default function LoginPage() {
                 {fieldErrors.password && <p className="text-xs text-red-500 dark:text-red-400">{fieldErrors.password}</p>}
               </div>
 
+
               {/* Actions Row */}
               <div className="flex items-center justify-between text-sm">
                 <Checkbox 
                   label="Remember me" 
                   checked={rememberMe} 
                   onChange={setRememberMe} 
-                  disabled={isLoading} 
+                  disabled={isLoading || isGoogleLoading} 
                 />
                 <Link 
                   href="/forgot-password" 
@@ -286,17 +364,19 @@ export default function LoginPage() {
                 </Link>
               </div>
 
+
               {/* Submit Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isGoogleLoading}
                 className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Sign In'}
               </motion.button>
             </form>
+
 
             {/* Footer Links */}
             <div className="mt-8 text-center pt-6 border-t border-gray-200 dark:border-white/10 relative z-10">
@@ -314,6 +394,7 @@ export default function LoginPage() {
   )
 }
 
+
 const Input = ({ label, type, value, onChange, placeholder, error, disabled }) => (
   <div className="space-y-1.5">
     <label className={LABEL_STYLE}>{label}</label>
@@ -330,6 +411,7 @@ const Input = ({ label, type, value, onChange, placeholder, error, disabled }) =
     {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
   </div>
 )
+
 
 const Checkbox = ({ label, checked, onChange, disabled }) => (
   <button
