@@ -39,7 +39,7 @@ html {
 
 /* Focus states: coral outline with 2px offset */
 *:focus-visible {
-  outline: 2px solid #FF5A5F;
+  outline: 2px solid #fcf7f7;
   outline-offset: 2px;
 }
 

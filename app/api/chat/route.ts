@@ -100,7 +100,7 @@ ${favorites && favorites.length > 0 ? `### TOP FAVORITES\n${favorites.slice(0, 5
 
 ${reviews && reviews.length > 0 ? `### RECENT REVIEWS\n${reviews.slice(0, 3).map((r: any) => `• ⭐${r.rating}/5 - "${r.text?.substring(0, 50)}..." (${new Date(r.created_at).toLocaleDateString()})`).join('\n')}` : ''}
 
-Keep response SHORT (max 150 words). Summarize their account status and activity.`;
+Keep response SHORT (max 150 words). Summarize their account status and activity. ONLY answer buisness directory website related questions, if something else is asked, say "That is not related for my purpose"`;
 
       return await callGroqAPI(context, message);
     }
@@ -193,6 +193,7 @@ async function callGroqAPI(context: string, message: string) {
           content: `${context}
 
 FORMATTING RULES:
+- Only answer questions related to the user's account or business profile and nothing else. If the user asks something outside this scope, respond with "That is not related for my purpose".
 - Use bullet points (•) for lists
 - Use ### for headers (max 2-3)
 - Keep paragraphs to 1-2 sentences
