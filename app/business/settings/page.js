@@ -174,98 +174,111 @@ export default function BusinessSettingsPage() {
 
 
   const handleExportData = async () => {
-    if (!user) return
-    setIsExporting(true)
-    setError(null)
+  if (!user) return
+  setIsExporting(true)
+  setError(null)
 
+  try {
+    const dateRange = getDateRange()
 
-    try {
-      const dateRange = getDateRange()
+    // 1. Fetch ALL business info for this owner - don't assume single
+    const { data: allBusinesses, error: businessError } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('owner_id', user.id)
 
+    if (businessError) throw businessError
+    if (!allBusinesses || allBusinesses.length === 0) {
+      throw new Error('No business found. Please create a business first.')
+    }
 
-      // 1. Fetch Business Info
-      const { data: businessData, error: businessError } = await supabase
-        .from('businesses')
+    // Use first business (most recent)
+    const businessData = allBusinesses[0]
+    const businessId = businessData.id
+
+    let reviewsData = []
+    let dealsData = []
+    let favoritesData = []
+
+    // 2. Fetch Reviews (same as SavedPage/ReviewsPage pattern)
+    if (exportOptions.reviews) {
+      const { data, error } = await supabase
+        .from('reviews')
         .select('*')
-        .eq('owner_id', user.id)
-        .single()
+        .eq('business_id', businessId)
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString())
+        .order('created_at', { ascending: false })
 
-
-      if (businessError) throw businessError
-
-
-      let reviewsData = []
-      let dealsData = []
-      let favoritesData = []
-
-
-      // 2. Fetch Reviews (Schema: reviews table)
-      if (exportOptions.reviews) {
-        const { data } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('business_id', businessData.id)
-          .gte('created_at', dateRange.start.toISOString())
-          .lte('created_at', dateRange.end.toISOString())
-          .order('created_at', { ascending: false })
+      if (error) {
+        console.error('Reviews fetch error:', error)
+      } else {
         reviewsData = data || []
       }
+    }
 
+    // 3. Fetch Deals (same pattern as reviews)
+    if (exportOptions.deals) {
+      const { data, error } = await supabase
+        .from('deals')
+        .select('*')
+        .eq('business_id', businessId)
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString())
+        .order('created_at', { ascending: false })
 
-      // 3. Fetch Deals (NEW - Schema: deals table)
-      if (exportOptions.deals) {
-        const { data } = await supabase
-          .from('deals')
-          .select('*')
-          .eq('business_id', businessData.id)
-          .gte('created_at', dateRange.start.toISOString())
-          .lte('created_at', dateRange.end.toISOString())
-          .order('created_at', { ascending: false })
+      if (error) {
+        console.error('Deals fetch error:', error)
+      } else {
         dealsData = data || []
       }
+    }
 
+    // 4. Fetch Favorites (same pattern as SavedPage)
+    if (exportOptions.favorites) {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('business_id', businessId)
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString())
 
-      // 4. Fetch Favorites (Schema: favorites table)
-      if (exportOptions.favorites) {
-        const { data } = await supabase
-          .from('favorites')
-          .select('*')
-          .eq('business_id', businessData.id)
-          .gte('created_at', dateRange.start.toISOString())
-          .lte('created_at', dateRange.end.toISOString())
+      if (error) {
+        console.error('Favorites fetch error:', error)
+      } else {
         favoritesData = data || []
       }
-
-
-      const reportData = {
-        business: exportOptions.businessInfo ? businessData : null,
-        reviews: reviewsData,
-        deals: dealsData,
-        favorites: favoritesData,
-        exportOptions: exportOptions,
-        dateRange: {
-          start: dateRange.start.toISOString().split('T')[0],
-          end: dateRange.end.toISOString().split('T')[0]
-        },
-        generatedAt: new Date().toISOString()
-      }
-
-
-      await generateAdvancedPDFReport(reportData, businessData.name)
-
-
-      setSuccess('Data exported successfully!')
-      setShowExportModal(false)
-      setTimeout(() => setSuccess(null), 3000)
-
-
-    } catch (err) {
-      console.error('Export error:', err)
-      setError('Failed to export data. Please try again.')
-    } finally {
-      setIsExporting(false)
     }
+
+    // Build report data
+    const reportData = {
+      business: exportOptions.businessInfo ? businessData : null,
+      reviews: reviewsData,
+      deals: dealsData,
+      favorites: favoritesData,
+      exportOptions: exportOptions,
+      dateRange: {
+        start: dateRange.start.toISOString().split('T')[0],
+        end: dateRange.end.toISOString().split('T')[0]
+      },
+      generatedAt: new Date().toISOString()
+    }
+
+    // Generate PDF
+    await generateAdvancedPDFReport(reportData, businessData.name || 'Business')
+
+    setSuccess('Data exported successfully!')
+    setShowExportModal(false)
+    setTimeout(() => setSuccess(null), 3000)
+
+  } catch (err) {
+    console.error('Export error:', err)
+    setError(err.message || 'Failed to export data. Please try again.')
+  } finally {
+    setIsExporting(false)
   }
+}
+
 
 
   const generateAdvancedPDFReport = async (reportData, businessName) => {
@@ -318,54 +331,41 @@ export default function BusinessSettingsPage() {
 
 
       // Business Information Section
-      if (reportData.business) {
-        addHeading('BUSINESS INFORMATION')
+if (reportData.business) {
+  addHeading('BUSINESS INFORMATION')
 
+  doc.setFontSize(11)
+  doc.setTextColor(0)
 
-        doc.setFontSize(11)
-        doc.setTextColor(0)
+  // Calculate average rating from reviews
+  const avgRating = reportData.reviews && reportData.reviews.length > 0
+    ? (reportData.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reportData.reviews.length).toFixed(1)
+    : (reportData.business.rating || 0)
 
+  const businessFields = [
+    ['Business Name', reportData.business.name || 'N/A'],
+    ['Email', reportData.business.email || 'N/A'],
+    ['Phone', reportData.business.phone || 'N/A'],
+    ['Address', reportData.business.address || 'N/A'],
+    ['City', reportData.business.city || 'N/A'],
+    ['State', reportData.business.state || 'N/A'],
+    ['Zip Code', reportData.business.zip || 'N/A'],
+    ['Type', reportData.business.type || 'N/A'],
+    ['Website', reportData.business.website || 'N/A'],
+    ['Current Rating', `${avgRating}/5 stars`],
+    ['Total Reviews', String(reportData.reviews?.length || 0)],
+    ['Created Date', new Date(reportData.business.created_at).toLocaleDateString()]
+  ]
 
-        const businessFields = [
-          ['Business Name', reportData.business.name],
-          ['Email', reportData.business.email || 'N/A'],
-          ['Phone', reportData.business.phone || 'N/A'],
-          ['Address', reportData.business.address || 'N/A'],
-          ['City', reportData.business.city || 'N/A'],
-          ['State', reportData.business.state || 'N/A'],
-          ['Zip Code', reportData.business.zip || 'N/A'],
-          ['Type', reportData.business.type || 'N/A'],
-          ['Website', reportData.business.website || 'N/A'],
-          ['Current Rating', reportData.business.rating ? `${reportData.business.rating}/5 stars` : 'N/A'],
-          ['Total Reviews', reportData.business.review_count || '0'],
-          ['Created Date', new Date(reportData.business.created_at).toLocaleDateString()]
-        ]
+  businessFields.forEach(([label, value]) => {
+    addPageIfNeeded(6)
+    const wrappedValue = doc.splitTextToSize(String(value), contentWidth - 60)
+    doc.text(`${label}:`, margin, yPosition)
+    doc.text(wrappedValue, margin + 50, yPosition)
+    yPosition += Math.max(6, wrappedValue.length * 5) + 2
+  })
+}
 
-
-        businessFields.forEach(([label, value]) => {
-          addPageIfNeeded(6)
-          const wrappedValue = doc.splitTextToSize(String(value), contentWidth - 60)
-          doc.text(`${label}:`, margin, yPosition)
-          doc.text(wrappedValue, margin + 50, yPosition)
-          yPosition += Math.max(6, wrappedValue.length * 5) + 2
-        })
-
-
-        if (reportData.business.description) {
-          addPageIfNeeded(30)
-          doc.setFontSize(11)
-          doc.setTextColor(255, 111, 0)
-          doc.text('Description:', margin, yPosition)
-          yPosition += 7
-
-
-          doc.setFontSize(10)
-          doc.setTextColor(0)
-          const wrappedDesc = doc.splitTextToSize(String(reportData.business.description || ''), contentWidth)
-          doc.text(wrappedDesc, margin, yPosition)
-          yPosition += wrappedDesc.length * 5 + 15
-        }
-      }
 
 
       // Reviews Section

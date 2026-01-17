@@ -1,4 +1,4 @@
-// app/api/ai-search/route.js - ACCURATE AI SEARCH WITH PRE-FILTER
+// app/api/ai-search/route.js 
 import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
@@ -7,7 +7,7 @@ function normalizeId(id) {
   return String(id).trim().toLowerCase()
 }
 
-// Smart keyword pre-filter to reduce noise
+// Smart keyword pre-filter 
 function smartPreFilter(query, businesses) {
   const q = query.toLowerCase().trim()
   const keywords = q.split(/\s+/).filter(k => k.length > 0)
@@ -39,7 +39,7 @@ function smartPreFilter(query, businesses) {
 
     // Check each keyword
     for (const kw of keywords) {
-      // Direct match in name/type/desc
+      
       if (name.includes(kw) || type.includes(kw) || desc.includes(kw)) {
         return true
       }

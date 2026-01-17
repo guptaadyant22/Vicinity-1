@@ -12,11 +12,12 @@ import { createClient } from '../../../lib/supabase'
 import BusinessCard from '../../../components/BusinessCard'
 
 // --- THEME CONFIGURATION ---
+// Define the primary color gradient for the Vicinity brand
 const THEME = {
   accentGrad: 'from-orange-500 to-pink-500',
 }
 
-// Adaptive colors for StatCards
+// Adaptive colors for StatCards - matches Vicinity theme (orange/purple/rose)
 const colorMap = {
   orange: { 
     iconWrap: 'bg-orange-100 text-orange-600 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/25', 
@@ -33,6 +34,7 @@ const colorMap = {
 }
 
 // --- VICINITY LOGO (THEMED) ---
+// Renders the Vicinity logo with optional text label
 const VicinityLogo = ({ className = '', showText = true }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="w-9 h-9">
@@ -52,6 +54,7 @@ const VicinityLogo = ({ className = '', showText = true }) => (
 )
 
 // --- DASHBOARD HEADER ---
+// Navigation bar with logo, links, profile button, and logout
 const Header = ({ onLogout }) => {
   const router = useRouter()
 
@@ -90,6 +93,7 @@ const Header = ({ onLogout }) => {
             👤
           </motion.button>
 
+          {/* LOGOUT BUTTON */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -105,6 +109,7 @@ const Header = ({ onLogout }) => {
 }
 
 // --- STAT CARD ---
+// Displays a single statistic with icon, label, and value
 const StatCard = ({ label, value, icon: Icon, color, delay }) => {
   const t = colorMap[color] || colorMap.orange
   return (
@@ -115,8 +120,10 @@ const StatCard = ({ label, value, icon: Icon, color, delay }) => {
       whileHover={{ y: -4 }} 
       className="group relative p-6 rounded-2xl overflow-hidden border border-gray-200 dark:border-white/15 bg-white/80 dark:bg-black/40 backdrop-blur-2xl shadow-lg hover:shadow-xl transition-all hover:bg-white/90 dark:hover:bg-black/50"
     >
+      {/* Animated glow effect on hover */}
       <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[70px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:mix-blend-normal mix-blend-multiply" style={{ background: `radial-gradient(circle, ${t.glow}, transparent 65%)` }} />
       <div className="relative z-10 flex items-center gap-4">
+        {/* Icon wrapper with theme-matched color */}
         <div className={`p-3.5 rounded-xl border backdrop-blur-lg ${t.iconWrap}`}>
           <Icon size={22} />
         </div>
@@ -134,23 +141,25 @@ export default function SavedPage() {
   const router = useRouter()
   const supabase = createClient()
   
+  // State management for saved businesses, search, and sorting
   const [loading, setLoading] = useState(true)
   const [savedBusinesses, setSavedBusinesses] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('recent')
 
   // --- STATS LOGIC (REAL CALCULATION WITH TIE-BREAKING) ---
+  // Calculates the top category from saved businesses with tie-breaking logic
   const getTopCategory = () => {
     if (savedBusinesses.length === 0) return 'N/A'
     
-    // 1. Create a frequency map
+    // 1. Build frequency map of business types
     const counts = {}
     savedBusinesses.forEach(b => {
       const type = b.type ? b.type.trim() : 'Other'
       counts[type] = (counts[type] || 0) + 1
     })
 
-    // 2. Determine maximum count and find all winners
+    // 2. Find the maximum count and all categories that match it
     let maxCount = 0
     let winners = []
 
@@ -163,26 +172,30 @@ export default function SavedPage() {
       }
     })
 
-    // 3. Logic: If clear winner, return it. If tie, return "Diverse"
+    // 3. If there's a clear winner, return it. If tie, return "Diverse"
     if (winners.length === 1) return winners[0]
     return 'Diverse'
   }
 
+  // Calculate statistics for display
   const stats = {
     total: savedBusinesses.length,
     topCategory: getTopCategory(),
     categories: new Set(savedBusinesses.map(b => b.type)).size
   }
 
+  // Redirect to login if user not authenticated
   useEffect(() => {
     if (!authLoading && !user) router.push('/login')
   }, [user, authLoading, router])
 
+  // Fetch saved businesses from database on component mount
   useEffect(() => {
     if (!user) return
     const fetchSaved = async () => {
       try {
         setLoading(true)
+        // Fetch user's favorite business IDs
         const { data: fData, error: fError } = await supabase
           .from('favorites')
           .select('business_id, created_at')
@@ -195,11 +208,13 @@ export default function SavedPage() {
           return
         }
 
+        // Fetch full business details for each favorite
         const ids = fData.map((f) => f.business_id)
         const { data: bData, error: bError } = await supabase.from('businesses').select('*').in('id', ids)
 
         if (bError) throw bError
 
+        // Merge business data with saved timestamp
         const businessesWithDate = (bData || []).map((b) => {
           const fav = fData.find((f) => f.business_id === b.id)
           return {
@@ -220,6 +235,7 @@ export default function SavedPage() {
     fetchSaved()
   }, [user, supabase])
 
+  // Remove a business from saved list
   const handleRemove = async (id) => {
     setSavedBusinesses((prev) => prev.filter((b) => b.id !== id))
     try {
@@ -229,6 +245,7 @@ export default function SavedPage() {
     }
   }
 
+  // Toggle save status for a business
   const handleSave = async (businessId) => {
     try {
       const isSaved = savedBusinesses.some(b => b.id === businessId)
@@ -242,12 +259,13 @@ export default function SavedPage() {
     }
   }
 
+  // Sign out user and redirect to home
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  // Filter & Sort Logic
+  // Filter by search term and sort by selected criteria
   const filteredSaved = savedBusinesses
     .filter((b) => !searchTerm || b.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -261,11 +279,11 @@ export default function SavedPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-200 font-sans selection:bg-orange-500/25 selection:text-white overflow-x-hidden transition-colors duration-300">
       
-      {/* Background Orbs */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-br from-purple-700/30 via-blue-600/30 to-transparent rounded-full blur-[100px] opacity-80 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
+      {/* Background Orbs - Changed from blue/purple to orange/pink theme */}
+      <div className="fixed -top-40 -left-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-br from-orange-600/30 via-orange-500/25 to-transparent rounded-full blur-[100px] opacity-80 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
         animation: 'float-top-left 12s ease-in-out infinite',
       }} />
-      <div className="fixed -bottom-40 -right-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-tl from-orange-600/30 via-pink-600/30 to-transparent rounded-full blur-[100px] opacity-85 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
+      <div className="fixed -bottom-40 -right-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-tl from-pink-600/30 via-rose-500/25 to-transparent rounded-full blur-[100px] opacity-85 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
         animation: 'float-bottom-right 15s ease-in-out infinite',
       }} />
 

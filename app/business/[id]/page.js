@@ -34,12 +34,12 @@ const VicinityLogo = ({ className = "", textClassName = "" }) => (
   </div> 
 )
 
-// --- BACKGROUND COMPONENT (THEMED) ---
 const Background = () => (
   <div className="fixed inset-0 -z-50 bg-gray-50 dark:bg-[#080808] pointer-events-none transition-colors duration-300">
-    <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-orange-200/40 dark:bg-orange-600/8 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-    <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-purple-200/40 dark:bg-purple-600/8 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-100 contrast-150 mix-blend-overlay" />
+    {/* Top-left orange orb - theme color */}
+    <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-orange-200/50 dark:bg-orange-600/15 rounded-full blur-[120px]" />
+    {/* Bottom-right pink/rose orb - theme color */}
+    <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-pink-200/50 dark:bg-pink-600/15 rounded-full blur-[120px]" />
   </div>
 )
 

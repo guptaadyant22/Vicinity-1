@@ -9,7 +9,8 @@ import {
   FaImage, FaTrash, FaChevronDown, FaEye, FaInfo, FaLightbulb, FaChartLine,
   FaCommentDots, FaSync, FaChartBar, FaSmile, FaFrown,
   FaFilter, FaThumbsUp, FaCalendar, FaUser, FaArrowUp, FaQuestionCircle,
-  FaArrowRight, FaPlay, FaRocket, FaShare, FaBookmark, FaTimes, FaLightbulb as FaBulb
+  FaArrowRight, FaPlay, FaRocket, FaShare, FaBookmark, FaTimes, FaLightbulb as FaBulb,
+  FaStar
 } from 'react-icons/fa'
 
 import { useAuth } from '../../../context/AuthContext'
@@ -523,7 +524,7 @@ function ReviewCard({ review, idx }) {
         </div>
         <div className="flex gap-0.5">
           {[1, 2, 3, 4, 5].map((star) => (
-            <FaEye
+            <FaStar
               key={star}
               size={16}
               className={

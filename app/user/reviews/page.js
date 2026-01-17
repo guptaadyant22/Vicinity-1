@@ -10,14 +10,13 @@ import {
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 
-
 // --- THEME CONSTANTS ---
+// Primary gradient color scheme for Vicinity branding
 const THEME = {
   accentGrad: 'from-orange-500 to-pink-500',
 }
 
-
-// Adaptive colors for StatCards
+// Adaptive colors for StatCards - matches Vicinity theme
 const colorMap = {
   orange: { 
     iconWrap: 'bg-orange-100 text-orange-600 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/25', 
@@ -33,8 +32,8 @@ const colorMap = {
   }
 }
 
-
 // --- VICINITY LOGO (THEMED) ---
+// Renders the Vicinity logo with optional text label
 const VicinityLogo = ({ className = '', showText = true }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="w-9 h-9">
@@ -53,8 +52,8 @@ const VicinityLogo = ({ className = '', showText = true }) => (
   </div>
 )
 
-
-// --- DASHBOARD HEADER (UPDATED WITH PROFILE BUTTON) ---
+// --- DASHBOARD HEADER ---
+// Navigation bar with logo, links, profile button, and logout
 const Header = ({ onLogout }) => {
   const router = useRouter() // Hook for navigation
 
@@ -83,7 +82,7 @@ const Header = ({ onLogout }) => {
         
         {/* RIGHT SIDE BUTTONS */}
         <div className="flex items-center gap-3">
-          {/* PROFILE BUTTON ADDED HERE */}
+          {/* PROFILE BUTTON */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -93,6 +92,7 @@ const Header = ({ onLogout }) => {
             👤
           </motion.button>
 
+          {/* LOGOUT BUTTON */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -107,8 +107,8 @@ const Header = ({ onLogout }) => {
   )
 }
 
-
-// --- STAT CARD (THEMED) ---
+// --- STAT CARD ---
+// Displays a single statistic with icon, label, and value
 const StatCard = ({ label, value, icon: Icon, color, delay }) => {
   const t = colorMap[color] || colorMap.orange
   return (
@@ -119,8 +119,10 @@ const StatCard = ({ label, value, icon: Icon, color, delay }) => {
       whileHover={{ y: -4 }} 
       className="group relative p-6 rounded-2xl overflow-hidden border border-gray-200 dark:border-white/15 bg-white/80 dark:bg-black/40 backdrop-blur-2xl shadow-lg hover:shadow-xl transition-all hover:bg-white/90 dark:hover:bg-black/50"
     >
+      {/* Animated glow effect on hover */}
       <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[70px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:mix-blend-normal mix-blend-multiply" style={{ background: `radial-gradient(circle, ${t.glow}, transparent 65%)` }} />
       <div className="relative z-10 flex items-center gap-4">
+        {/* Icon wrapper with theme-matched color */}
         <div className={`p-3.5 rounded-xl border backdrop-blur-lg ${t.iconWrap}`}>
           <Icon size={22} />
         </div>
@@ -133,8 +135,8 @@ const StatCard = ({ label, value, icon: Icon, color, delay }) => {
   )
 }
 
-
-// --- REVIEW DETAIL MODAL (THEMED) ---
+// --- REVIEW DETAIL MODAL ---
+// Full-screen modal for viewing, editing, and deleting reviews
 const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editedComment, setEditedComment] = useState(review?.comment || '')
@@ -143,7 +145,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const supabase = createClient()
 
-
+  // Sync state when review changes
   useEffect(() => {
     if (review) {
       setEditedComment(review.comment)
@@ -152,14 +154,14 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     }
   }, [review])
 
-
+  // Returns color based on rating value
   const getStarColor = (rating) => {
     if (rating >= 4.5) return 'text-green-500 dark:text-green-400'
     if (rating >= 3.5) return 'text-yellow-500 dark:text-yellow-400'
     return 'text-orange-500 dark:text-orange-400'
   }
 
-
+  // Saves edited review to database
   const handleSaveEdit = async () => {
     setIsSaving(true)
     try {
@@ -171,7 +173,6 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
           updated_at: new Date().toISOString()
         })
         .eq('id', review.id)
-
 
       if (error) throw error
       onUpdate({
@@ -188,7 +189,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     }
   }
 
-
+  // Deletes review from database
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this review?')) return
     setIsDeleting(true)
@@ -205,9 +206,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     }
   }
 
-
   if (!review) return null
-
 
   return (
     <AnimatePresence>
@@ -233,6 +232,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                   <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{review.business_name}</h2>
                   <p className="text-sm text-orange-500 dark:text-orange-400 font-bold uppercase">{review.business_type}</p>
                 </div>
+                {/* Close button */}
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
@@ -243,7 +243,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                 </motion.button>
               </div>
 
-
+              {/* Rating display or edit section */}
               {!isEditing ? (
                 <div className="flex items-center gap-3 mb-8">
                   <div className={`flex items-center gap-1 text-2xl font-black ${getStarColor(review.rating)}`}>
@@ -257,6 +257,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
               ) : (
                 <div className="flex items-center gap-4 mb-8">
                   <span className="text-gray-600 dark:text-gray-400 font-bold">Rating:</span>
+                  {/* Interactive star rating selector */}
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <motion.button
@@ -273,7 +274,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                 </div>
               )}
 
-
+              {/* Review comment section */}
               <div className="mb-8">
                 <label className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-3 block">Your Review</label>
                 {!isEditing ? (
@@ -296,13 +297,13 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                 )}
               </div>
 
-
+              {/* Posted date */}
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-8 pb-8 border-b border-gray-200 dark:border-white/10">
                 <FaCalendarAlt />
                 Posted on {new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
 
-
+              {/* Action buttons */}
               <div className="flex gap-3">
                 {!isEditing ? (
                   <>
@@ -362,17 +363,17 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
   )
 }
 
-
+// --- REVIEW CARD ---
+// Individual review card component with animation
 const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
+  // Returns color styling based on rating value
   const getRatingColor = (rating) => {
     if (rating >= 4.5) return { bg: 'bg-green-100 dark:bg-green-500/10', border: 'border-green-200 dark:border-green-500/30', text: 'text-green-600 dark:text-green-400' }
     if (rating >= 3.5) return { bg: 'bg-yellow-100 dark:bg-yellow-500/10', border: 'border-yellow-200 dark:border-yellow-500/30', text: 'text-yellow-600 dark:text-yellow-400' }
     return { bg: 'bg-orange-100 dark:bg-orange-500/10', border: 'border-orange-200 dark:border-orange-500/30', text: 'text-orange-600 dark:text-orange-400' }
   }
 
-
   const ratingStyle = getRatingColor(review.rating)
-
 
   return (
     <motion.div
@@ -385,6 +386,7 @@ const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
       className="group cursor-pointer h-full"
     >
       <div className="h-full rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-black/40 backdrop-blur-xl hover:border-orange-300 dark:hover:border-white/25 hover:shadow-lg dark:hover:bg-black/50 transition-all duration-300 overflow-hidden">
+        {/* Header with business name and rating */}
         <div className={`p-5 ${ratingStyle.bg} border-b ${ratingStyle.border}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -398,7 +400,7 @@ const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
           </div>
         </div>
 
-
+        {/* Review comment preview */}
         <div className="p-5">
           <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-4 mb-4">{review.comment}</p>
           <div className="flex items-center gap-2 text-xs font-bold text-orange-500 dark:text-orange-400 group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors">
@@ -407,7 +409,7 @@ const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
           </div>
         </div>
 
-
+        {/* Footer with date and edit button */}
         <div className="px-5 py-3 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -424,14 +426,14 @@ const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
   )
 })
 
-
 ReviewCard.displayName = 'ReviewCard'
-
 
 export default function ReviewsPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const supabase = createClient()
+  
+  // State management for reviews, filters, and modals
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState([])
   const [filterRating, setFilterRating] = useState(0)
@@ -440,7 +442,7 @@ export default function ReviewsPage() {
   const [selectedReview, setSelectedReview] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login')
@@ -448,26 +450,25 @@ export default function ReviewsPage() {
     }
   }, [user, authLoading, router])
 
-
+  // Fetch reviews from database and subscribe to real-time updates
   useEffect(() => {
     if (!user?.id) return
-
 
     const fetchData = async () => {
       try {
         setLoading(true)
         setError(null)
         
+        // Fetch user's reviews from database
         const { data: reviewsData, error: rError } = await supabase
           .from('reviews')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
 
-
         if (rError) throw rError
 
-
+        // Enrich reviews with business name and type
         const enrichedReviews = await Promise.all(
           (reviewsData || []).map(async (review) => {
             const { data: businessData } = await supabase
@@ -476,7 +477,6 @@ export default function ReviewsPage() {
               .eq('id', review.business_id)
               .single()
 
-
             return {
               ...review,
               business_name: businessData?.name || 'Unknown Business',
@@ -484,7 +484,6 @@ export default function ReviewsPage() {
             }
           })
         )
-
 
         setReviews(enrichedReviews)
       } catch (err) {
@@ -495,10 +494,9 @@ export default function ReviewsPage() {
       }
     }
 
-
     fetchData()
 
-
+    // Subscribe to real-time review changes
     const channel = supabase
       .channel(`user-reviews-${user.id}`)
       .on('postgres_changes', {
@@ -534,36 +532,35 @@ export default function ReviewsPage() {
         }
       }).subscribe()
 
-
     return () => {
       supabase.removeChannel(channel)
     }
   }, [user?.id, supabase, selectedReview?.id])
 
-
+  // Sign out user and redirect to home
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-
+  // Open modal with selected review
   const handleViewDetails = (review) => {
     setSelectedReview(review)
     setIsModalOpen(true)
   }
 
-
+  // Remove deleted review from state
   const handleDeleteReview = (reviewId) => {
     setReviews((prev) => prev.filter((r) => r.id !== reviewId))
   }
 
-
+  // Update edited review in state
   const handleUpdateReview = (updatedReview) => {
     setReviews((prev) => prev.map((r) => (r.id === updatedReview.id ? updatedReview : r)))
     setSelectedReview(updatedReview)
   }
 
-
+  // Filter reviews by rating and search query
   const filteredReviews = reviews.filter((r) => {
     const matchesRating = filterRating === 0 || r.rating >= filterRating
     const matchesSearch = searchQuery === '' || 
@@ -573,30 +570,27 @@ export default function ReviewsPage() {
     return matchesRating && matchesSearch
   })
 
-
+  // Calculate statistics from reviews
   const stats = {
     total: reviews.length,
     avgRating: reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0',
     impact: (reviews.length * 8).toLocaleString() + '+'
   }
 
-
   if (authLoading || !user) return <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors" />
-
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-200 font-sans selection:bg-orange-500/25 selection:text-white overflow-x-hidden transition-colors duration-300">
       
-      {/* TOP LEFT CORNER - Purple/Blue gradient orb */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-br from-purple-700/30 via-blue-600/30 to-transparent rounded-full blur-[100px] opacity-80 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
+      {/* TOP LEFT CORNER - Orange/Rose gradient orb (changed from purple/blue) */}
+      <div className="fixed -top-40 -left-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-br from-orange-600/30 via-orange-500/25 to-transparent rounded-full blur-[100px] opacity-80 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
         animation: 'float-top-left 12s ease-in-out infinite',
       }} />
       
-      {/* BOTTOM RIGHT CORNER - Orange/Pink gradient orb */}
-      <div className="fixed -bottom-40 -right-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-tl from-orange-600/30 via-pink-600/30 to-transparent rounded-full blur-[100px] opacity-85 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
+      {/* BOTTOM RIGHT CORNER - Pink/Rose gradient orb (matches theme) */}
+      <div className="fixed -bottom-40 -right-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-tl from-pink-600/30 via-rose-500/25 to-transparent rounded-full blur-[100px] opacity-85 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
         animation: 'float-bottom-right 15s ease-in-out infinite',
       }} />
-
 
       <style>{`
         @keyframes float-top-left {
@@ -621,9 +615,7 @@ export default function ReviewsPage() {
         }
       `}</style>
 
-
       <Header onLogout={handleLogout} />
-
 
       <ReviewDetailModal
         review={selectedReview}
@@ -635,7 +627,6 @@ export default function ReviewsPage() {
         onDelete={handleDeleteReview}
         onUpdate={handleUpdateReview}
       />
-
 
       <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
         <section className="mb-16">
@@ -651,14 +642,14 @@ export default function ReviewsPage() {
             </p>
           </motion.div>
 
-
+          {/* Statistics cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             <StatCard label="Total Reviews" value={stats.total} icon={FaPencilAlt} color="orange" delay={0.1} />
             <StatCard label="Avg Rating" value={stats.avgRating} icon={FaChartLine} color="purple" delay={0.2} />
             <StatCard label="Impact" value={stats.impact} icon={FaFire} color="rose" delay={0.3} />
           </div>
 
-
+          {/* Search bar */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -683,7 +674,7 @@ export default function ReviewsPage() {
             </div>
           </motion.div>
 
-
+          {/* Rating filter buttons */}
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 hover:bg-white/90 dark:hover:bg-black/50 transition-all shadow-sm">
             <FaFilter className="text-gray-400 dark:text-gray-500" />
             <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Filter by Rating:</span>
@@ -705,7 +696,7 @@ export default function ReviewsPage() {
           </div>
         </section>
 
-
+        {/* Error message */}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -716,7 +707,7 @@ export default function ReviewsPage() {
           </motion.div>
         )}
 
-
+        {/* Reviews grid or empty state */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
