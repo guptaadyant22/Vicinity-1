@@ -1,3 +1,17 @@
+// Landing page with hero section, features showcase, how-it-works, FAQ, and footer
+// VicinityLogo - Branded logo with text rendering and orange SVG icon
+// CleanWhiteBackground - Animated light mode background with gradient beams and grid
+// GridBackground - Responsive background wrapper (uses LightPillar for dark mode, CleanWhiteBackground for light)
+// AnimatedIPadDemo - iPad device mockup with app icons, radar scanner, and location markers
+// TiltCard - 3D tilt card component with mouse interaction (rotateX, rotateY on hover)
+// Hero - Main hero section with heading, CTA buttons, and TiltCard with AnimatedIPadDemo
+// SectionBackgroundGlow - Wrapper for sections with animated background gradients
+// AIBenefitsSection - Feature cards grid (6 AI-powered features: Smart Search, Verified Reviews, Analytics, Descriptions, Updates, Chat)
+// HowItWorks - Three-step process (Discover, Connect, Share) with animated step cards
+// FAQ - Expandable FAQ section with 6 common questions
+// Footer - Footer with branding, links, social icons, and copyright
+
+
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -115,21 +129,21 @@ const GridBackground = () => {
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
       {isDark ? (
-        // Dark Mode - Existing LightPillar Configuration
+        // Dark Mode
         <LightPillar
           bottomColor="#ff6f00"
           topColor="#ff1493"
-          intensity={0.8}
-          rotationSpeed={0.3}
+          intensity={0.7}
+          rotationSpeed={0.4}
           interactive={false}
-          glowAmount={0.008}
+          glowAmount={0.009}
           pillarWidth={4.0}
           pillarHeight={0.5}
           noiseIntensity={0.3}
           pillarRotation={0}
         />
       ) : (
-        // Light Mode - New Custom White Background
+        // Light Mode 
         <CleanWhiteBackground />
       )}
     </div>
@@ -159,7 +173,7 @@ const AnimatedIPadDemo = () => {
               </div>
             </div>
           </div>
-
+          
           <div className="flex-1 relative overflow-hidden bg-black">
             
             <motion.div
@@ -184,7 +198,23 @@ const AnimatedIPadDemo = () => {
                   { icon: <FaBell />, gradient: "bg-gradient-to-br from-orange-400 to-orange-600" },
                   { icon: <FaUser />, gradient: "bg-gradient-to-br from-slate-500 to-slate-700" },
                   { icon: <FaCompass />, gradient: "bg-gradient-to-br from-teal-400 to-teal-600" },
-                  { icon: <FaRocket />, gradient: "bg-gradient-to-br from-orange-500 to-pink-600", highlight: true, isVicinity: true },
+                  { 
+                    icon: (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0,0,256,256" fill="white">
+                        <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
+                          <path d="M5,45l4,-11l12,-12l-6,23z"></path>
+                          <path d="M25,18l8,27h10l-11,-33z"></path>
+                          <path d="M16.059,14.164l3.941,-11.164h8z"></path>
+                          <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
+                          <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
+                          <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
+                        </g>
+                      </svg>
+                    ), 
+                    gradient: "bg-gradient-to-br from-orange-500 to-pink-600", 
+                    highlight: true, 
+                    isVicinity: true 
+                  },
                   { icon: <FaWifi />, gradient: "bg-gradient-to-br from-cyan-400 to-cyan-600" },
                   { icon: <FaStar />, gradient: "bg-gradient-to-br from-yellow-400 to-yellow-600" },
                   { icon: <FaUserFriends />, gradient: "bg-gradient-to-br from-rose-400 to-rose-600" },
@@ -233,6 +263,7 @@ const AnimatedIPadDemo = () => {
               </motion.div>
             </motion.div>
 
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ 
@@ -249,32 +280,32 @@ const AnimatedIPadDemo = () => {
               >
                 <div className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0,0,256,256" className="w-6 h-6">
-                  <g fill="#ff6f00" fillRule="nonzero">
-                    <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
-                     <path d="M5,45l4,-11l12,-12l-6,23z"></path>
-                     <path d="M25,18l8,27h10l-11,-33z"></path>
-                      <path d="M16.059,14.164l3.941,-11.164h8z"></path>
-                           <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
-      <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
-      <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
-    </g>
-  </g>
-</svg>
-                    <div>
-                      <h2 className="text-white text-sm font-bold">Vicinity</h2>
-                      <p className="text-xs text-gray-400">Local Discovery</p>
-                    </div>
+                    <g fill="#ff6f00" fillRule="nonzero">
+                      <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
+                        <path d="M5,45l4,-11l12,-12l-6,23z"></path>
+                        <path d="M25,18l8,27h10l-11,-33z"></path>
+                        <path d="M16.059,14.164l3.941,-11.164h8z"></path>
+                        <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
+                        <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
+                        <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
+                      </g>
+                    </g>
+                  </svg>
+                  <div>
+                    <h2 className="text-white text-sm font-bold">Vicinity</h2>
+                    <p className="text-xs text-gray-400">Local Discovery</p>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <motion.div 
-                      className="w-2 h-2 rounded-full bg-green-500"
-                      animate={{ scale: [1, 1.5, 1] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                    />
-                    <span className="text-xs text-gray-400">Live</span>
-                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <motion.div 
+                    className="w-2 h-2 rounded-full bg-green-500"
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <span className="text-xs text-gray-400">Live</span>
+                </div>
               </motion.div>
-
+              
               <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-[#1a1a1a]/50 to-[#0a0a0a]/80 flex">
                 
                 <div className="w-40 bg-black/40 backdrop-blur-md border-r border-orange-500/20 p-2 flex flex-col gap-2">
@@ -306,11 +337,12 @@ const AnimatedIPadDemo = () => {
                         <motion.div 
                           className="bg-gradient-to-r from-orange-400 to-orange-500 h-full rounded-full"
                           animate={{ width: ["0%", "98%"] }}
-                          transition={{ duration: 2, delay: 4.4 }}
+                          transition={{ duration: 2, delay: 4.0 }}
                         />
                       </div>
                     </div>
                   </motion.div>
+
 
                   <motion.div
                     className="bg-black/50 backdrop-blur-md border border-pink-500/30 rounded-lg p-2 flex-shrink-0"
@@ -341,6 +373,7 @@ const AnimatedIPadDemo = () => {
                     <p className="text-gray-400 text-xs mt-1">Strong</p>
                   </motion.div>
 
+
                   <motion.div
                     className="bg-black/50 backdrop-blur-md border border-cyan-500/30 rounded-lg p-2 flex-shrink-0"
                     initial={{ opacity: 0, x: -50 }}
@@ -366,7 +399,7 @@ const AnimatedIPadDemo = () => {
                     </div>
                   </motion.div>
                 </div>
-
+                
                 <div className="flex-1 relative overflow-hidden">
                   <motion.div
                     className="absolute inset-0 opacity-15"
@@ -375,6 +408,7 @@ const AnimatedIPadDemo = () => {
                     animate={{ opacity: [0, 0, 0.1, 0.15, 0.15, 0.15] }}
                     transition={{ duration: 5, times: [0, 0.3, 0.35, 0.42, 0.5, 1] }}
                   />
+
 
                   <svg className="absolute inset-0 w-full h-full" style={{ opacity: 1 }}>
                     <defs>
@@ -401,13 +435,14 @@ const AnimatedIPadDemo = () => {
                     <motion.circle 
                       cx="50%" 
                       cy="50%" 
+                      r="50"
                       fill="none" 
                       stroke="#ff8c42" 
                       strokeWidth="2" 
                       opacity="0.6"
                       filter="url(#glow)"
                       animate={{
-                        r: ["5%", "35%"],
+                        r: [50, 280],
                         opacity: [0.8, 0],
                         strokeWidth: [2, 0.5]
                       }}
@@ -420,13 +455,14 @@ const AnimatedIPadDemo = () => {
                     <motion.circle 
                       cx="50%" 
                       cy="50%" 
+                      r="50"
                       fill="none" 
                       stroke="#ff6b35" 
                       strokeWidth="1.5" 
                       opacity="0.5"
                       filter="url(#glow)"
                       animate={{
-                        r: ["5%", "35%"],
+                        r: [50, 280],
                         opacity: [0.6, 0],
                         strokeWidth: [1.5, 0.3]
                       }}
@@ -438,11 +474,12 @@ const AnimatedIPadDemo = () => {
                       }}
                     />
                     
-                    <circle cx="50%" cy="50%" r="15%" fill="none" stroke="url(#radarGradient)" strokeWidth="1.5" opacity="0.7" filter="url(#innerGlow)" />
-                    <circle cx="50%" cy="50%" r="30%" fill="none" stroke="#ff6b35" strokeWidth="1" opacity="0.4" />
-                    <circle cx="50%" cy="50%" r="45%" fill="none" stroke="#ff6b35" strokeWidth="1" opacity="0.2" />
-                    <circle cx="50%" cy="50%" r="60%" fill="none" stroke="#444" strokeWidth="0.5" opacity="0.3" />
+                    <circle cx="50%" cy="50%" r="85" fill="none" stroke="url(#radarGradient)" strokeWidth="1.5" opacity="0.7" filter="url(#innerGlow)" />
+                    <circle cx="50%" cy="50%" r="170" fill="none" stroke="#ff6b35" strokeWidth="1" opacity="0.4" />
+                    <circle cx="50%" cy="50%" r="255" fill="none" stroke="#ff6b35" strokeWidth="1" opacity="0.2" />
+                    <circle cx="50%" cy="50%" r="340" fill="none" stroke="#444" strokeWidth="0.5" opacity="0.3" />
                   </svg>
+
 
                   <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.5 }}>
                     <motion.line 
@@ -467,6 +504,7 @@ const AnimatedIPadDemo = () => {
                     />
                   </svg>
 
+
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                     <motion.div 
                       style={{ scale: pulseScale }}
@@ -485,6 +523,7 @@ const AnimatedIPadDemo = () => {
                     />
                   </div>
 
+
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 pointer-events-none">
                     <motion.div 
                       style={{ rotate: radarRotate }}
@@ -496,11 +535,12 @@ const AnimatedIPadDemo = () => {
                     </motion.div>
                   </div>
 
+
                   {[
-                    { x: '10%', y: '0%', label: "Joe's Pizza", icon: <FaStore />, color: 'bg-blue-500', desc: 'Italian • 4.8★', distance: '2.7 mi' },
-                    { x: '65%', y: '15%', label: 'Star Cafe', icon: <FaCoffee />, color: 'bg-pink-500', desc: 'Coffee • 4.9★', distance: '1.8 mi' },
-                    { x: '20%', y: '55%', label: 'Book Store', icon: <FaBook />, color: 'bg-cyan-500', desc: 'Retail • 4.6★', distance: '2.4 mi' },
-                    { x: '70%', y: '60%', label: 'Metro Gym', icon: <FaDumbbell />, color: 'bg-purple-500', desc: 'Fitness • 4.7★', distance: '3.1 mi' },
+                    { x: '10%', y: '0%', label: "Joe's Pizza", icon: <FaStore />, color: 'bg-blue-500', desc: 'Italian • 4.8★', distance: '2.7 mi', delayOffset: 0 },
+                    { x: '65%', y: '15%', label: 'Star Cafe', icon: <FaCoffee />, color: 'bg-pink-500', desc: 'Coffee • 4.9★', distance: '1.8 mi', delayOffset: 0.1 },
+                    { x: '20%', y: '55%', label: 'Book Store', icon: <FaBook />, color: 'bg-cyan-500', desc: 'Retail • 4.6★', distance: '2.4 mi', delayOffset: 0.3 },
+                    { x: '70%', y: '60%', label: 'Metro Gym', icon: <FaDumbbell />, color: 'bg-purple-500', desc: 'Fitness • 4.7★', distance: '3.1 mi', delayOffset: 0.5 },
                   ].map((item, i) => (
                     <motion.div
                       key={i}
@@ -509,7 +549,7 @@ const AnimatedIPadDemo = () => {
                       initial={{ scale: 0, opacity: 0, y: 20 }}
                       animate={{ scale: 1, opacity: 1, y: 0 }}
                       transition={{ 
-                        delay: 4.3 + (0.15 * i),
+                        delay: 3.8 + item.delayOffset,
                         type: "spring",
                         stiffness: 200,
                         damping: 15,
@@ -563,6 +603,8 @@ const AnimatedIPadDemo = () => {
     </div>
   )
 }
+
+
 
 const TiltCard = ({ children, className = "" }) => {
   const x = useMotionValue(0)

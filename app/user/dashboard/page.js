@@ -1,3 +1,21 @@
+// Community user dashboard with business discovery, filtering, and AI-powered search
+// COMPONENTS:
+// VICINITY LOGO - Branded logo component with optional text display
+// ANIMATED BG - Adaptive gradient background with grid pattern and light rays
+// HEADER - Navigation bar with user profile, logout, and navigation links
+// STAT CARD - Statistics card displaying key metrics (total places, reviews, ratings, saved)
+// SKELETON CARD - Loading placeholder for business cards in grid/list view
+// FILTER SECTION - Collapsible filter category with expandable content
+// HELPER FUNCTIONS:
+// FORMAT BUSINESS TYPE - Converts business type to short display format using category mapping
+// IS DEAL EXPIRED - Checks if deal expiry date has passed
+// IS BUSINESS OPEN NOW - Determines if business is currently open based on hours
+// HANDLE SEARCH INPUT CHANGE - Updates search query with debounced AI search trigger
+// HANDLE AI SEARCH - Sends search query to AI API and retrieves matched businesses
+// HANDLE SAVE - Saves/unsaves business to user favorites in database
+// HANDLE LOGOUT - Signs out user and redirects to home page
+// CLEAR ALL FILTERS - Resets all active filters and search state
+
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'

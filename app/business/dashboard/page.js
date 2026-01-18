@@ -1,3 +1,21 @@
+// Business owner dashboard with real-time analytics, charts, and review management
+// COMPONENTS:
+// CLEAN WHITE BACKGROUND - Grid and animated gradient background for light mode
+// DARK BACKGROUND - Animated orbs and grid for dark mode
+// GRID BACKGROUND - Renders appropriate background based on theme
+// HELPER FUNCTIONS:
+// GET GREETING - Returns time-based greeting message
+// TRUNCATE TEXT - Limits text length and adds ellipsis
+// KEY METRICS:
+// Average Rating - Shows star rating from all reviews
+// Total Reviews - Displays review count and this month's total
+// Active Deals - Shows active coupon count with link to manage
+// Positive Reviews - Shows 4-5 star percentage
+// CHARTS:
+// Review Trend - Line chart of last 7 days of reviews
+// Rating Distribution - Bar chart showing rating breakdown
+// Latest Review - Displays most recent customer review
+
 'use client'
 
 import { useRef, useEffect, useState } from 'react'

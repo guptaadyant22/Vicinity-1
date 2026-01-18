@@ -1,3 +1,6 @@
+// Analyzes customer reviews using Groq AI
+// Extracts sentiment breakdown, key themes, and recommendations for businesses
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 

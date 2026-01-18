@@ -1,3 +1,16 @@
+// Business profile management with sections for branding, details, gallery, and hours
+// COMPONENTS:
+// FORM INPUT - Reusable input field with label styling
+// TIP CARD - Informational tip with icon and description
+// BRANDING TIPS - Tips for brand identity section
+// DETAILS TIPS - Tips for contact and address section
+// GALLERY TIPS - Tips for photo gallery section
+// HOURS TIPS - Tips for operating hours section
+// HELPER FUNCTIONS:
+// GENERATE AI - Creates business description using AI based on business info
+// UPLOAD IMAGE - Handles image uploads to Supabase storage (cover or gallery)
+// HANDLE SAVE - Saves/updates business profile to database
+
 'use client'
 
 import React, { useState, useEffect } from 'react'

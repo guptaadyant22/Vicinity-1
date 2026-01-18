@@ -1,6 +1,15 @@
+// Business settings page for account management, data export, and security
+// COMPONENTS:
+// REVIEWS ANALYZER - Modal displaying sentiment analysis and key themes
+// HELPER FUNCTIONS:
+// HANDLE DELETE ACCOUNT - Removes business profile and user data permanently
+// HANDLE UPDATE PASSWORD - Updates user password with validation
+// HANDLE EXPORT DATA - Fetches business data and generates PDF report
+// GENERATE ADVANCED PDF REPORT - Creates formatted PDF with business info, reviews, deals, and favorites
+// GET DATE RANGE - Calculates date range based on export option selection
+// TOGGLE EXPORT OPTION - Toggles checkboxes for data export selections
+
 'use client'
-
-
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'

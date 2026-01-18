@@ -1,3 +1,15 @@
+// User profile page with editable profile information, statistics, and account management
+// COMPONENTS:
+// VICINITY LOGO - Branded logo component with optional text display
+// NAVBAR - Navigation bar with logo and dashboard link
+// ANIMATED BG - Gradient background with grid pattern for visual appeal
+// CONFIRMATION MODAL - Reusable modal for confirming destructive actions
+// HELPER FUNCTIONS:
+// SAVE FIELD - Updates single user profile field in Supabase auth metadata
+// SAVE INTERESTS - Updates user interests array in auth metadata
+// HANDLE DELETE ALL REVIEWS - Deletes all reviews created by user from database
+// HANDLE DELETE ACCOUNT - Permanently deletes user account, reviews, and all related data
+
 'use client'
 
 import React, { useState, useEffect } from 'react'

@@ -1,3 +1,6 @@
+// Browse page for discovering and filtering local businesses
+// Displays businesses in grid/list view with AI search, category filters, and pagination
+
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'

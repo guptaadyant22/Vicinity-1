@@ -1,3 +1,17 @@
+// Forgot password and password reset page with multi-step form flow
+// COMPONENTS:
+// GRID BACKGROUND - Adaptive grid pattern background for light/dark modes
+// VICINITY LOGO - Themed logo component with SVG icon
+// NAVBAR - Navigation bar with logo and auth links
+// EMAIL RESET FORM - Step 1: Email submission form for password reset
+// CONFIRMATION MESSAGE - Step 2: Email confirmation message with resend option
+// PASSWORD RESET FORM - Step 3: New password creation with strength indicator
+// HELPER FUNCTIONS:
+// IS VALID EMAIL - Validates email format using regex
+// GET PASSWORD STRENGTH - Returns password strength level, percentage, and color
+// HANDLE EMAIL SUBMIT - Sends password reset link to user email
+// HANDLE PASSWORD RESET - Updates user password after token validation
+
 'use client'
 
 import { useState } from 'react'

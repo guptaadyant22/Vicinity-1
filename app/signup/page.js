@@ -1,3 +1,17 @@
+// Signup page with multi-step form flow for business and community accounts
+// COMPONENTS:
+// GRID BACKGROUND - Adaptive gradient grid background for light/dark modes
+// VICINITY LOGO - Themed logo component with SVG icon
+// SIGNUP NAVBAR - Navigation bar with logo and auth links
+// ACCOUNT TYPE SELECTION - Initial screen for choosing business or community account
+// ACCOUNT CARD - Interactive card component for account type selection
+// STEP FORM CONTAINER - Wrapper component with step indicator and form card
+// BUSINESS STEP FORM - Multi-step form for business registration (5 steps)
+// COMMUNITY STEP FORM - Multi-step form for community registration (4 steps)
+// INPUT - Reusable form input with label, error state, and optional icon
+// SELECT - Reusable dropdown select with label and error state
+
+
 'use client'
 
 import { useState, useRef, useEffect } from 'react'

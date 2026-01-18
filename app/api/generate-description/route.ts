@@ -1,3 +1,6 @@
+// Generates professional business descriptions using Groq AI
+// Creates engaging 150-200 word descriptions based on business type and info
+
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {

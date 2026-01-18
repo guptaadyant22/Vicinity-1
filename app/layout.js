@@ -1,3 +1,14 @@
+// Root layout component for Next.js app with theme, auth providers, and global styles
+// IMPORTS:
+// dynamic - Next.js dynamic import for client-side only component loading
+// ThemeContext - Theme provider context for light/dark mode management
+// AuthContext - Authentication provider context for user state management
+// globals.css - Global stylesheet with Tailwind and custom styles
+// ThemeToggle - Theme toggle button component (fixed top-right)
+// AIChat - AI chat assistant component (fixed bottom-right, dynamically loaded)
+// METADATA:
+// Page title, description, and SVG favicon (Vicinity logo in orange)
+
 import dynamic from 'next/dynamic'
 import '../context/ThemeContext'
 import { ThemeProvider } from '../context/ThemeContext'

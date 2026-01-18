@@ -1,3 +1,18 @@
+// Business detail page with real-time reviews, deals, gallery, favorites, and review management
+// HELPER FUNCTIONS:
+// GET COVER IMAGE - Returns business image or placeholder
+// FORMAT FULL ADDRESS - Combines address fields into readable string
+// FORMAT REVIEW DATE - Converts timestamp to "X days ago" format
+// FORMAT BUSINESS HOURS - Converts time formats (9-5, 09:00, objects) to 12-hour format
+// GET DEAL LABEL - Returns formatted discount label (e.g., "25% OFF")
+// GET DEAL EMOJI - Returns emoji based on deal type
+// IS EXPIRED - Checks if deal expiry date has passed
+// HANDLERS:
+// TOGGLE FAVORITE - Add/remove business from user's favorites
+// HANDLE SUBMIT REVIEW - Posts new review with rating and text
+// HANDLE EDIT REVIEW - Updates existing review
+// HANDLE DELETE REVIEW - Removes review with confirmation
+
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
@@ -15,23 +30,23 @@ import { createClient } from '../../../lib/supabase'
 const DAYS_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&h=800&fit=crop'
 
-// --- VICINITY LOGO COMPONENT (from Navbar file) ---
-const VicinityLogo = ({ className = "", textClassName = "" }) => ( 
-  <div className={`flex items-center gap-2.5 ${className}`}> 
-    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8"> 
-      <g fill="#ff6f00" fillRule="nonzero"> 
-        <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)"> 
-          <path d="M5,45l4,-11l12,-12l-6,23z"></path> 
-          <path d="M25,18l8,27h10l-11,-33z"></path> 
-          <path d="M16.059,14.164l3.941,-11.164h8z"></path> 
-          <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path> 
-          <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path> 
-          <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path> 
-        </g> 
-      </g> 
-    </svg> 
-    <span className={`font-black text-gray-900 dark:text-white text-xl tracking-tight ${textClassName}`}>Vicinity</span> 
-  </div> 
+
+const VicinityLogo = ({ className = "", textClassName = "" }) => (
+  <div className={`flex items-center gap-2.5 ${className}`}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8">
+      <g fill="#ff6f00" fillRule="nonzero">
+        <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
+          <path d="M5,45l4,-11l12,-12l-6,23z"></path>
+          <path d="M25,18l8,27h10l-11,-33z"></path>
+          <path d="M16.059,14.164l3.941,-11.164h8z"></path>
+          <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
+          <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
+          <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
+        </g>
+      </g>
+    </svg>
+    <span className={`font-black text-gray-900 dark:text-white text-xl tracking-tight ${textClassName}`}>Vicinity</span>
+  </div>
 )
 
 const Background = () => (
@@ -66,13 +81,13 @@ const formatReviewDate = (timestamp) => {
     const now = new Date()
     const diffMs = now - date
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 0) return 'Today'
     if (diffDays === 1) return 'Yesterday'
     if (diffDays < 7) return `${diffDays} days ago`
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`
-    
+
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   } catch (e) {
     console.warn('⚠️ Failed to parse date:', e)
@@ -83,17 +98,72 @@ const formatReviewDate = (timestamp) => {
 const formatBusinessHours = (timeObj, dayName = '') => {
   if (!timeObj) return 'Closed'
 
+  // Handle string inputs (like "9-5" or "09:00" from dashboard)
   if (typeof timeObj === 'string') {
     const str = timeObj.toString().trim()
     if (str.toLowerCase().includes('closed')) return 'Closed'
+
+    // Handle "9-5" format (with dash)
+    if (str.includes('-') && !str.includes(':')) {
+      const [openStr, closeStr] = str.split('-').map(s => s.trim())
+      
+      const formatTimeFromNumber = (timeStr) => {
+        const num = parseInt(timeStr, 10)
+        if (!isNaN(num) && num >= 0 && num <= 23) {
+          const ampm = num >= 12 ? 'PM' : 'AM'
+          const hour12 = num % 12 || 12
+          return `${hour12}:00 ${ampm}`
+        }
+        return timeStr
+      }
+      
+      return `${formatTimeFromNumber(openStr)} - ${formatTimeFromNumber(closeStr)}`
+    }
+
+    // Handle "HH:MM" format (09:00, 17:30, etc)
+    if (str.includes(':')) {
+      const [h, m] = str.split(':')
+      const hour = parseInt(h, 10)
+      const ampm = hour >= 12 ? 'PM' : 'AM'
+      const hour12 = hour % 12 || 12
+      return `${hour12}:${m} ${ampm}`
+    }
+
+    // Handle plain numbers as strings ("9", "17")
+    const timeNum = parseInt(str, 10)
+    if (!isNaN(timeNum) && timeNum >= 0 && timeNum <= 23) {
+      const ampm = timeNum >= 12 ? 'PM' : 'AM'
+      const hour12 = timeNum % 12 || 12
+      return `${hour12}:00 ${ampm}`
+    }
+
     return str
   }
 
+  // Handle pure number inputs
+  const num = Number(timeObj)
+  if (!isNaN(num) && Number.isInteger(num) && (typeof timeObj === 'number' || /^\d+$/.test(String(timeObj)))) {
+    const hour = num
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const hour12 = hour % 12 || 12
+    return `${hour12}:00 ${ampm}`
+  }
+
+  // Handle object inputs
   if (typeof timeObj === 'object' && timeObj !== null) {
     if (timeObj.closed === true) return 'Closed'
 
     const formatTime = (time) => {
-      if (!time) return ''
+      if (time === null || time === undefined || time === '') return ''
+
+      const timeNum = Number(time)
+      if (!isNaN(timeNum) && Number.isInteger(timeNum)) {
+        const hour = timeNum
+        const ampm = hour >= 12 ? 'PM' : 'AM'
+        const hour12 = hour % 12 || 12
+        return `${hour12}:00 ${ampm}`
+      }
+
       const timeStr = time.toString().trim()
 
       if (timeStr.includes(':')) {
@@ -103,43 +173,54 @@ const formatBusinessHours = (timeObj, dayName = '') => {
         const hour12 = hour % 12 || 12
         return `${hour12}:${m} ${ampm}`
       }
+
+      const parsedNum = parseInt(timeStr, 10)
+      if (!isNaN(parsedNum) && parsedNum >= 0 && parsedNum <= 23) {
+        const ampm = parsedNum >= 12 ? 'PM' : 'AM'
+        const hour12 = parsedNum % 12 || 12
+        return `${hour12}:00 ${ampm}`
+      }
+
       return timeStr
     }
 
-    if (timeObj.open && timeObj.close) {
-      return `${formatTime(timeObj.open)} - ${formatTime(timeObj.close)}`
-    }
-    if (timeObj.start && timeObj.end) {
-      return `${formatTime(timeObj.start)} - ${formatTime(timeObj.end)}`
+    if ((timeObj.open && timeObj.close) || (timeObj.start && timeObj.end)) {
+      const openTime = timeObj.open || timeObj.start
+      const closeTime = timeObj.close || timeObj.end
+      return `${formatTime(openTime)} - ${formatTime(closeTime)}`
     }
   }
 
   return 'Closed'
 }
 
+
+
+
+
 const getDealLabel = (deal) => {
   if (!deal) return ''
-  
+
   const typeLabels = {
     percentage: `${deal.discount_value}% OFF`,
     fixed: `$${deal.discount_value} OFF`,
     bogo: 'BUY ONE GET ONE',
     free: 'FREE ITEM'
   }
-  
+
   return typeLabels[deal.discount_type] || 'SPECIAL DEAL'
 }
 
 const getDealEmoji = (deal) => {
   if (!deal) return '✨'
-  
+
   const emojis = {
     percentage: '📊',
     fixed: '💰',
     bogo: '🎁',
     free: '🎉'
   }
-  
+
   return emojis[deal.discount_type] || '✨'
 }
 
@@ -291,7 +372,7 @@ export default function BusinessDetailPage() {
       return
     }
 
-    ;(async () => {
+    ; (async () => {
       try {
         setLoading(true)
         setError(null)
@@ -369,109 +450,109 @@ export default function BusinessDetailPage() {
   useEffect(() => {
     if (!businessId) return
 
-    ;(async () => {
-      try {
-        const { data: reviewsData } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('business_id', businessId)
-          .order('created_at', { ascending: false })
+      ; (async () => {
+        try {
+          const { data: reviewsData } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('business_id', businessId)
+            .order('created_at', { ascending: false })
 
-        setReviews(reviewsData || [])
+          setReviews(reviewsData || [])
 
-        const channel = supabase
-          .channel(`business-reviews-${businessId}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'reviews',
-              filter: `business_id=eq.${businessId}`,
-            },
-            (payload) => {
-              if (payload.eventType === 'INSERT') {
-  // CHECK IF REVIEW ALREADY EXISTS IN STATE TO AVOID DUPLICATES
-  setReviews((prev) => {
-    const reviewExists = prev.some((r) => r.id === payload.new.id)
-    if (reviewExists) return prev
-    return [payload.new, ...prev]
-        })
-  setSuccess('✨ New review received!')
-                setTimeout(() => setSuccess(null), 3000)
+          const channel = supabase
+            .channel(`business-reviews-${businessId}`)
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'reviews',
+                filter: `business_id=eq.${businessId}`,
+              },
+              (payload) => {
+                if (payload.eventType === 'INSERT') {
+                  // CHECK IF REVIEW ALREADY EXISTS IN STATE TO AVOID DUPLICATES
+                  setReviews((prev) => {
+                    const reviewExists = prev.some((r) => r.id === payload.new.id)
+                    if (reviewExists) return prev
+                    return [payload.new, ...prev]
+                  })
+                  setSuccess('✨ New review received!')
+                  setTimeout(() => setSuccess(null), 3000)
 
-              } else if (payload.eventType === 'UPDATE') {
-                setReviews((prev) => 
-                  prev.map((r) => (r.id === payload.new.id ? payload.new : r))
-                )
-                setSuccess('✨ Review updated!')
-                setTimeout(() => setSuccess(null), 3000)
-              } else if (payload.eventType === 'DELETE') {
-                setReviews((prev) => prev.filter((r) => r.id !== payload.old.id))
-                setSuccess('✨ Review deleted!')
-                setTimeout(() => setSuccess(null), 3000)
+                } else if (payload.eventType === 'UPDATE') {
+                  setReviews((prev) =>
+                    prev.map((r) => (r.id === payload.new.id ? payload.new : r))
+                  )
+                  setSuccess('✨ Review updated!')
+                  setTimeout(() => setSuccess(null), 3000)
+                } else if (payload.eventType === 'DELETE') {
+                  setReviews((prev) => prev.filter((r) => r.id !== payload.old.id))
+                  setSuccess('✨ Review deleted!')
+                  setTimeout(() => setSuccess(null), 3000)
+                }
               }
-            }
-          )
-          .subscribe()
+            )
+            .subscribe()
 
-        return () => supabase.removeChannel(channel)
-      } catch (e) {
-        console.error('❌ Subscription error:', e)
-      }
-    })()
+          return () => supabase.removeChannel(channel)
+        } catch (e) {
+          console.error('❌ Subscription error:', e)
+        }
+      })()
   }, [businessId, supabase])
 
   // FETCH DEALS
   useEffect(() => {
     if (!businessId) return
 
-    ;(async () => {
-      try {
-        const { data: dealsData } = await supabase
-          .from('deals')
-          .select('id, title, discount_type, discount_value, is_active, code, expiry_date')
-          .eq('business_id', businessId)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
+      ; (async () => {
+        try {
+          const { data: dealsData } = await supabase
+            .from('deals')
+            .select('id, title, discount_type, discount_value, is_active, code, expiry_date')
+            .eq('business_id', businessId)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
 
-        setDeals(dealsData || [])
+          setDeals(dealsData || [])
 
-        const dealsChannel = supabase
-          .channel(`business-deals-${businessId}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'deals',
-              filter: `business_id=eq.${businessId}`,
-            },
-            (payload) => {
-              if (payload.eventType === 'INSERT') {
-                if (payload.new.is_active) {
-                  setDeals((prev) => [payload.new, ...prev])
-                  setSuccess('✨ New deal available!')
-                  setTimeout(() => setSuccess(null), 3000)
+          const dealsChannel = supabase
+            .channel(`business-deals-${businessId}`)
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'deals',
+                filter: `business_id=eq.${businessId}`,
+              },
+              (payload) => {
+                if (payload.eventType === 'INSERT') {
+                  if (payload.new.is_active) {
+                    setDeals((prev) => [payload.new, ...prev])
+                    setSuccess('✨ New deal available!')
+                    setTimeout(() => setSuccess(null), 3000)
+                  }
+                } else if (payload.eventType === 'UPDATE') {
+                  setDeals((prev) =>
+                    payload.new.is_active
+                      ? prev.map((d) => (d.id === payload.new.id ? payload.new : d))
+                      : prev.filter((d) => d.id !== payload.new.id)
+                  )
+                } else if (payload.eventType === 'DELETE') {
+                  setDeals((prev) => prev.filter((d) => d.id !== payload.old.id))
                 }
-              } else if (payload.eventType === 'UPDATE') {
-                setDeals((prev) =>
-                  payload.new.is_active
-                    ? prev.map((d) => (d.id === payload.new.id ? payload.new : d))
-                    : prev.filter((d) => d.id !== payload.new.id)
-                )
-              } else if (payload.eventType === 'DELETE') {
-                setDeals((prev) => prev.filter((d) => d.id !== payload.old.id))
               }
-            }
-          )
-          .subscribe()
+            )
+            .subscribe()
 
-        return () => supabase.removeChannel(dealsChannel)
-      } catch (e) {
-        console.error('❌ Deals subscription error:', e)
-      }
-    })()
+          return () => supabase.removeChannel(dealsChannel)
+        } catch (e) {
+          console.error('❌ Deals subscription error:', e)
+        }
+      })()
   }, [businessId, supabase])
 
   // FAVORITE STATUS
@@ -678,19 +759,19 @@ export default function BusinessDetailPage() {
       </AnimatePresence>
 
       {/* INLINE BACK NAVBAR - USES VICINITY LOGO + BACK BUTTON */}
-      <motion.nav 
-        initial={{ y: -100 }} 
-        animate={{ y: 0 }} 
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
         className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4"
       >
         <div className="w-full max-w-5xl bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border border-gray-300 dark:border-white/10 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2">
-          
+
           {/* VICINITY LOGO */}
           <VicinityLogo />
-          
+
           {/* SPACER */}
           <div className="flex-1" />
-          
+
           {/* BACK BUTTON - RIGHT SIDE */}
           <motion.button
             onClick={() => window.history.back()}
@@ -701,15 +782,15 @@ export default function BusinessDetailPage() {
             <FaArrowLeft size={14} />
             <span>Back</span>
           </motion.button>
-          
+
         </div>
       </motion.nav>
 
       {/* HERO HEADER WITH COVER IMAGE */}
       <div className="relative h-[65vh] min-h-[500px] overflow-hidden pt-20">
         <div className="absolute inset-0 top-0">
-          <img 
-            src={coverImage} 
+          <img
+            src={coverImage}
             alt={business.name}
             className="w-full h-full object-cover"
           />
@@ -768,7 +849,7 @@ export default function BusinessDetailPage() {
                   <FaMapMarkerAlt className="text-orange-500" size={16} />
                   <span className="text-sm text-gray-800 dark:text-gray-100">{business.fullAddress}</span>
                 </motion.div>
-                
+
                 {/* Actions */}
                 <div className="flex items-center gap-3 ml-auto">
                   <ActionButton
@@ -807,7 +888,7 @@ export default function BusinessDetailPage() {
                 className="relative p-8 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 backdrop-blur-md overflow-hidden group hover:border-orange-500/30 dark:hover:border-white/30 transition-all shadow-xl dark:shadow-none"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-purple-600/0 group-hover:from-orange-500/5 group-hover:to-purple-600/5 transition-all" />
-                
+
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 bg-orange-100 dark:bg-orange-500/20 rounded-lg">
@@ -815,7 +896,7 @@ export default function BusinessDetailPage() {
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">About</h2>
                   </div>
-                  
+
                   <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-base whitespace-pre-line mb-6">
                     {business.description}
                   </p>
@@ -848,7 +929,7 @@ export default function BusinessDetailPage() {
                 className="relative p-8 rounded-2xl bg-blue-50 dark:bg-blue-600/5 border border-blue-200 dark:border-blue-500/30 backdrop-blur-md overflow-hidden group hover:border-blue-300 dark:hover:border-blue-500/50 transition-all shadow-xl dark:shadow-none"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-600/0 group-hover:from-blue-500/5 group-hover:to-blue-600/5 transition-all" />
-                
+
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-blue-100 dark:bg-blue-500/30 rounded-lg">
@@ -962,7 +1043,7 @@ export default function BusinessDetailPage() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all" />
-                      
+
                       {i === 3 && galleryImages.length > 4 && (
                         <div className="absolute inset-0 bg-black/70 flex items-center justify-center font-bold text-2xl text-white">
                           +{galleryImages.length - 4}
@@ -1028,9 +1109,8 @@ export default function BusinessDetailPage() {
                               <button
                                 key={star}
                                 onClick={() => setEditReviewRating(star)}
-                                className={`text-3xl transition-all cursor-pointer ${
-                                  star <= editReviewRating ? 'text-yellow-400 scale-110' : 'text-gray-300 dark:text-white/20'
-                                }`}
+                                className={`text-3xl transition-all cursor-pointer ${star <= editReviewRating ? 'text-yellow-400 scale-110' : 'text-gray-300 dark:text-white/20'
+                                  }`}
                               >
                                 ★
                               </button>
@@ -1175,7 +1255,6 @@ export default function BusinessDetailPage() {
                 </div>
               )}
 
-              {/* Hours */}
               {business.hours && (
                 <div>
                   <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-3 flex items-center gap-2">
@@ -1189,8 +1268,9 @@ export default function BusinessDetailPage() {
                         const dayKey = Object.keys(business.hours).find(
                           (k) => k.toLowerCase() === day.toLowerCase()
                         )
-                        if (dayKey) {
-                          formattedTime = formatBusinessHours(business.hours[dayKey], day)
+                        if (dayKey && business.hours[dayKey]) {
+                          const dayData = business.hours[dayKey]
+                          formattedTime = formatBusinessHours(dayData)
                         } else {
                           formattedTime = 'Not specified'
                         }
@@ -1212,6 +1292,8 @@ export default function BusinessDetailPage() {
                   </div>
                 </div>
               )}
+
+
             </div>
           </motion.div>
         </div>
@@ -1223,7 +1305,7 @@ export default function BusinessDetailPage() {
           <Modal onClose={() => setIsReviewModalOpen(false)}>
             <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Share Your Experience</h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Help others by sharing your honest review</p>
-            
+
             <div className="flex gap-2 mb-6 justify-center">
               {[1, 2, 3, 4, 5].map((star) => (
                 <motion.button
@@ -1231,22 +1313,21 @@ export default function BusinessDetailPage() {
                   onClick={() => setReviewRating(star)}
                   whileHover={{ scale: 1.2 }}
                   whileTap={{ scale: 0.9 }}
-                  className={`text-5xl transition-all cursor-pointer ${
-                    star <= reviewRating ? 'text-yellow-400' : 'text-gray-300 dark:text-white/20'
-                  }`}
+                  className={`text-5xl transition-all cursor-pointer ${star <= reviewRating ? 'text-yellow-400' : 'text-gray-300 dark:text-white/20'
+                    }`}
                 >
                   ★
                 </motion.button>
               ))}
             </div>
-            
+
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="What's your experience been like?"
               className="w-full h-32 bg-gray-50 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg p-4 text-gray-900 dark:text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none mb-6 resize-none"
             />
-            
+
             <motion.button
               onClick={handleSubmitReview}
               disabled={isSubmittingReview}

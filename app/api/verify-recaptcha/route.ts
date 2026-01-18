@@ -1,3 +1,6 @@
+// Verifies reCAPTCHA tokens from Google to prevent bot signup
+// Returns success status and score to validate user authenticity
+
 export async function POST(request: Request) {
   const { token } = await request.json()
 

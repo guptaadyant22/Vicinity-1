@@ -1,3 +1,19 @@
+// Login page with email/password and Google OAuth authentication
+// COMPONENTS:
+// GRID BACKGROUND - Adaptive gradient grid background for light/dark modes
+// VICINITY LOGO - Themed logo component with SVG icon
+// NAVBAR - Navigation bar with logo and auth links
+// INPUT - Reusable form input with label, error state, and validation
+// CHECKBOX - Custom checkbox component for "Remember me" functionality
+// HELPER FUNCTIONS:
+// IS VALID EMAIL - Validates email format using regex
+// VALIDATE FORM - Validates email and password fields
+// CLEAR ERROR - Clears error message after 5 seconds
+// HANDLE EMAIL CHANGE - Updates email state and clears field error
+// HANDLE PASSWORD CHANGE - Updates password state and clears field error
+// HANDLE SUBMIT - Authenticates user and routes to appropriate dashboard
+// HANDLE GOOGLE SIGN IN - Authenticates user via Google OAuth provider
+
 'use client'
 
 import { useState } from 'react'

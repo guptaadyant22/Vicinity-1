@@ -1,3 +1,14 @@
+// User saved places page with search, sort, and display of favorited businesses
+// COMPONENTS:
+// VICINITY LOGO - Branded logo component with optional text display
+// HEADER - Navigation bar with logo, links, profile button, and logout
+// STAT CARD - Statistics card displaying key metrics (total saved, top category, category count)
+// HELPER FUNCTIONS:
+// GET TOP CATEGORY - Calculates most frequent business type with tie-breaking logic (returns "Diverse" on tie)
+// HANDLE REMOVE - Removes business from saved list and database
+// HANDLE SAVE - Toggles favorite status for a business (save/unsave)
+// HANDLE LOGOUT - Signs out user and redirects to home page
+
 'use client'
 
 import React, { useState, useEffect } from 'react'

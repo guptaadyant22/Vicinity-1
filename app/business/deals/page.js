@@ -1,3 +1,20 @@
+// Deals management page for creating, editing, and sharing promotional offers
+// COMPONENTS:
+// DEAL CARD - Individual deal display with copy code, toggle active, edit, and delete actions
+// HELPER FUNCTIONS:
+// UPDATE STATS - Calculates total, active, expiring soon, and expired deal counts
+// RESET FORM - Clears form fields and editing state
+// GET DEAL TYPE INFO - Returns deal type configuration object
+// SHOULD SHOW VALUE INPUT - Determines if discount value field is required
+// HANDLE ADD CUSTOM DEAL TYPE - Creates and adds custom deal type to dropdown
+// HANDLERS:
+// HANDLE SUBMIT - Creates or updates deals with validation
+// TOGGLE DEAL ACTIVE - Activates or deactivates deal visibility
+// HANDLE DELETE - Removes deal with confirmation
+// HANDLE EDIT - Loads deal data into form for editing
+// HANDLE COPY CODE - Copies promo code to clipboard with feedback
+
+
 'use client'
 
 import React, { useState, useEffect } from 'react'

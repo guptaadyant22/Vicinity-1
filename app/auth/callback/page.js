@@ -1,3 +1,6 @@
+// Handles post-login redirect after authentication
+// Routes users to business dashboard or community dashboard based on account type
+
 'use client'
 
 import { useEffect } from 'react'

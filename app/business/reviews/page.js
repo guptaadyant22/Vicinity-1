@@ -1,3 +1,13 @@
+// Reviews management page with AI-powered sentiment analysis and filtering
+// COMPONENTS:
+// REVIEW CARD - Individual review display with user info, rating, content, and actions
+// REVIEWS ANALYZER - AI analysis modal showing sentiment breakdown, themes, and recommendations
+// HELPER FUNCTIONS:
+// UPDATE STATS - Calculates total reviews, average rating, and recent review count
+// ANALYZE REVIEWS WITH AI - Calls API to analyze reviews and generate insights
+// FORMAT DATE - Converts timestamp to readable date format
+
+
 'use client'
 
 import React, { useState, useEffect } from 'react'

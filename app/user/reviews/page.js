@@ -1,3 +1,19 @@
+// User reviews management page with view, edit, delete, search, and filter functionality
+// COMPONENTS:
+// VICINITY LOGO - Branded logo component with optional text display
+// HEADER - Navigation bar with logo, links, profile button, and logout
+// STAT CARD - Statistics card displaying key metrics (total reviews, avg rating, impact)
+// REVIEW DETAIL MODAL - Full-screen modal for viewing, editing, and deleting individual reviews
+// REVIEW CARD - Individual review card with business info, rating, comment preview, and edit button
+// HELPER FUNCTIONS:
+// GET RATING COLOR - Returns color styling based on review rating value (green/yellow/orange)
+// GET STAR COLOR - Returns star icon color based on rating (green 4.5+, yellow 3.5+, orange)
+// HANDLE SAVE EDIT - Updates edited review (rating, comment) to database
+// HANDLE DELETE - Permanently deletes review from database with confirmation
+// HANDLE VIEW DETAILS - Opens modal with selected review for full viewing/editing
+// HANDLE DELETE REVIEW - Removes deleted review from state
+// HANDLE UPDATE REVIEW - Updates edited review in state and modal
+// HANDLE LOGOUT - Signs out user and redirects to home page
 'use client'
 
 import React, { useState, useEffect } from 'react'

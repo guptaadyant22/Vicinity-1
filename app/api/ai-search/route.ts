@@ -1,4 +1,6 @@
-// app/api/ai-search/route.js 
+// Searches businesses using AI with smart keyword pre-filtering
+// Matches by category, name, and description to find relevant results
+
 import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
