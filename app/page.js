@@ -1,19 +1,7 @@
 // Landing page with hero section, features showcase, how-it-works, FAQ, and footer
-// VicinityLogo - Branded logo with text rendering and orange SVG icon
-// CleanWhiteBackground - Animated light mode background with gradient beams and grid
-// GridBackground - Responsive background wrapper (uses LightPillar for dark mode, CleanWhiteBackground for light)
-// AnimatedIPadDemo - iPad device mockup with app icons, radar scanner, and location markers
-// TiltCard - 3D tilt card component with mouse interaction (rotateX, rotateY on hover)
-// Hero - Main hero section with heading, CTA buttons, and TiltCard with AnimatedIPadDemo
-// SectionBackgroundGlow - Wrapper for sections with animated background gradients
-// AIBenefitsSection - Feature cards grid (6 AI-powered features: Smart Search, Verified Reviews, Analytics, Descriptions, Updates, Chat)
-// HowItWorks - Three-step process (Discover, Connect, Share) with animated step cards
-// FAQ - Expandable FAQ section with 6 common questions
-// Footer - Footer with branding, links, social icons, and copyright
-
 
 'use client'
-
+// All the imports
 import { useState, useEffect, useRef } from 'react'
 import { motion, useMotionValue, useTransform, useTime, useAnimationFrame,AnimatePresence  } from 'framer-motion'
 import {
@@ -30,7 +18,7 @@ import Navbar from '../components/Navbar'
 import { useTheme } from '../context/ThemeContext'
 import LightPillar from '../components/LightPillar'
 
-
+// Renders branded Vicinity logo with custom orange SVG icon and text
 const VicinityLogo = ({ className = "", textClassName = "" }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
     <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8">
@@ -49,11 +37,12 @@ const VicinityLogo = ({ className = "", textClassName = "" }) => (
   </div>
 )
 
+// Light mode animated background with gradient orbs and subtle grid
 const CleanWhiteBackground = () => {
   return (
     <div className="absolute inset-0 w-full h-full bg-white overflow-hidden pointer-events-none">
       
-      {/* 1. Primary Gradient Beam - Orange from bottom-left */}
+      
       <motion.div 
         animate={{ 
           opacity: [0.6, 0.9, 0.6],
@@ -63,7 +52,7 @@ const CleanWhiteBackground = () => {
         className="absolute -bottom-1/4 -left-1/4 w-[700px] h-[700px] bg-gradient-to-tr from-orange-400/70 via-orange-300/50 to-transparent rounded-full blur-[80px]"
       />
 
-      {/* 2. Secondary Gradient Beam - Pink/Rose from top-right */}
+      
       <motion.div 
         animate={{ 
           opacity: [0.5, 0.85, 0.5],
@@ -73,7 +62,7 @@ const CleanWhiteBackground = () => {
         className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] bg-gradient-to-bl from-pink-400/60 via-rose-300/40 to-transparent rounded-full blur-[90px]"
       />
 
-      {/* 3. Tertiary Accent - Purple from top-left */}
+      
       <motion.div 
         animate={{ 
           opacity: [0.4, 0.7, 0.4],
@@ -83,7 +72,7 @@ const CleanWhiteBackground = () => {
         className="absolute top-1/4 -left-1/3 w-[600px] h-[600px] bg-gradient-to-br from-purple-400/50 via-purple-300/30 to-transparent rounded-full blur-[100px]"
       />
 
-      {/* 4. Subtle Grid Pattern */}
+      
       <div 
         className="absolute inset-0 opacity-[0.2]" 
         style={{ 
@@ -97,7 +86,7 @@ const CleanWhiteBackground = () => {
         }} 
       />
 
-      {/* 5. Animated Accent Line */}
+      
       <motion.div 
         animate={{ 
           opacity: [0.3, 0.6, 0.3],
@@ -107,7 +96,7 @@ const CleanWhiteBackground = () => {
         className="absolute top-1/3 right-1/4 w-[3px] h-2/5 bg-gradient-to-b from-transparent via-orange-400/70 to-transparent blur-sm"
       />
 
-      {/* 6. Center Glow - Warm overlay */}
+      
       <motion.div 
         animate={{ 
           opacity: [0.6, 0.85, 0.6],
@@ -117,12 +106,12 @@ const CleanWhiteBackground = () => {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-to-r from-orange-200/50 via-pink-200/40 to-purple-200/40 rounded-full blur-[130px]"
       />
 
-      {/* 7. Light Readability Overlay */}
+      
       <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/10 to-white/20" />
     </div>
   )
 }
-
+// Responsive background wrapper - switches between dark (LightPillar) and light mode (CleanWhiteBackground)
 const GridBackground = () => {
   const { isDark } = useTheme()
   
@@ -149,7 +138,7 @@ const GridBackground = () => {
     </div>
   )
 }
-
+// iPad device mockup with app icons grid, radar scanner, and animated location markers
 const AnimatedIPadDemo = () => {
   const time = useTime()
   const radarRotate = useTransform(time, [0, 4000], [0, 360], { clamp: false })
@@ -605,7 +594,7 @@ const AnimatedIPadDemo = () => {
 }
 
 
-
+// 3D tilt card component that rotates based on cursor position for depth effect
 const TiltCard = ({ children, className = "" }) => {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -626,7 +615,7 @@ const TiltCard = ({ children, className = "" }) => {
     </motion.div>
   )
 }
-
+// Main hero section with headline, CTA buttons, and 3D tilt card with iPad mockup
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center pt-32 pb-12 px-6 overflow-hidden bg-white dark:bg-black transition-colors duration-300">
@@ -683,7 +672,7 @@ const Hero = () => {
   );
 };
 
-
+// Reusable section wrapper with animated background effects and grid pattern
 const SectionBackgroundGlow = ({ children, className, id }) => (
   <section id={id} className={`relative py-24 px-6 overflow-hidden bg-white dark:bg-black transition-colors duration-300 ${className}`}>
     <div className="absolute inset-0 -z-40 bg-white dark:bg-black" />
@@ -691,22 +680,22 @@ const SectionBackgroundGlow = ({ children, className, id }) => (
     {children}
   </section>
 )
-
+// 6-card grid showcasing AI-powered features (Smart Search, Reviews, Analytics, Descriptions, Updates, Chat)
 const AIBenefitsSection = () => {
   const time = useTime()
   const scale = useTransform(time, [0, 4000, 8000], [1, 1.2, 1])
 
   return (
     <section id="features" className="relative min-h-screen w-full overflow-hidden bg-white dark:bg-black transition-colors duration-300 flex items-center py-12 sm:py-16 md:py-20 px-4 sm:px-6">
-      {/* Enhanced Animated Background */}
+      
       <motion.div 
         style={{ scale }} 
         className="absolute top-10 left-10 w-[400px] sm:w-[600px] md:w-[800px] h-[400px] sm:h-[600px] md:h-[800px] bg-gradient-to-tr from-orange-500/30 to-purple-600/30 rounded-full blur-[120px]" 
       />
 
-      {/* Premium Background */}
+      
       <div className="absolute inset-0 -z-20">
-        {/* Grid Pattern */}
+        
         <motion.div
           className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
           style={{
@@ -717,7 +706,7 @@ const AIBenefitsSection = () => {
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         />
         
-        {/* Animated Orbs */}
+        
         <motion.div
           className="absolute top-10 left-1/4 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-gradient-to-br from-blue-600/20 to-transparent rounded-full blur-[120px]"
           animate={{
@@ -744,7 +733,7 @@ const AIBenefitsSection = () => {
           }}
         />
 
-        {/* Center Glow */}
+       
         <motion.div
           className="absolute top-10 left-10 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-orange-500/10 rounded-full blur-[150px]"
           animate={{
@@ -760,7 +749,7 @@ const AIBenefitsSection = () => {
       </div>
 
       <div className="w-full max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
+       
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -782,10 +771,10 @@ const AIBenefitsSection = () => {
           </p>
         </motion.div>
 
-        {/* Premium Features Grid */}
+        
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           
-          {/* Feature 1: AI Smart Search */}
+         
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -817,7 +806,7 @@ const AIBenefitsSection = () => {
             </div>
           </motion.div>
 
-          {/* Feature 2: Real Reviews */}
+         
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -849,7 +838,7 @@ const AIBenefitsSection = () => {
             </div>
           </motion.div>
 
-          {/* Feature 3: Review Analytics */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -881,7 +870,7 @@ const AIBenefitsSection = () => {
             </div>
           </motion.div>
 
-          {/* Feature 4: AI Descriptions */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -913,7 +902,7 @@ const AIBenefitsSection = () => {
             </div>
           </motion.div>
 
-          {/* Feature 5: Easy Updates */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -945,7 +934,7 @@ const AIBenefitsSection = () => {
             </div>
           </motion.div>
 
-          {/* Feature 6: AI Chat */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -987,6 +976,7 @@ const navItems = [
   { name: 'How It Works', href: '#how-it-works' },
   { name: 'Community', href: '#community' }
 ]
+// 3-step process section: Discover → Connect → Share the Vibe with animated step cards
 
 const HowItWorks = () => {
   const time = useTime()
@@ -994,15 +984,13 @@ const HowItWorks = () => {
 
   return (
     <SectionBackgroundGlow id="how-it-works" className="bg-white dark:bg-black relative py-16 sm:py-20 md:py-24 px-6 overflow-hidden transition-colors duration-300">
-      {/* Enhanced Animated Background */}
       <motion.div 
         style={{ scale }} 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[600px] md:w-[800px] h-[400px] sm:h-[600px] md:h-[800px] bg-gradient-to-tr from-orange-500/30 to-purple-600/30 rounded-full blur-[120px]" 
       />
 
-      {/* Premium Background */}
       <div className="absolute inset-0 -z-20">
-        {/* Grid Pattern */}
+        
         <motion.div
           className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
           style={{
@@ -1013,7 +1001,7 @@ const HowItWorks = () => {
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         />
         
-        {/* Animated Orbs */}
+    
         <motion.div
           className="absolute top-10 left-1/4 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-gradient-to-br from-blue-600/20 to-transparent rounded-full blur-[120px]"
           animate={{
@@ -1040,7 +1028,7 @@ const HowItWorks = () => {
           }}
         />
 
-        {/* Center Glow */}
+        
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-orange-500/10 rounded-full blur-[150px]"
           animate={{
@@ -1056,7 +1044,7 @@ const HowItWorks = () => {
       </div>
 
       <div className="w-full max-w-6xl mx-auto relative z-10">
-        {/* Section Header */}
+       
         <motion.div 
           initial={{ opacity: 0, y: 15 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -1079,7 +1067,7 @@ const HowItWorks = () => {
         </motion.div>
 
         <div className="w-full grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-4 sm:gap-5 md:gap-6 h-auto md:h-auto">
-          {/* Step 1: Discover */}
+          
           <motion.div 
             initial={{ opacity: 0, x: -50 }} 
             whileInView={{ opacity: 1, x: 0 }} 
@@ -1128,7 +1116,7 @@ const HowItWorks = () => {
             </div>
           </motion.div>
 
-          {/* Step 2: Connect */}
+          
           <motion.div 
             initial={{ opacity: 0, x: 50 }} 
             whileInView={{ opacity: 1, x: 0 }} 
@@ -1166,7 +1154,7 @@ const HowItWorks = () => {
             </div>
           </motion.div>
 
-          {/* Step 3: Share */}
+        
           <motion.div 
             initial={{ opacity: 0, y: 50 }} 
             whileInView={{ opacity: 1, y: 0 }} 
@@ -1205,7 +1193,7 @@ const HowItWorks = () => {
           </motion.div>
         </div>
 
-        {/* Get Started Button */}
+        
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -1223,6 +1211,8 @@ const HowItWorks = () => {
     </SectionBackgroundGlow>
   )
 }
+
+// Expandable FAQ accordion with 6 common questions about Vicinity
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null)
   const time = useTime()
@@ -1261,15 +1251,15 @@ const FAQ = () => {
 
   return (
     <section id="faq" className="bg-white dark:bg-black relative py-12 px-6 overflow-hidden transition-colors duration-300 min-h-screen flex items-center">
-      {/* Enhanced Animated Background - Cut off at bottom-left */}
+     
       <motion.div 
         style={{ scale }} 
         className="absolute -bottom-40 -left-40 sm:-bottom-56 sm:-left-56 md:-bottom-64 md:-left-64 w-[400px] sm:w-[600px] md:w-[800px] h-[400px] sm:h-[600px] md:h-[800px] bg-gradient-to-tr from-orange-500/30 to-purple-600/30 rounded-full blur-[120px]" 
       />
 
-      {/* Premium Background */}
+      
       <div className="absolute inset-0 -z-20">
-        {/* Grid Pattern */}
+       
         <motion.div
           className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
           style={{
@@ -1280,7 +1270,7 @@ const FAQ = () => {
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         />
         
-        {/* Animated Orbs */}
+       
         <motion.div
           className="absolute top-10 right-1/4 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-gradient-to-br from-blue-600/20 to-transparent rounded-full blur-[120px]"
           animate={{
@@ -1307,7 +1297,7 @@ const FAQ = () => {
           }}
         />
 
-        {/* Center Glow */}
+        
         <motion.div
           className="absolute top-1/3 right-1/3 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-orange-500/10 rounded-full blur-[150px]"
           animate={{
@@ -1323,7 +1313,7 @@ const FAQ = () => {
       </div>
 
       <div className="w-full max-w-4xl mx-auto relative z-10">
-        {/* Section Header */}
+        
         <motion.div 
           initial={{ opacity: 0, y: 15 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -1345,7 +1335,7 @@ const FAQ = () => {
           </p>
         </motion.div>
 
-        {/* FAQ Items */}
+       
         <div className="space-y-3">
           {faqs.map((faq, index) => (
             <motion.div
@@ -1376,7 +1366,7 @@ const FAQ = () => {
                 </motion.div>
               </button>
 
-              {/* Answer */}
+             
               <AnimatePresence>
                 {openIndex === index && (
                   <motion.div
@@ -1399,6 +1389,8 @@ const FAQ = () => {
     </section>
   )
 }
+// Page footer with brand intro, navigation links, social icons, and copyright
+
 const Footer = () => (
   <footer className="relative py-20 border-t border-gray-300 dark:border-white/10 text-gray-900 dark:text-white z-10 bg-white dark:bg-[#050505] transition-colors duration-300">
     <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -1427,6 +1419,7 @@ const Footer = () => (
     <div className="max-w-6xl mx-auto px-6 pt-8 border-t border-gray-300 dark:border-white/5 text-center text-xs text-gray-600 dark:text-gray-600">© 2025 Vicinity Inc. All rights reserved.</div>
   </footer>
 )
+// Main page component assembling all sections: Navbar → Hero → Features → How It Works → FAQ → Footer
 
 export default function LandingPage() {
   return (
