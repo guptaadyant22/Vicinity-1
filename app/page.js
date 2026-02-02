@@ -111,6 +111,7 @@ const CleanWhiteBackground = () => {
     </div>
   )
 }
+
 // Responsive background wrapper - switches between dark (LightPillar) and light mode (CleanWhiteBackground)
 const GridBackground = () => {
   const { isDark } = useTheme()
