@@ -16,6 +16,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"
@@ -26,8 +30,10 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "app/user/dashboard/page.js", "components/LightPillar.jsx"  ],
+    "**/*.tsx",
+    "app/user/dashboard/page.js",
+    "components/LightPillar.jsx"
+  ],
   "exclude": [
     "node_modules"
   ]

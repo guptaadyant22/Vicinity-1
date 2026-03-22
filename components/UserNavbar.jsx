@@ -1,0 +1,93 @@
+'use client'
+
+// =================================================================
+// USER NAVBAR — Consistent navigation for all /user/** pages
+// =================================================================
+// Usage: <UserNavbar activePage="dashboard" onLogout={handleLogout} />
+// activePage: 'dashboard' | 'saved' | 'reviews' | 'messages' | 'profile'
+
+import React from 'react'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { FaUser } from 'react-icons/fa'
+import VicinityLogo from './VicinityLogo'
+import ThemeToggle from './ThemeToggle'
+
+const NAV_LINKS = [
+  { name: 'Browse', href: '/user/dashboard', key: 'dashboard' },
+  { name: 'Saved', href: '/user/saved', key: 'saved' },
+  { name: 'Reviews', href: '/user/reviews', key: 'reviews' },
+  { name: 'Messages', href: '/user/messages', key: 'messages' },
+]
+
+export default function UserNavbar({ activePage = '', onLogout }) {
+  const router = useRouter()
+
+  return (
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4"
+    >
+      <div className="w-full max-w-5xl bg-white/82 dark:bg-[#0d142488] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[24px] p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)] pointer-events-auto flex items-center justify-between pl-4 pr-2 transition-all duration-300">
+        <VicinityLogo showText={true} />
+
+        {/* Center nav links */}
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+          {NAV_LINKS.map((link) => {
+            const isActive = activePage === link.key
+            return (
+              <a
+                key={link.key}
+                href={link.href}
+                className={`transition-colors relative group ${
+                  isActive
+                    ? 'text-slate-900 dark:text-white font-bold'
+                    : 'hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                {link.name}
+                <span
+                  className={`absolute -bottom-1 left-0 h-0.5 bg-blue-500 transition-all ${
+                    isActive ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}
+                />
+              </a>
+            )
+          })}
+        </div>
+
+        {/* Right side actions */}
+        <div className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <ThemeToggle />
+
+          {/* Profile button */}
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push('/user/profile')}
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white text-sm font-bold shadow-[0_10px_30px_rgba(59,130,246,0.24)] transition-all ${
+              activePage === 'profile'
+                ? 'bg-blue-700 ring-2 ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-[#081120]'
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            <FaUser size={13} />
+          </motion.button>
+
+          {/* Logout button */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onLogout}
+            className="px-5 py-2.5 rounded-2xl text-sm font-bold transition-all bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
+          >
+            Logout
+          </motion.button>
+        </div>
+      </div>
+    </motion.nav>
+  )
+}

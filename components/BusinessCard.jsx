@@ -33,7 +33,7 @@ const shimmer = (w, h) => `
 const toBase64 = (str) =>
   typeof window === 'undefined' ? Buffer.from(str).toString('base64') : window.btoa(str)
 
-const placeholderImage = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f5f5f5' width='400' height='300'/%3E%3Crect fill='%23ff6f00' x='0' y='0' width='400' height='6'/%3E%3Crect fill='%23ff6f00' x='0' y='294' width='400' height='6'/%3E%3Ctext x='200' y='130' text-anchor='middle' fill='%23ff6f00' font-size='32' font-weight='bold' font-family='Arial, sans-serif'%3EBUSINESS%3C/text%3E%3Ctext x='200' y='170' text-anchor='middle' fill='%23999' font-size='14' font-family='Arial, sans-serif'%3ENo Image Available%3C/text%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='%23ff6f00' stroke-width='2'/%3E%3Ccircle cx='340' cy='240' r='25' fill='none' stroke='%23ff6f00' stroke-width='2'/%3E%3C/svg%3E`
+const placeholderImage = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23334155' width='400' height='300'/%3E%3Crect fill='%232563eb' x='0' y='0' width='400' height='4'/%3E%3Crect fill='%232563eb' x='0' y='296' width='400' height='4'/%3E%3Ctext x='200' y='130' text-anchor='middle' fill='%232563eb' font-size='28' font-weight='bold' font-family='Arial, sans-serif'%3EBUSINESS%3C/text%3E%3Ctext x='200' y='170' text-anchor='middle' fill='%2394a3b8' font-size='14' font-family='Arial, sans-serif'%3ENo Image Available%3C/text%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3Ccircle cx='340' cy='240' r='25' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3C/svg%3E`
 
 const parseTime = (timeStr) => {
   if (!timeStr || typeof timeStr !== 'string') return null
@@ -194,14 +194,14 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
 
         if (deals && deals.length > 0) {
           const deal = deals[0]
-          
+
           // CHECK IF DEAL HAS EXPIRED - USING EXPIRY_DATE
           if (isDealExpired(deal.expiry_date)) {
             setHasDeal(false)
             setDealInfo(null)
             return
           }
-          
+
           // DEAL IS VALID, NOT EXPIRED, AND IS_ACTIVE = TRUE
           setHasDeal(true)
           setDealInfo(deal)
@@ -218,7 +218,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
     }
 
     fetchDeals()
-    
+
     // REFRESH DEALS EVERY MINUTE TO CHECK FOR EXPIRATION OR HIDDEN STATUS
     const interval = setInterval(fetchDeals, 60 * 1000)
     return () => clearInterval(interval)
@@ -257,27 +257,27 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
 
   const getDealLabel = () => {
     if (!dealInfo) return ''
-    
+
     const typeLabels = {
       percentage: `${dealInfo.discount_value}% OFF`,
       fixed: `$${dealInfo.discount_value} OFF`,
       bogo: 'BUY ONE GET ONE',
       free: 'FREE ITEM'
     }
-    
+
     return typeLabels[dealInfo.discount_type] || 'SPECIAL DEAL'
   }
 
   const getDealEmoji = () => {
     if (!dealInfo) return ''
-    
+
     const emojis = {
       percentage: '📊',
       fixed: '💰',
       bogo: '🎁',
       free: '🎉'
     }
-    
+
     return emojis[dealInfo.discount_type] || '✨'
   }
 
@@ -290,17 +290,16 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
       transition={{ duration: 0.3 }}
       className={`
         group relative rounded-2xl overflow-hidden
-        border border-gray-200 dark:border-white/10
-        bg-white dark:bg-[#0f0f0f]/60 backdrop-blur-md
-        shadow-sm hover:shadow-md dark:shadow-black/40 
-        hover:shadow-orange-500/10 dark:hover:shadow-orange-500/15 
-        hover:border-orange-500/30 dark:hover:border-orange-500/20
+        border border-blue-500/12 dark:border-white/10
+        bg-white/85 dark:bg-white/[0.04] backdrop-blur-xl
+        shadow-[0_8px_30px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_50px_rgba(59,130,246,0.12)] dark:shadow-[0_14px_40px_rgba(0,0,0,0.30)]
+        hover:border-blue-500/30 dark:hover:border-white/20
         transition-all duration-300
         ${viewMode === 'list' ? 'flex h-auto min-h-[320px]' : 'flex flex-col h-[400px]'}
       `}
     >
       {/* IMAGE CONTAINER */}
-      <div className={`relative ${viewMode === 'list' ? 'w-80 h-80 flex-shrink-0' : 'h-56 w-full'} bg-gray-100 dark:bg-[#0a0a0a] overflow-hidden`}>
+      <div className={`relative ${viewMode === 'list' ? 'w-80 h-80 flex-shrink-0' : 'h-56 w-full'} bg-slate-100 dark:bg-[#0a1020] overflow-hidden`}>
         <Image
           src={business.image_url || placeholderImage}
           alt={business.name}
@@ -312,7 +311,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
         />
 
         {/* IMAGE OVERLAY */}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/5 via-transparent to-transparent dark:from-[#0f0f0f] dark:via-[#0f0f0f]/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/5 via-transparent to-transparent dark:from-[#081120] dark:via-[#081120]/20" />
 
         {/* BUSINESS TYPE BADGE - TOP LEFT */}
         <div className="absolute top-3 left-3 z-10">
@@ -329,8 +328,8 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
             onClick={handleSaveClick}
             disabled={isLoading}
             className={`flex items-center justify-center w-10 h-10 rounded-lg backdrop-blur-md border-2 transition-all 
-            bg-white/90 border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-200
-            dark:bg-black/60 dark:border-white/40 dark:text-white dark:hover:border-red-500/60 
+            bg-white/90 border-slate-200 text-slate-500 hover:text-red-500 hover:border-red-200
+            dark:bg-[#0d1424]/80 dark:border-white/20 dark:text-slate-300 dark:hover:text-red-400 dark:hover:border-red-500/40 
             ${isLoading ? 'opacity-70' : 'opacity-100'}`}
             title={isSaved ? 'Saved' : 'Save'}
           >
@@ -350,28 +349,28 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
         <div>
           <div className="flex justify-between items-start gap-3 mb-2">
             <div className="min-w-0 flex-1">
-              <h3 className="text-base font-black text-gray-900 dark:text-white leading-tight truncate">
+              <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight truncate">
                 {business.name}
               </h3>
             </div>
 
             {/* RATING DISPLAY */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border flex-shrink-0
-              bg-orange-50 border-orange-100 
-              dark:bg-yellow-500/10 dark:border-yellow-500/20">
-              <FaStar size={11} className="text-orange-500 dark:text-yellow-400" />
-              <span className="text-xs font-black text-orange-700 dark:text-white">{rating.toFixed(1)}</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border flex-shrink-0
+              bg-blue-50 border-blue-100
+              dark:bg-blue-500/10 dark:border-blue-500/20">
+              <FaStar size={11} className="text-blue-500 dark:text-blue-300" />
+              <span className="text-xs font-black text-blue-700 dark:text-white">{rating.toFixed(1)}</span>
             </div>
           </div>
 
           {/* LOCATION */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-3">
-            <FaMapMarkerAlt size={10} className="text-orange-500 dark:text-orange-400 flex-shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3">
+            <FaMapMarkerAlt size={10} className="text-blue-500 dark:text-blue-400 flex-shrink-0" />
             <span className="truncate leading-tight">{business.address}</span>
           </div>
 
           {/* OPEN/CLOSED STATUS WITH TIME */}
-          <div className="text-xs text-gray-500 dark:text-gray-300 mb-3 flex items-center gap-1.5">
+          <div className="text-xs text-slate-500 dark:text-slate-300 mb-3 flex items-center gap-1.5">
             <FaClock
               size={10}
               className={businessStatus.isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
@@ -383,14 +382,14 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
 
           {/* DESCRIPTION - LINE CLAMPED */}
           {business.description && (
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2 leading-tight">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 line-clamp-2 leading-tight">
               {business.description}
             </p>
           )}
 
           {/* REVIEWS INFO */}
-          <div className="mb-4 pb-4 border-b border-gray-100 dark:border-white/5">
-            <p className="text-xs text-gray-500 dark:text-gray-300 font-medium">
+          <div className="mb-4 pb-4 border-b border-slate-100 dark:border-white/10">
+            <p className="text-xs text-slate-500 dark:text-slate-300 font-medium">
               <span className="text-emerald-600 dark:text-green-400 font-bold">{reviewCount}</span> {reviewText}
             </p>
           </div>
@@ -421,8 +420,8 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
               whileTap={{ scale: 0.95 }}
               href={`tel:${business.phone}`}
               className="flex items-center justify-center gap-1 py-2.5 rounded-lg 
-              bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100
-              dark:bg-transparent dark:border-white/20 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white
+              bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100
+              dark:bg-white/[0.04] dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/[0.08] dark:hover:text-white
               text-xs font-bold transition-all"
             >
               <FaPhone size={10} /> Call
@@ -436,9 +435,9 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
             className={`
               flex items-center justify-center gap-1 py-2.5 rounded-lg
               text-xs font-black text-white
-              bg-gradient-to-r from-orange-500 to-orange-600
-              hover:from-orange-600 hover:to-orange-700
-              shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30
+              bg-blue-600
+              hover:bg-blue-700
+              shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30
               transition-all
               ${business.phone && viewMode !== 'list' ? 'col-span-1' : 'col-span-2'}
             `}

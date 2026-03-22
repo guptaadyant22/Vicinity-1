@@ -1,158 +1,125 @@
-// User reviews management page with view, edit, delete, search, and filter functionality
-// COMPONENTS:
-// VICINITY LOGO - Branded logo component with optional text display
-// HEADER - Navigation bar with logo, links, profile button, and logout
-// STAT CARD - Statistics card displaying key metrics (total reviews, avg rating, impact)
-// REVIEW DETAIL MODAL - Full-screen modal for viewing, editing, and deleting individual reviews
-// REVIEW CARD - Individual review card with business info, rating, comment preview, and edit button
-// HELPER FUNCTIONS:
-// GET RATING COLOR - Returns color styling based on review rating value (green/yellow/orange)
-// GET STAR COLOR - Returns star icon color based on rating (green 4.5+, yellow 3.5+, orange)
-// HANDLE SAVE EDIT - Updates edited review (rating, comment) to database
-// HANDLE DELETE - Permanently deletes review from database with confirmation
-// HANDLE VIEW DETAILS - Opens modal with selected review for full viewing/editing
-// HANDLE DELETE REVIEW - Removes deleted review from state
-// HANDLE UPDATE REVIEW - Updates edited review in state and modal
-// HANDLE LOGOUT - Signs out user and redirects to home page
 'use client'
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  FaStar, FaCalendarAlt, FaFilter, FaTrash, FaEdit, FaTimes, FaCheck, FaSearch,
-  FaChartLine, FaPencilAlt, FaFire, FaQuoteLeft
+  FaStar,
+  FaCalendarAlt,
+  FaFilter,
+  FaTrash,
+  FaEdit,
+  FaTimes,
+  FaCheck,
+  FaSearch,
+  FaChartLine,
+  FaPencilAlt,
+  FaFire,
+  FaQuoteLeft,
 } from 'react-icons/fa'
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
+import VicinityLogo from '../../../components/VicinityLogo'
+import UserNavbar from '../../../components/UserNavbar'
 
-// --- THEME CONSTANTS ---
-// Primary gradient color scheme for Vicinity branding
-const THEME = {
-  accentGrad: 'from-orange-500 to-pink-500',
+// --- SHARED UI SYSTEM ---
+// Matches the attached blue glass UI style
+const UI = {
+  page: 'min-h-screen text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300',
+  card: 'bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-colors duration-300',
+  cardSoft: 'bg-white dark:bg-[#111827] border border-blue-500/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none transition-colors duration-300',
+  modal: 'bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 rounded-[30px] p-8 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)] transition-colors duration-300',
+  input: 'w-full px-4 py-3 rounded-2xl bg-white dark:bg-[#111827] border border-blue-500/15 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#162033] transition-all text-sm',
+  primaryButton: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]',
+  secondaryButton: 'bg-white dark:bg-[#162033] hover:bg-blue-50 dark:hover:bg-[#1c2940] text-slate-700 dark:text-white border border-blue-500/12 dark:border-white/10',
+  softBlueButton: 'bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300',
+  softRedButton: 'bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-300',
 }
 
-// Adaptive colors for StatCards - matches Vicinity theme
-const colorMap = {
-  orange: { 
-    iconWrap: 'bg-orange-100 text-orange-600 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/25', 
-    glow: 'rgba(255,111,0,0.18)' 
-  },
-  purple: { 
-    iconWrap: 'bg-purple-100 text-purple-600 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/25', 
-    glow: 'rgba(168,85,247,0.16)' 
-  },
-  rose: { 
-    iconWrap: 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/25', 
-    glow: 'rgba(244,63,94,0.14)' 
-  }
-}
-
-// --- VICINITY LOGO (THEMED) ---
-// Renders the Vicinity logo with optional text label
-const VicinityLogo = ({ className = '', showText = true }) => (
-  <div className={`flex items-center gap-2.5 ${className}`}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="w-9 h-9">
-      <g className="fill-orange-500" fillRule="nonzero">
-        <g transform="translate(256,256) rotate(180) scale(5.33,5.33)">
-          <path d="M5,45l4,-11l12,-12l-6,23z"></path>
-          <path d="M25,18l8,27h10l-11,-33z"></path>
-          <path d="M16.059,14.164l3.941,-11.164h8z"></path>
-          <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
-          <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
-          <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
-        </g>
-      </g>
-    </svg>
-    {showText && <p className="font-black text-gray-900 dark:text-white text-xl tracking-tight leading-none">Vicinity</p>}
-  </div>
-)
-
-// --- DASHBOARD HEADER ---
-// Navigation bar with logo, links, profile button, and logout
-const Header = ({ onLogout }) => {
-  const router = useRouter() // Hook for navigation
-
+// --- PAGE BACKGROUND ---
+// Same animated blue glow + grid style
+const Background = () => {
   return (
-    <motion.nav 
-      initial={{ y: -100 }} 
-      animate={{ y: 0 }} 
-      className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4"
-    >
-      <div className="w-full max-w-5xl bg-white/80 dark:bg-black/40 backdrop-blur-2xl border border-gray-200 dark:border-white/15 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2 hover:bg-white/90 dark:hover:bg-black/50 transition-all">
-        <VicinityLogo showText={true} />
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-300">
-          <a href="/user/dashboard" className="hover:text-gray-900 dark:hover:text-white transition-colors relative group">
-            Browse
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
-          </a>
-          <a href="/user/saved" className="hover:text-gray-900 dark:hover:text-white transition-colors relative group">
-            Saved
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
-          </a>
-          <a href="/user/reviews" className="text-gray-900 dark:text-white font-bold transition-colors relative group">
-            Reviews
-            <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-orange-500 transition-all" />
-          </a>
-        </div>
-        
-        {/* RIGHT SIDE BUTTONS */}
-        <div className="flex items-center gap-3">
-          {/* PROFILE BUTTON */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push('/user/profile')}
-            className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all shadow-md shadow-orange-500/20"
-          >
-            👤
-          </motion.button>
+    <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none transition-colors duration-300 bg-white dark:bg-[#081120]">
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
 
-          {/* LOGOUT BUTTON */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onLogout}
-            className="px-5 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl hover:scale-105 transition-transform shadow-lg shadow-orange-500/20"
-          >
-            Logout
-          </motion.button>
-        </div>
-      </div>
-    </motion.nav>
+      {/* Main glow */}
+      <motion.div
+        animate={{ y: [0, -14, 0], scale: [1, 1.05, 1], opacity: [0.2, 0.38, 0.2] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute left-1/2 top-8 h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/15"
+      />
+
+      {/* Left glow */}
+      <motion.div
+        animate={{ x: [0, 14, 0], y: [0, 10, 0], opacity: [0.12, 0.24, 0.12] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute left-[-32px] top-[18%] h-[320px] w-[320px] rounded-full bg-cyan-100/80 blur-[120px] dark:bg-cyan-500/10"
+      />
+
+      {/* Right glow */}
+      <motion.div
+        animate={{ x: [0, -16, 0], y: [0, -8, 0], opacity: [0.12, 0.24, 0.12] }}
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute right-[-32px] top-[10%] h-[340px] w-[340px] rounded-full bg-indigo-100/70 blur-[120px] dark:bg-indigo-500/10"
+      />
+
+      {/* Grid */}
+      <motion.div
+        animate={{ backgroundPosition: ['0px 0px', '72px 72px'] }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+        className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(59,130,246,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.22) 1px, transparent 1px)',
+          backgroundSize: '72px 72px',
+          maskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
+        }}
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-[#081120]" />
+    </div>
   )
 }
 
+// --- HEADER ---
+// Top navbar styled to match attached UI
+// Header is now the shared UserNavbar component
+
 // --- STAT CARD ---
-// Displays a single statistic with icon, label, and value
-const StatCard = ({ label, value, icon: Icon, color, delay }) => {
-  const t = colorMap[color] || colorMap.orange
+// Top stats card
+const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
+  const iconStyleMap = {
+    blue: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300',
+    indigo: 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-300',
+    cyan: 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20 text-cyan-600 dark:text-cyan-300',
+  }
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 18 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      transition={{ delay }} 
-      whileHover={{ y: -4 }} 
-      className="group relative p-6 rounded-2xl overflow-hidden border border-gray-200 dark:border-white/15 bg-white/80 dark:bg-black/40 backdrop-blur-2xl shadow-lg hover:shadow-xl transition-all hover:bg-white/90 dark:hover:bg-black/50"
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      whileHover={{ y: -4 }}
+      className={`${UI.cardSoft} group relative p-6`}
     >
-      {/* Animated glow effect on hover */}
-      <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[70px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:mix-blend-normal mix-blend-multiply" style={{ background: `radial-gradient(circle, ${t.glow}, transparent 65%)` }} />
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/[0.01] to-cyan-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="relative z-10 flex items-center gap-4">
-        {/* Icon wrapper with theme-matched color */}
-        <div className={`p-3.5 rounded-xl border backdrop-blur-lg ${t.iconWrap}`}>
+        <div className={`p-3.5 rounded-2xl border ${iconStyleMap[color] || iconStyleMap.blue}`}>
           <Icon size={22} />
         </div>
         <div>
-          <p className="text-3xl font-black text-gray-900 dark:text-white leading-none tracking-tight">{value}</p>
-          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1.5">{label}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight">{value}</p>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1.5">{label}</p>
         </div>
       </div>
     </motion.div>
   )
 }
 
-// --- REVIEW DETAIL MODAL ---
-// Full-screen modal for viewing, editing, and deleting reviews
+// --- REVIEW MODAL ---
+// Full detail modal
 const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editedComment, setEditedComment] = useState(review?.comment || '')
@@ -161,7 +128,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const supabase = createClient()
 
-  // Sync state when review changes
+  // Sync modal state when selection changes
   useEffect(() => {
     if (review) {
       setEditedComment(review.comment)
@@ -170,14 +137,14 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     }
   }, [review])
 
-  // Returns color based on rating value
+  // Rating color helper
   const getStarColor = (rating) => {
-    if (rating >= 4.5) return 'text-green-500 dark:text-green-400'
-    if (rating >= 3.5) return 'text-yellow-500 dark:text-yellow-400'
-    return 'text-orange-500 dark:text-orange-400'
+    if (rating >= 4.5) return 'text-yellow-400'
+    if (rating >= 3.5) return 'text-amber-400'
+    return 'text-orange-400'
   }
 
-  // Saves edited review to database
+  // Save changes
   const handleSaveEdit = async () => {
     setIsSaving(true)
     try {
@@ -186,16 +153,18 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
         .update({
           comment: editedComment,
           rating: editedRating,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', review.id)
 
       if (error) throw error
+
       onUpdate({
         ...review,
         comment: editedComment,
-        rating: editedRating
+        rating: editedRating,
       })
+
       setIsEditing(false)
     } catch (err) {
       console.error('Error updating review:', err)
@@ -205,9 +174,10 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     }
   }
 
-  // Deletes review from database
+  // Delete review
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this review?')) return
+
     setIsDeleting(true)
     try {
       const { error } = await supabase.from('reviews').delete().eq('id', review.id)
@@ -228,38 +198,37 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-slate-950/55 dark:bg-black/80 backdrop-blur-md"
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
           />
+
+          {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
             className="fixed inset-0 z-50 flex items-center justify-center px-4 pointer-events-none"
           >
-            <div className="w-full max-w-2xl bg-white dark:bg-[#1a1a1a] backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-3xl p-8 pointer-events-auto shadow-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{review.business_name}</h2>
-                  <p className="text-sm text-orange-500 dark:text-orange-400 font-bold uppercase">{review.business_type}</p>
-                </div>
-                {/* Close button */}
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-                >
-                  <FaTimes className="text-gray-500 dark:text-gray-400 text-xl" />
-                </motion.button>
+            <div className={`${UI.modal} w-full max-w-2xl pointer-events-auto max-h-[90vh] overflow-y-auto relative text-slate-900 dark:text-white`}>
+              {/* Close button */}
+              <button
+                onClick={onClose}
+                className="absolute top-5 right-5 p-2 hover:bg-blue-50 dark:hover:bg-[#162033] rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+              >
+                <FaTimes size={20} />
+              </button>
+
+              <div className="mb-6">
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">{review.business_name}</h2>
+                <p className="text-sm font-bold uppercase text-blue-600 dark:text-blue-300">{review.business_type}</p>
               </div>
 
-              {/* Rating display or edit section */}
+              {/* Rating section */}
               {!isEditing ? (
                 <div className="flex items-center gap-3 mb-8">
                   <div className={`flex items-center gap-1 text-2xl font-black ${getStarColor(review.rating)}`}>
@@ -267,21 +236,20 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                       <FaStar key={i} />
                     ))}
                   </div>
-                  <span className="text-4xl font-black text-gray-900 dark:text-white">{review.rating}</span>
-                  <span className="text-gray-500 dark:text-gray-400">/5.0</span>
+                  <span className="text-4xl font-black text-slate-900 dark:text-white">{review.rating}</span>
+                  <span className="text-slate-500 dark:text-slate-400">/5.0</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-4 mb-8">
-                  <span className="text-gray-600 dark:text-gray-400 font-bold">Rating:</span>
-                  {/* Interactive star rating selector */}
+                  <span className="text-slate-600 dark:text-slate-400 font-bold">Rating:</span>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <motion.button
                         key={star}
-                        whileHover={{ scale: 1.2 }}
+                        whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setEditedRating(star)}
-                        className={`text-3xl transition-colors ${star <= editedRating ? 'text-orange-500 dark:text-orange-400' : 'text-gray-300 dark:text-gray-600'}`}
+                        className={`text-3xl transition-all ${star <= editedRating ? 'text-yellow-400 scale-110' : 'text-slate-300 dark:text-white/20'}`}
                       >
                         <FaStar />
                       </motion.button>
@@ -290,36 +258,39 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                 </div>
               )}
 
-              {/* Review comment section */}
+              {/* Comment section */}
               <div className="mb-8">
-                <label className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-3 block">Your Review</label>
+                <label className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-3 block">
+                  Your Review
+                </label>
+
                 {!isEditing ? (
-                  <div className="p-4 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/15 relative">
-                    <FaQuoteLeft className="absolute top-3 left-3 text-gray-300 dark:text-white/10 text-lg" />
-                    <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed pl-8">{review.comment}</p>
+                  <div className={`${UI.cardSoft} relative p-5`}>
+                    <FaQuoteLeft className="absolute top-4 left-4 text-blue-200 dark:text-white/10 text-lg" />
+                    <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed pl-8">{review.comment}</p>
                   </div>
                 ) : (
                   <>
                     <textarea
                       value={editedComment}
                       onChange={(e) => setEditedComment(e.target.value)}
-                      className="w-full p-4 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/20 focus:border-orange-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition-colors resize-none"
+                      className={`${UI.input} h-32 resize-none`}
                       rows={5}
                       maxLength={500}
                       autoFocus
                     />
-                    <p className="text-xs text-gray-500 mt-2">{editedComment.length}/500 characters</p>
+                    <p className="text-xs text-slate-500 mt-2">{editedComment.length}/500 characters</p>
                   </>
                 )}
               </div>
 
-              {/* Posted date */}
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-8 pb-8 border-b border-gray-200 dark:border-white/10">
+              {/* Date row */}
+              <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-8 pb-8 border-b border-blue-500/10 dark:border-white/10">
                 <FaCalendarAlt />
                 Posted on {new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
 
-              {/* Action buttons */}
+              {/* Actions */}
               <div className="flex gap-3">
                 {!isEditing ? (
                   <>
@@ -327,17 +298,18 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setIsEditing(true)}
-                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-blue-500/25 transition-shadow"
+                      className={`flex-1 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${UI.primaryButton}`}
                     >
                       <FaEdit size={16} />
                       Edit Review
                     </motion.button>
+
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleDelete}
                       disabled={isDeleting}
-                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-500/25 transition-shadow disabled:opacity-50"
+                      className="flex-1 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all bg-red-600 hover:bg-red-700 text-white shadow-[0_10px_30px_rgba(220,38,38,0.22)] disabled:opacity-50"
                     >
                       <FaTrash size={16} />
                       Delete Review
@@ -350,11 +322,12 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                       whileTap={{ scale: 0.98 }}
                       onClick={handleSaveEdit}
                       disabled={isSaving}
-                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/25 transition-shadow disabled:opacity-50"
+                      className={`flex-1 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 ${UI.primaryButton}`}
                     >
                       <FaCheck size={16} />
                       Save Changes
                     </motion.button>
+
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -363,7 +336,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                         setEditedComment(review.comment)
                         setEditedRating(review.rating)
                       }}
-                      className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-white/20 text-gray-700 dark:text-white font-bold flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-black/50 transition-colors"
+                      className={`flex-1 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${UI.secondaryButton}`}
                     >
                       <FaTimes size={16} />
                       Cancel
@@ -380,13 +353,29 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
 }
 
 // --- REVIEW CARD ---
-// Individual review card component with animation
+// Individual review card
 const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
-  // Returns color styling based on rating value
+  // Rating chip style
   const getRatingColor = (rating) => {
-    if (rating >= 4.5) return { bg: 'bg-green-100 dark:bg-green-500/10', border: 'border-green-200 dark:border-green-500/30', text: 'text-green-600 dark:text-green-400' }
-    if (rating >= 3.5) return { bg: 'bg-yellow-100 dark:bg-yellow-500/10', border: 'border-yellow-200 dark:border-yellow-500/30', text: 'text-yellow-600 dark:text-yellow-400' }
-    return { bg: 'bg-orange-100 dark:bg-orange-500/10', border: 'border-orange-200 dark:border-orange-500/30', text: 'text-orange-600 dark:text-orange-400' }
+    if (rating >= 4.5) {
+      return {
+        bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+        border: 'border-emerald-200 dark:border-emerald-500/20',
+        text: 'text-emerald-600 dark:text-emerald-300',
+      }
+    }
+    if (rating >= 3.5) {
+      return {
+        bg: 'bg-amber-50 dark:bg-amber-500/10',
+        border: 'border-amber-200 dark:border-amber-500/20',
+        text: 'text-amber-600 dark:text-amber-300',
+      }
+    }
+    return {
+      bg: 'bg-orange-50 dark:bg-orange-500/10',
+      border: 'border-orange-200 dark:border-orange-500/20',
+      text: 'text-orange-600 dark:text-orange-300',
+    }
   }
 
   const ratingStyle = getRatingColor(review.rating)
@@ -401,38 +390,45 @@ const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
       onClick={() => onViewDetails(review)}
       className="group cursor-pointer h-full"
     >
-      <div className="h-full rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-black/40 backdrop-blur-xl hover:border-orange-300 dark:hover:border-white/25 hover:shadow-lg dark:hover:bg-black/50 transition-all duration-300 overflow-hidden">
-        {/* Header with business name and rating */}
-        <div className={`p-5 ${ratingStyle.bg} border-b ${ratingStyle.border}`}>
+      <div className={`${UI.cardSoft} h-full overflow-hidden hover:border-blue-500/18 dark:hover:border-white/20 transition-all`}>
+        {/* Header */}
+        <div className={`p-5 border-b ${ratingStyle.bg} ${ratingStyle.border}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-black text-gray-900 dark:text-white truncate group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">{review.business_name}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase mt-1">{review.business_type}</p>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+                {review.business_name}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase mt-1">{review.business_type}</p>
             </div>
-            <div className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border ${ratingStyle.border} ${ratingStyle.bg} whitespace-nowrap flex-shrink-0`}>
+
+            <div className={`flex items-center gap-1 px-3 py-1.5 rounded-2xl border ${ratingStyle.border} ${ratingStyle.bg} whitespace-nowrap flex-shrink-0`}>
               <FaStar size={14} className={ratingStyle.text} />
               <span className={`font-black text-sm ${ratingStyle.text}`}>{review.rating}</span>
             </div>
           </div>
         </div>
 
-        {/* Review comment preview */}
+        {/* Comment preview */}
         <div className="p-5">
-          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-4 mb-4">{review.comment}</p>
-          <div className="flex items-center gap-2 text-xs font-bold text-orange-500 dark:text-orange-400 group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors">
+          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-4 mb-4">{review.comment}</p>
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-300 group-hover:text-blue-700 dark:group-hover:text-blue-200 transition-colors">
             <span>View full review</span>
             <span className="group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </div>
 
-        {/* Footer with date and edit button */}
-        <div className="px-5 py-3 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/50">
+        {/* Footer */}
+        <div className="px-5 py-3 border-t border-blue-500/10 dark:border-white/10 bg-slate-50/70 dark:bg-[#0b1220]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
               <FaCalendarAlt size={12} />
               <span>{new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
             </div>
-            <motion.div whileHover={{ scale: 1.05 }} className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-500/20 px-2.5 py-1 rounded-lg border border-orange-200 dark:border-orange-500/30 group-hover:border-orange-300 dark:group-hover:border-orange-500/50 transition-colors">
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="text-xs font-bold px-2.5 py-1 rounded-2xl border transition-all bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-500/20"
+            >
               Edit
             </motion.div>
           </div>
@@ -444,12 +440,13 @@ const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
 
 ReviewCard.displayName = 'ReviewCard'
 
+// --- MAIN PAGE ---
 export default function ReviewsPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const supabase = createClient()
-  
-  // State management for reviews, filters, and modals
+
+  // Main state
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState([])
   const [filterRating, setFilterRating] = useState(0)
@@ -458,7 +455,7 @@ export default function ReviewsPage() {
   const [selectedReview, setSelectedReview] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Redirect to login if not authenticated
+  // Auth redirect
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login')
@@ -466,7 +463,7 @@ export default function ReviewsPage() {
     }
   }, [user, authLoading, router])
 
-  // Fetch reviews from database and subscribe to real-time updates
+  // Fetch and subscribe to reviews
   useEffect(() => {
     if (!user?.id) return
 
@@ -474,8 +471,8 @@ export default function ReviewsPage() {
       try {
         setLoading(true)
         setError(null)
-        
-        // Fetch user's reviews from database
+
+        // Get reviews
         const { data: reviewsData, error: rError } = await supabase
           .from('reviews')
           .select('*')
@@ -484,7 +481,7 @@ export default function ReviewsPage() {
 
         if (rError) throw rError
 
-        // Enrich reviews with business name and type
+        // Enrich with business data
         const enrichedReviews = await Promise.all(
           (reviewsData || []).map(async (review) => {
             const { data: businessData } = await supabase
@@ -496,7 +493,7 @@ export default function ReviewsPage() {
             return {
               ...review,
               business_name: businessData?.name || 'Unknown Business',
-              business_type: businessData?.type || 'Business'
+              business_type: businessData?.type || 'Business',
             }
           })
         )
@@ -512,126 +509,116 @@ export default function ReviewsPage() {
 
     fetchData()
 
-    // Subscribe to real-time review changes
+    // Realtime updates
     const channel = supabase
       .channel(`user-reviews-${user.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'reviews',
-        filter: `user_id=eq.${user.id}`,
-      }, async (payload) => {
-        if (payload.eventType === 'INSERT') {
-          const { data: businessData } = await supabase.from('businesses').select('name, type').eq('id', payload.new.business_id).single()
-          const enrichedReview = {
-            ...payload.new,
-            business_name: businessData?.name || 'Unknown Business',
-            business_type: businessData?.type || 'Business'
-          }
-          setReviews((prev) => [enrichedReview, ...prev])
-        } else if (payload.eventType === 'UPDATE') {
-          const { data: businessData } = await supabase.from('businesses').select('name, type').eq('id', payload.new.business_id).single()
-          const enrichedReview = {
-            ...payload.new,
-            business_name: businessData?.name || 'Unknown Business',
-            business_type: businessData?.type || 'Business'
-          }
-          setReviews((prev) => prev.map((r) => (r.id === enrichedReview.id ? enrichedReview : r)))
-          if (selectedReview?.id === enrichedReview.id) {
-            setSelectedReview(enrichedReview)
-          }
-        } else if (payload.eventType === 'DELETE') {
-          setReviews((prev) => prev.filter((r) => r.id !== payload.old.id))
-          if (selectedReview?.id === payload.old.id) {
-            setIsModalOpen(false)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reviews',
+          filter: `user_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const { data: businessData } = await supabase
+              .from('businesses')
+              .select('name, type')
+              .eq('id', payload.new.business_id)
+              .single()
+
+            const enrichedReview = {
+              ...payload.new,
+              business_name: businessData?.name || 'Unknown Business',
+              business_type: businessData?.type || 'Business',
+            }
+
+            setReviews((prev) => [enrichedReview, ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            const { data: businessData } = await supabase
+              .from('businesses')
+              .select('name, type')
+              .eq('id', payload.new.business_id)
+              .single()
+
+            const enrichedReview = {
+              ...payload.new,
+              business_name: businessData?.name || 'Unknown Business',
+              business_type: businessData?.type || 'Business',
+            }
+
+            setReviews((prev) => prev.map((r) => (r.id === enrichedReview.id ? enrichedReview : r)))
+
+            if (selectedReview?.id === enrichedReview.id) {
+              setSelectedReview(enrichedReview)
+            }
+          } else if (payload.eventType === 'DELETE') {
+            setReviews((prev) => prev.filter((r) => r.id !== payload.old.id))
+            if (selectedReview?.id === payload.old.id) {
+              setIsModalOpen(false)
+            }
           }
         }
-      }).subscribe()
+      )
+      .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
   }, [user?.id, supabase, selectedReview?.id])
 
-  // Sign out user and redirect to home
+  // Logout
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  // Open modal with selected review
+  // Open detail modal
   const handleViewDetails = (review) => {
     setSelectedReview(review)
     setIsModalOpen(true)
   }
 
-  // Remove deleted review from state
+  // Remove deleted review
   const handleDeleteReview = (reviewId) => {
     setReviews((prev) => prev.filter((r) => r.id !== reviewId))
   }
 
-  // Update edited review in state
+  // Update edited review
   const handleUpdateReview = (updatedReview) => {
     setReviews((prev) => prev.map((r) => (r.id === updatedReview.id ? updatedReview : r)))
     setSelectedReview(updatedReview)
   }
 
-  // Filter reviews by rating and search query
+  // Filters
   const filteredReviews = reviews.filter((r) => {
     const matchesRating = filterRating === 0 || r.rating >= filterRating
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch =
+      searchQuery === '' ||
       r.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.business_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.comment.toLowerCase().includes(searchQuery.toLowerCase())
+
     return matchesRating && matchesSearch
   })
 
-  // Calculate statistics from reviews
+  // Stats
   const stats = {
     total: reviews.length,
     avgRating: reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0',
-    impact: (reviews.length * 8).toLocaleString() + '+'
+    impact: (reviews.length * 8).toLocaleString() + '+',
   }
 
-  if (authLoading || !user) return <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors" />
+  if (authLoading || !user) {
+    return <div className="min-h-screen bg-white dark:bg-[#081120] transition-colors" />
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-200 font-sans selection:bg-orange-500/25 selection:text-white overflow-x-hidden transition-colors duration-300">
-      
-      {/* TOP LEFT CORNER - Orange/Rose gradient orb (changed from purple/blue) */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-br from-orange-600/30 via-orange-500/25 to-transparent rounded-full blur-[100px] opacity-80 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
-        animation: 'float-top-left 12s ease-in-out infinite',
-      }} />
-      
-      {/* BOTTOM RIGHT CORNER - Pink/Rose gradient orb (matches theme) */}
-      <div className="fixed -bottom-40 -right-40 w-96 h-96 md:w-[500px] md:h-[500px] bg-gradient-to-tl from-pink-600/30 via-rose-500/25 to-transparent rounded-full blur-[100px] opacity-85 pointer-events-none mix-blend-multiply dark:mix-blend-normal" style={{
-        animation: 'float-bottom-right 15s ease-in-out infinite',
-      }} />
+    <div className={UI.page}>
+      <Background />
 
-      <style>{`
-        @keyframes float-top-left {
-          0%, 100% { 
-            transform: translate(0px, 0px);
-            opacity: 0.8;
-          }
-          50% { 
-            transform: translate(40px, 40px);
-            opacity: 1;
-          }
-        }
-        @keyframes float-bottom-right {
-          0%, 100% { 
-            transform: translate(0px, 0px);
-            opacity: 0.85;
-          }
-          50% { 
-            transform: translate(-40px, -40px);
-            opacity: 1;
-          }
-        }
-      `}</style>
-
-      <Header onLogout={handleLogout} />
+      <UserNavbar activePage="reviews" onLogout={handleLogout} />
 
       <ReviewDetailModal
         review={selectedReview}
@@ -646,43 +633,47 @@ export default function ReviewsPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
         <section className="mb-16">
+          {/* Page intro */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-            <h1 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
+            <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
               Your Voice, <br />
-              <span className={`text-transparent bg-clip-text bg-gradient-to-r ${THEME.accentGrad}`}>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
                 Your Reviews
               </span>
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl leading-relaxed">
+
+            <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl leading-relaxed">
               Every review you write helps others discover amazing places.
             </p>
           </motion.div>
 
-          {/* Statistics cards */}
+          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <StatCard label="Total Reviews" value={stats.total} icon={FaPencilAlt} color="orange" delay={0.1} />
-            <StatCard label="Avg Rating" value={stats.avgRating} icon={FaChartLine} color="purple" delay={0.2} />
-            <StatCard label="Impact" value={stats.impact} icon={FaFire} color="rose" delay={0.3} />
+            <StatCard label="Total Reviews" value={stats.total} icon={FaPencilAlt} color="blue" delay={0.1} />
+            <StatCard label="Avg Rating" value={stats.avgRating} icon={FaChartLine} color="indigo" delay={0.2} />
+            <StatCard label="Impact" value={stats.impact} icon={FaFire} color="cyan" delay={0.3} />
           </div>
 
-          {/* Search bar */}
+          {/* Search */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <FaSearch className="text-gray-400 dark:text-gray-500 text-sm" />
+                <FaSearch className="text-slate-400 dark:text-slate-500 text-sm" />
               </div>
+
               <input
                 type="text"
                 placeholder="Search your reviews by business name, type, or comment..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/80 dark:bg-black/40 border border-gray-200 dark:border-white/15 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/30 transition-all shadow-sm"
+                className={`${UI.input} pl-11 pr-12`}
               />
+
               {searchQuery && (
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.08 }}
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
                 >
                   <FaTimes size={14} />
                 </motion.button>
@@ -690,19 +681,20 @@ export default function ReviewsPage() {
             </div>
           </motion.div>
 
-          {/* Rating filter buttons */}
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 hover:bg-white/90 dark:hover:bg-black/50 transition-all shadow-sm">
-            <FaFilter className="text-gray-400 dark:text-gray-500" />
-            <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Filter by Rating:</span>
-            <div className="flex gap-2">
+          {/* Filter row */}
+          <div className={`${UI.cardSoft} flex flex-wrap items-center gap-4 p-4`}>
+            <FaFilter className="text-slate-400 dark:text-slate-500" />
+            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Filter by Rating:</span>
+
+            <div className="flex gap-2 flex-wrap">
               {[0, 5, 4, 3].map((rating) => (
                 <button
                   key={rating}
                   onClick={() => setFilterRating(rating)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold border transition-all ${
                     filterRating === rating
-                      ? 'bg-orange-100 dark:bg-orange-500/20 border-orange-200 dark:border-orange-500/50 text-orange-600 dark:text-orange-300'
-                      : 'bg-white dark:bg-black/40 border-gray-200 dark:border-white/15 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/25 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-[0_10px_30px_rgba(59,130,246,0.24)]'
+                      : 'bg-white dark:bg-[#162033] text-slate-600 dark:text-slate-300 border-blue-500/12 dark:border-white/10 hover:bg-blue-50 dark:hover:bg-[#1c2940] hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   {rating === 0 ? 'All' : `${rating}+ ★`}
@@ -712,31 +704,34 @@ export default function ReviewsPage() {
           </div>
         </section>
 
-        {/* Error message */}
+        {/* Error state */}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 rounded-xl bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-300 text-sm"
+            className="mb-6 px-4 py-3 rounded-2xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 text-sm text-red-600 dark:text-red-300"
           >
             {error}
           </motion.div>
         )}
 
-        {/* Reviews grid or empty state */}
+        {/* Main content */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-64 bg-gray-200 dark:bg-black/40 rounded-2xl animate-pulse border border-gray-300 dark:border-white/15" />
+              <div
+                key={i}
+                className="h-64 rounded-[28px] bg-white dark:bg-[#111827] border border-blue-500/10 dark:border-white/10 animate-pulse"
+              />
             ))}
           </div>
         ) : filteredReviews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence mode="popLayout">
               {filteredReviews.map((review, idx) => (
-                <ReviewCard 
-                  key={review.id} 
-                  review={review} 
+                <ReviewCard
+                  key={review.id}
+                  review={review}
                   index={idx}
                   onViewDetails={handleViewDetails}
                 />
@@ -744,28 +739,31 @@ export default function ReviewsPage() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="text-center py-32 bg-white/50 dark:bg-black/40 rounded-3xl border border-dashed border-gray-300 dark:border-white/15 backdrop-blur-xl">
-            <div className="w-20 h-20 bg-gray-100 dark:bg-black/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-200 dark:border-white/15">
-              <FaStar size={32} className="text-gray-400 dark:text-gray-600" />
+          <div className="p-16 rounded-[28px] bg-white dark:bg-[#111827] border border-dashed border-blue-200 dark:border-white/10 text-center flex flex-col items-center justify-center">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-slate-50 dark:bg-[#162033] border border-blue-500/10 dark:border-white/10">
+              <FaStar size={32} className="text-slate-300 dark:text-white/20" />
             </div>
-            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
-              {searchQuery 
+
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+              {searchQuery
                 ? `No reviews match "${searchQuery}"`
-                : filterRating > 0 
-                ? `No ${filterRating}+ star reviews yet` 
+                : filterRating > 0
+                ? `No ${filterRating}+ star reviews yet`
                 : 'No reviews yet'}
             </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
+
+            <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">
               {searchQuery
                 ? 'Try a different search query.'
                 : filterRating > 0
                 ? 'Try adjusting the filter to see all reviews.'
                 : 'Share your experiences to help the community discover great places.'}
             </p>
+
             {!searchQuery && (
               <a
                 href="/user/dashboard"
-                className="inline-block px-8 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold text-sm hover:shadow-lg hover:shadow-orange-500/25 transition-all shadow-lg shadow-orange-500/20"
+                className="inline-block px-8 py-3 rounded-2xl font-bold text-sm transition-all bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
               >
                 Explore & Review Places
               </a>

@@ -1,16 +1,16 @@
+'use client'
+
 // User profile page with editable profile information, statistics, and account management
 // COMPONENTS:
 // VICINITY LOGO - Branded logo component with optional text display
-// NAVBAR - Navigation bar with logo and dashboard link
-// ANIMATED BG - Gradient background with grid pattern for visual appeal
+// NAVBAR - Navigation bar with dashboard link
+// ANIMATED BG - Soft blue background with grid pattern for visual appeal
 // CONFIRMATION MODAL - Reusable modal for confirming destructive actions
 // HELPER FUNCTIONS:
 // SAVE FIELD - Updates single user profile field in Supabase auth metadata
 // SAVE INTERESTS - Updates user interests array in auth metadata
 // HANDLE DELETE ALL REVIEWS - Deletes all reviews created by user from database
 // HANDLE DELETE ACCOUNT - Permanently deletes user account, reviews, and all related data
-
-'use client'
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -26,75 +26,75 @@ import {
   FaExclamationTriangle,
   FaCalendar,
   FaSpinner,
-  FaArrowRight,
   FaEnvelope,
   FaHeart,
 } from 'react-icons/fa'
 
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
+import VicinityLogo from '../../../components/VicinityLogo'
+import UserNavbar from '../../../components/UserNavbar'
 
-// --- OFFICIAL NAVBAR COMPONENT ---
-const VicinityLogo = ({ className = '', textClassName = '' }) => (
-  <div className={`flex items-center gap-2.5 ${className}`}>
-    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8">
-      <g fill="#ff6f00" fillRule="nonzero">
-        <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
-          <path d="M5,45l4,-11l12,-12l-6,23z"></path>
-          <path d="M25,18l8,27h10l-11,-33z"></path>
-          <path d="M16.059,14.164l3.941,-11.164h8z"></path>
-          <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"></path>
-          <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"></path>
-          <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"></path>
-        </g>
-      </g>
-    </svg>
-    <span className={`font-black text-orange-500 dark:text-orange-400 text-xl tracking-tight ${textClassName}`}>Vicinity</span>
-  </div>
-)
-
-const Navbar = () => {
-  const router = useRouter()
-
-  return (
-    <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
-      <div className="w-full max-w-5xl bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-gray-300/20 dark:border-white/15 rounded-2xl p-2 shadow-2xl pointer-events-auto flex items-center justify-between pl-4 pr-2 hover:bg-white/50 dark:hover:bg-black/50 transition-all duration-300">
-        <VicinityLogo />
-        
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => router.push('/user/dashboard')}
-          className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold rounded-xl hover:scale-105 transition-transform shadow-lg shadow-orange-500/20 flex items-center gap-2"
-        >
-          Dashboard <FaArrowRight size={12} />
-        </motion.button>
-      </div>
-    </motion.nav>
-  )
+// --- SHARED UI TOKENS ---
+const UI = {
+  page: 'min-h-screen bg-white dark:bg-[#081120] text-slate-900 dark:text-white transition-colors duration-300 font-sans',
+  shell:
+    'bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-colors duration-300',
+  card:
+    'bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 shadow-sm hover:shadow-md transition-all duration-300',
+  input:
+    'w-full px-4 py-2 bg-slate-100 dark:bg-[#111827] border border-blue-500/15 dark:border-white/15 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors duration-300',
+  iconBtn:
+    'p-2 rounded-lg transition-all text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-[#162033]',
+  pill:
+    'px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  primaryBtn:
+    'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all',
 }
 
 // --- ANIMATED BACKGROUND ---
-const AnimatedBg = () => (
-  <div className="fixed inset-0 -z-10 overflow-hidden bg-white dark:bg-[#0a0a0a] transition-colors duration-300">
-    <div 
-      className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]" 
-      style={{ 
-        backgroundImage: `linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)`, 
-        backgroundSize: '120px 120px', 
-      }} 
-    />
-    <div 
-      className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[160px] opacity-40 dark:opacity-50 -translate-x-1/3 translate-y-1/3" 
-      style={{ 
-        background: 'radial-gradient(circle at 50% 50%, rgba(255,111,0,0.2), rgba(236,72,153,0.1), transparent 70%)',
-      }} 
-    />
-  </div>
-)
+const AnimatedBg = () => {
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-white dark:bg-[#081120] transition-colors duration-300">
+      {/* Grid */}
+      <div
+        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(59,130,246,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.35) 1px, transparent 1px)',
+          backgroundSize: '120px 120px',
+        }}
+      />
+
+      {/* Top orb */}
+      <div
+        className="absolute -top-24 left-0 w-[620px] h-[620px] rounded-full blur-[160px] opacity-40 dark:opacity-50 -translate-x-1/3"
+        style={{
+          background: 'rgba(59,130,246,0.20)',
+        }}
+      />
+
+      {/* Bottom orb */}
+      <div
+        className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[160px] opacity-40 dark:opacity-50 -translate-x-1/3 translate-y-1/3"
+        style={{
+          background: 'rgba(34,211,238,0.14)',
+        }}
+      />
+    </div>
+  )
+}
 
 // --- CONFIRMATION MODAL ---
-const ConfirmationModal = ({ title, message, confirmText, cancelText, onConfirm, onCancel, isDanger = false }) => (
+const ConfirmationModal = ({
+  title,
+  message,
+  confirmText,
+  cancelText,
+  onConfirm,
+  onCancel,
+  isDanger = false,
+}) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -105,23 +105,21 @@ const ConfirmationModal = ({ title, message, confirmText, cancelText, onConfirm,
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.95, opacity: 0 }}
-      className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/15 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+      className="bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 rounded-3xl p-8 max-w-sm w-full shadow-2xl"
     >
-      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{title}</h3>
-      <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">{message}</p>
+      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{title}</h3>
+      <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">{message}</p>
       <div className="flex gap-4">
         <button
           onClick={onCancel}
-          className="flex-1 px-4 py-3 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-900 dark:text-white font-bold rounded-lg transition-all"
+          className="flex-1 px-4 py-3 bg-slate-100 dark:bg-[#162033] hover:bg-slate-200 dark:hover:bg-[#1c2940] text-slate-900 dark:text-white font-bold rounded-xl transition-all"
         >
           {cancelText}
         </button>
         <button
           onClick={onConfirm}
-          className={`flex-1 px-4 py-3 font-bold rounded-lg transition-all text-white ${
-            isDanger
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600'
+          className={`flex-1 px-4 py-3 font-bold rounded-xl transition-all text-white ${
+            isDanger ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >
           {confirmText}
@@ -149,7 +147,13 @@ export default function UserProfilePage() {
   const [showDeleteReviewsModal, setShowDeleteReviewsModal] = useState(false)
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
 
-  const INTEREST_OPTIONS = ['Restaurants & Food', 'Shopping & Retail', 'Home Services', 'Health & Wellness', 'Professional Services']
+  const INTEREST_OPTIONS = [
+    'Restaurants & Food',
+    'Shopping & Retail',
+    'Home Services',
+    'Health & Wellness',
+    'Professional Services',
+  ]
 
   // Fetch user data
   useEffect(() => {
@@ -160,8 +164,10 @@ export default function UserProfilePage() {
         setLoading(true)
         setError(null)
 
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser()
+
         if (!authUser) {
           router.push('/login')
           return
@@ -169,7 +175,11 @@ export default function UserProfilePage() {
 
         const authMetadata = authUser.user_metadata || {}
         const userType = authMetadata.user_type || 'community'
-        const fullname = authMetadata.fullname || authMetadata.full_name || authUser.email?.split('@')[0] || 'User'
+        const fullname =
+          authMetadata.fullname ||
+          authMetadata.full_name ||
+          authUser.email?.split('@')[0] ||
+          'User'
         const city = authMetadata.city || ''
         const zip = authMetadata.zip || authMetadata.zipCode || ''
         const interests = authMetadata.interests || []
@@ -239,14 +249,14 @@ export default function UserProfilePage() {
 
       const updateData = { [field]: value.trim() }
       const { error: updateError } = await supabase.auth.updateUser({
-        data: updateData
+        data: updateData,
       })
 
       if (updateError) throw updateError
 
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        [field]: value.trim()
+        [field]: value.trim(),
       }))
 
       if (userData.userType === 'business' && businessData && field === 'fullname') {
@@ -274,14 +284,14 @@ export default function UserProfilePage() {
       setError(null)
 
       const { error: updateError } = await supabase.auth.updateUser({
-        data: { interests }
+        data: { interests },
       })
 
       if (updateError) throw updateError
 
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        interests
+        interests,
       }))
 
       setSaveSuccess(true)
@@ -323,7 +333,7 @@ export default function UserProfilePage() {
 
       await supabase.from('reviews').delete().eq('user_id', userData.id)
       await supabase.from('saved_places').delete().eq('user_id', userData.id)
-      
+
       if (userData.userType === 'business' && businessData) {
         await supabase.from('businesses').delete().eq('owner_id', userData.id)
       }
@@ -341,20 +351,25 @@ export default function UserProfilePage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#081120] flex items-center justify-center">
         <AnimatedBg />
-        <FaSpinner className="text-4xl text-orange-500 animate-spin" />
+        <FaSpinner className="text-4xl text-blue-600 animate-spin" />
       </div>
     )
   }
 
   if (!user || !userData) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#081120] flex items-center justify-center">
         <AnimatedBg />
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">Please log in to view your profile</p>
-          <button onClick={() => router.push('/login')} className="px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-bold">
+          <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg">
+            Please log in to view your profile
+          </p>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold"
+          >
             Go to Login
           </button>
         </motion.div>
@@ -369,9 +384,9 @@ export default function UserProfilePage() {
   })
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white transition-colors duration-300 font-sans">
+    <div className={UI.page}>
       <AnimatedBg />
-      <Navbar />
+      <UserNavbar activePage="profile" onLogout={async () => { await createClient().auth.signOut(); logout(); router.push('/'); }} />
 
       <main className="w-full pt-32 pb-16 px-4 md:px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
@@ -404,15 +419,15 @@ export default function UserProfilePage() {
             )}
           </AnimatePresence>
 
-          {/* Profile Card - Full Width with Location Info */}
+          {/* Profile card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-3xl p-8 md:p-12 mb-12 shadow-xl"
+            className={`${UI.shell} rounded-3xl p-8 md:p-12 mb-12`}
           >
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
               {/* Avatar */}
-              <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-5xl font-bold shadow-lg flex-shrink-0">
+              <div className="w-28 h-28 rounded-3xl bg-blue-600 flex items-center justify-center text-white text-5xl font-bold shadow-lg flex-shrink-0">
                 {userData.fullname.charAt(0).toUpperCase()}
               </div>
 
@@ -424,26 +439,26 @@ export default function UserProfilePage() {
                     <input
                       type="text"
                       defaultValue={userData.fullname}
-                      onChange={e => setUserData(prev => ({ ...prev, fullname: e.target.value }))}
-                      onBlur={e => saveField('fullname', e.target.value)}
-                      className="flex-1 px-4 py-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      onChange={(e) => setUserData((prev) => ({ ...prev, fullname: e.target.value }))}
+                      onBlur={(e) => saveField('fullname', e.target.value)}
+                      className={`${UI.input} flex-1 text-lg font-bold`}
                       autoFocus
                     />
                     <button
                       onClick={() => setEditingField(null)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400 rounded-lg"
+                      className="p-2 hover:bg-slate-100 dark:hover:bg-[#162033] text-slate-600 dark:text-slate-400 rounded-lg"
                     >
                       <FaTimes />
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 justify-center md:justify-start">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
                       {userData.fullname}
                     </h1>
                     <button
                       onClick={() => setEditingField('fullname')}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 text-orange-500 dark:text-orange-400 rounded-lg transition-all"
+                      className={UI.iconBtn}
                     >
                       <FaEdit size={16} />
                     </button>
@@ -452,46 +467,58 @@ export default function UserProfilePage() {
 
                 {/* Meta */}
                 <div className="flex items-center gap-4 flex-wrap justify-center md:justify-start">
-                  <span className="px-3 py-1 bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 rounded-full text-xs font-semibold">
+                  <span className={UI.pill}>
                     {userData.userType === 'business' ? '🏢 Business' : '👤 Community'}
                   </span>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                     <FaCalendar size={14} />
                     Joined {joinDate}
                   </div>
                 </div>
 
-                {/* Location Section */}
+                {/* Location */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                   {/* City */}
                   <div className="space-y-2">
                     {editingField === 'city' ? (
                       <>
-                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">City</label>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          City
+                        </label>
                         <div className="flex items-center gap-2">
-                          <FaMapMarkerAlt className="text-orange-500 dark:text-orange-400 flex-shrink-0" />
+                          <FaMapMarkerAlt className="text-blue-600 dark:text-blue-300 flex-shrink-0" />
                           <input
                             type="text"
                             defaultValue={userData.city}
-                            onChange={e => setUserData(prev => ({ ...prev, city: e.target.value }))}
-                            onBlur={e => saveField('city', e.target.value)}
-                            className="flex-1 px-3 py-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            onChange={(e) => setUserData((prev) => ({ ...prev, city: e.target.value }))}
+                            onBlur={(e) => saveField('city', e.target.value)}
+                            className={`${UI.input} flex-1 text-sm`}
                             autoFocus
                           />
-                          <button onClick={() => setEditingField(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded">
+                          <button
+                            onClick={() => setEditingField(null)}
+                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-[#162033] rounded"
+                          >
                             <FaTimes size={12} />
                           </button>
                         </div>
                       </>
                     ) : (
                       <>
-                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">City</label>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          City
+                        </label>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#162033] rounded-xl">
                           <div className="flex items-center gap-2">
-                            <FaMapMarkerAlt className="text-orange-500 dark:text-orange-400" />
-                            <span className="font-medium text-gray-900 dark:text-white">{userData.city || 'Not set'}</span>
+                            <FaMapMarkerAlt className="text-blue-600 dark:text-blue-300" />
+                            <span className="font-medium text-slate-900 dark:text-white">
+                              {userData.city || 'Not set'}
+                            </span>
                           </div>
-                          <button onClick={() => setEditingField('city')} className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-500 rounded transition-all">
+                          <button
+                            onClick={() => setEditingField('city')}
+                            className={UI.iconBtn}
+                          >
                             <FaEdit size={12} />
                           </button>
                         </div>
@@ -499,35 +526,47 @@ export default function UserProfilePage() {
                     )}
                   </div>
 
-                  {/* ZIP Code */}
+                  {/* ZIP */}
                   <div className="space-y-2">
                     {editingField === 'zip' ? (
                       <>
-                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ZIP Code</label>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          ZIP Code
+                        </label>
                         <div className="flex items-center gap-2">
-                          <FaMapMarkerAlt className="text-pink-500 dark:text-pink-400 flex-shrink-0" />
+                          <FaMapMarkerAlt className="text-cyan-600 dark:text-cyan-300 flex-shrink-0" />
                           <input
                             type="text"
                             defaultValue={userData.zip}
-                            onChange={e => setUserData(prev => ({ ...prev, zip: e.target.value }))}
-                            onBlur={e => saveField('zip', e.target.value)}
-                            className="flex-1 px-3 py-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                            onChange={(e) => setUserData((prev) => ({ ...prev, zip: e.target.value }))}
+                            onBlur={(e) => saveField('zip', e.target.value)}
+                            className={`${UI.input} flex-1 text-sm`}
                             autoFocus
                           />
-                          <button onClick={() => setEditingField(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded">
+                          <button
+                            onClick={() => setEditingField(null)}
+                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-[#162033] rounded"
+                          >
                             <FaTimes size={12} />
                           </button>
                         </div>
                       </>
                     ) : (
                       <>
-                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ZIP Code</label>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          ZIP Code
+                        </label>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#162033] rounded-xl">
                           <div className="flex items-center gap-2">
-                            <FaMapMarkerAlt className="text-pink-500 dark:text-pink-400" />
-                            <span className="font-medium text-gray-900 dark:text-white">{userData.zip || 'Not set'}</span>
+                            <FaMapMarkerAlt className="text-cyan-600 dark:text-cyan-300" />
+                            <span className="font-medium text-slate-900 dark:text-white">
+                              {userData.zip || 'Not set'}
+                            </span>
                           </div>
-                          <button onClick={() => setEditingField('zip')} className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-500 rounded transition-all">
+                          <button
+                            onClick={() => setEditingField('zip')}
+                            className={UI.iconBtn}
+                          >
                             <FaEdit size={12} />
                           </button>
                         </div>
@@ -539,31 +578,40 @@ export default function UserProfilePage() {
             </div>
           </motion.div>
 
-          {/* Bento Grid Layout */}
+          {/* Bento grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-max">
-            {/* Email & Interests Card - Full Width Top Left */}
+            {/* Email & interests */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="md:col-span-2 bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all space-y-6"
+              className={`md:col-span-2 ${UI.card} rounded-2xl p-6 space-y-6`}
             >
               {/* Email */}
               <div>
-                <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Email</h2>
+                <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                  Email
+                </h2>
                 <div className="flex items-center gap-3">
-                  <FaEnvelope className="text-orange-500 dark:text-orange-400 flex-shrink-0" />
-                  <span className="font-medium text-gray-900 dark:text-white break-all">{userData.email}</span>
+                  <FaEnvelope className="text-blue-600 dark:text-blue-300 flex-shrink-0" />
+                  <span className="font-medium text-slate-900 dark:text-white break-all">
+                    {userData.email}
+                  </span>
                 </div>
               </div>
 
-              {/* Interests - Community Only */}
+              {/* Interests */}
               {userData.userType === 'community' && (
-                <div className="pt-4 border-t border-gray-200 dark:border-white/10">
+                <div className="pt-4 border-t border-blue-500/10 dark:border-white/10">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Interests</h2>
+                    <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Interests
+                    </h2>
                     {editingField !== 'interests' && (
-                      <button onClick={() => setEditingField('interests')} className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-500 rounded transition-all">
+                      <button
+                        onClick={() => setEditingField('interests')}
+                        className={UI.iconBtn}
+                      >
                         <FaEdit size={14} />
                       </button>
                     )}
@@ -571,32 +619,36 @@ export default function UserProfilePage() {
 
                   {editingField === 'interests' ? (
                     <div className="space-y-3">
-                      {INTEREST_OPTIONS.map(interest => (
-                        <label key={interest} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10">
+                      {INTEREST_OPTIONS.map((interest) => (
+                        <label
+                          key={interest}
+                          className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-[#162033]"
+                        >
                           <input
                             type="checkbox"
                             checked={userData.interests.includes(interest)}
                             onChange={(e) => {
                               const newInterests = e.target.checked
                                 ? [...userData.interests, interest]
-                                : userData.interests.filter(i => i !== interest)
-                              setUserData(prev => ({ ...prev, interests: newInterests }))
+                                : userData.interests.filter((i) => i !== interest)
+                              setUserData((prev) => ({ ...prev, interests: newInterests }))
                             }}
-                            className="w-4 h-4 accent-orange-500 cursor-pointer"
+                            className="w-4 h-4 accent-blue-600 cursor-pointer"
                           />
                           <span className="text-sm font-medium">{interest}</span>
                         </label>
                       ))}
+
                       <div className="flex gap-2 pt-3">
                         <button
                           onClick={() => saveInterests(userData.interests)}
-                          className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold text-sm transition-all"
+                          className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold text-sm transition-all"
                         >
                           Save
                         </button>
                         <button
                           onClick={() => setEditingField(null)}
-                          className="flex-1 py-2 bg-gray-300 dark:bg-white/20 hover:bg-gray-400 dark:hover:bg-white/30 text-gray-700 dark:text-white rounded-lg font-semibold text-sm transition-all"
+                          className="flex-1 py-2 bg-slate-300 dark:bg-[#162033] hover:bg-slate-400 dark:hover:bg-[#1c2940] text-slate-700 dark:text-white rounded-xl font-semibold text-sm transition-all"
                         >
                           Cancel
                         </button>
@@ -605,74 +657,79 @@ export default function UserProfilePage() {
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {userData.interests.length > 0 ? (
-                        userData.interests.map(interest => (
-                          <span key={interest} className="px-3 py-1 bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300 rounded-full text-xs font-semibold">
+                        userData.interests.map((interest) => (
+                          <span
+                            key={interest}
+                            className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 rounded-full text-xs font-semibold"
+                          >
                             {interest}
                           </span>
                         ))
                       ) : (
-                        <p className="text-xs text-gray-500">No interests added</p>
+                        <p className="text-xs text-slate-500">No interests added</p>
                       )}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Business Info - For business owners */}
+              {/* Business info */}
               {userData.userType === 'business' && businessData && (
-                <div className="pt-4 border-t border-gray-200 dark:border-white/10">
-                  <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Business</h2>
+                <div className="pt-4 border-t border-blue-500/10 dark:border-white/10">
+                  <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                    Business
+                  </h2>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Name</p>
-                      <p className="font-medium text-gray-900 dark:text-white">{businessData.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Name</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{businessData.name}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Type</p>
-                      <p className="font-medium text-gray-900 dark:text-white">{businessData.type}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Type</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{businessData.type}</p>
                     </div>
                   </div>
                 </div>
               )}
             </motion.div>
 
-            {/* Reviews Card */}
+            {/* Reviews card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+              className={`${UI.card} rounded-2xl p-6`}
             >
               <div className="text-center">
-                <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center mx-auto mb-3">
-                  <FaStar className="text-orange-500 dark:text-orange-400 text-lg" />
+                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-500/15 flex items-center justify-center mx-auto mb-3">
+                  <FaStar className="text-blue-600 dark:text-blue-300 text-lg" />
                 </div>
-                <div className="text-3xl font-bold text-orange-500 dark:text-orange-400 mb-1">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-300 mb-1">
                   {reviewCount}
                 </div>
-                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Reviews</p>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Reviews</p>
               </div>
             </motion.div>
 
-            {/* Saved Places Card */}
+            {/* Saved places card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-200 dark:border-white/15 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+              className={`${UI.card} rounded-2xl p-6`}
             >
               <div className="text-center">
-                <div className="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center mx-auto mb-3">
-                  <FaHeart className="text-pink-500 dark:text-pink-400 text-lg" />
+                <div className="w-12 h-12 rounded-xl bg-cyan-100 dark:bg-cyan-500/15 flex items-center justify-center mx-auto mb-3">
+                  <FaHeart className="text-cyan-600 dark:text-cyan-300 text-lg" />
                 </div>
-                <div className="text-3xl font-bold text-pink-500 dark:text-pink-400 mb-1">
+                <div className="text-3xl font-bold text-cyan-600 dark:text-cyan-300 mb-1">
                   {savedPlaces.length}
                 </div>
-                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Saved</p>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Saved</p>
               </div>
             </motion.div>
 
-            {/* Danger Zone Card - Full Width Bottom with Delete Actions */}
+            {/* Danger zone */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -682,26 +739,28 @@ export default function UserProfilePage() {
               <h2 className="text-sm font-bold text-red-700 dark:text-red-300 uppercase tracking-wider mb-6 flex items-center gap-2">
                 <FaExclamationTriangle size={14} /> Danger Zone
               </h2>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Delete Reviews Button */}
+                {/* Delete reviews */}
                 {reviewCount > 0 && (
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowDeleteReviewsModal(true)}
-                    className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-all text-sm flex items-center justify-center gap-2"
+                    className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+                    disabled={isSaving}
                   >
                     <FaTrash size={14} /> Delete {reviewCount} Reviews
                   </motion.button>
                 )}
 
-                {/* Delete Account Button */}
+                {/* Delete account */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowDeleteAccountModal(true)}
-                  className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-all text-sm flex items-center justify-center gap-2"
+                  className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+                  disabled={isSaving}
                 >
                   <FaTrash size={14} /> Delete Account
                 </motion.button>

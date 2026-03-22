@@ -1,5 +1,4 @@
 // components/AIChat.tsx - USES WEBSITE DARK/LIGHT MODE
-
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -35,12 +34,14 @@ export default function AIChat() {
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greetingMessage = getGreetingMessage()
-      setMessages([{
-        id: '1',
-        role: 'assistant',
-        content: greetingMessage,
-        timestamp: new Date(),
-      }])
+      setMessages([
+        {
+          id: '1',
+          role: 'assistant',
+          content: greetingMessage,
+          timestamp: new Date(),
+        },
+      ])
     }
   }, [isOpen, userType])
 
@@ -88,6 +89,7 @@ export default function AIChat() {
       content: input,
       timestamp: new Date(),
     }
+
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setChatLoading(true)
@@ -109,18 +111,21 @@ export default function AIChat() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.reply || 'Sorry, I couldn\'t generate a response.',
+        content: data.reply || "Sorry, I couldn't generate a response.",
         timestamp: new Date(),
       }
+
       setMessages((prev) => [...prev, assistantMessage])
     } catch (error) {
       console.error('Error:', error)
+
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
         role: 'assistant',
         content: 'Something went wrong. Please try again.',
         timestamp: new Date(),
       }
+
       setMessages((prev) => [...prev, errorMessage])
     } finally {
       setChatLoading(false)
@@ -131,28 +136,42 @@ export default function AIChat() {
 
   const isDisabled = loading || chatLoading
 
-  // Theme colors
+  // Website theme blue palette
+  const brand = {
+    primary: '#2563eb',
+    secondary: '#1d4ed8',
+    accent: '#60a5fa',
+    soft: '#93c5fd',
+  }
+
+  // Theme colors for dark/light mode
   const colors = {
     dark: {
-      bg: '#0f0f0f',
-      bgSecondary: '#1a1a1a',
-      border: 'rgba(255, 111, 0, 0.25)',
-      text: '#e0e0e0',
-      textSecondary: '#a0a0a0',
-      inputBg: 'rgba(255, 111, 0, 0.06)',
-      inputBgFocus: 'rgba(255, 111, 0, 0.12)',
-      messageBg: 'rgba(255, 111, 0, 0.08)',
+      bg: '#0f172a',
+      bgSecondary: '#111827',
+      border: 'rgba(59, 130, 246, 0.28)',
+      text: '#e5eefb',
+      textSecondary: '#94a3b8',
+      inputBg: 'rgba(37, 99, 235, 0.08)',
+      inputBgFocus: 'rgba(37, 99, 235, 0.14)',
+      messageBg: 'rgba(37, 99, 235, 0.10)',
+      glow: 'rgba(59, 130, 246, 0.22)',
+      buttonShadow: 'rgba(37, 99, 235, 0.45)',
+      buttonHoverShadow: 'rgba(37, 99, 235, 0.60)',
     },
     light: {
       bg: '#ffffff',
-      bgSecondary: '#f5f5f5',
-      border: 'rgba(255, 111, 0, 0.2)',
-      text: '#333333',
-      textSecondary: '#666666',
-      inputBg: '#f0f0f0',
-      inputBgFocus: '#e8e8e8',
-      messageBg: '#f9f3f0',
-    }
+      bgSecondary: '#f8fbff',
+      border: 'rgba(37, 99, 235, 0.18)',
+      text: '#1e293b',
+      textSecondary: '#64748b',
+      inputBg: '#eff6ff',
+      inputBgFocus: '#dbeafe',
+      messageBg: '#f0f7ff',
+      glow: 'rgba(37, 99, 235, 0.10)',
+      buttonShadow: 'rgba(37, 99, 235, 0.30)',
+      buttonHoverShadow: 'rgba(37, 99, 235, 0.42)',
+    },
   }
 
   const theme = isDark ? colors.dark : colors.light
@@ -169,26 +188,26 @@ export default function AIChat() {
           width: '64px',
           height: '64px',
           borderRadius: '50%',
-          background: isOpen 
-            ? 'linear-gradient(135deg, #ff6f00, #ff8c42)'
-            : 'linear-gradient(135deg, #ff6f00, #ec4899)',
+          background: isOpen
+            ? `linear-gradient(135deg, ${brand.secondary}, ${brand.accent})`
+            : `linear-gradient(135deg, ${brand.primary}, ${brand.accent})`,
           border: 'none',
           color: 'white',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 32px rgba(255, 111, 0, 0.5)',
+          boxShadow: `0 8px 32px ${theme.buttonShadow}`,
           transition: 'all 0.3s ease',
           transform: isOpen ? 'scale(0.95)' : 'scale(1)',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'scale(1.1)'
-          e.currentTarget.style.boxShadow = '0 12px 40px rgba(255, 111, 0, 0.6)'
+          e.currentTarget.style.boxShadow = `0 12px 40px ${theme.buttonHoverShadow}`
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = isOpen ? 'scale(0.95)' : 'scale(1)'
-          e.currentTarget.style.boxShadow = '0 8px 32px rgba(255, 111, 0, 0.5)'
+          e.currentTarget.style.boxShadow = `0 8px 32px ${theme.buttonShadow}`
         }}
       >
         {isOpen ? <FaTimes size={24} /> : <FaRobot size={24} />}
@@ -209,21 +228,21 @@ export default function AIChat() {
             flexDirection: 'column',
             zIndex: 9998,
             overflow: 'hidden',
-            boxShadow: isDark 
-              ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 111, 0, 0.15)'
-              : '0 20px 60px rgba(0, 0, 0, 0.1), 0 0 40px rgba(255, 111, 0, 0.1)',
+            boxShadow: isDark
+              ? `0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px ${theme.glow}`
+              : `0 20px 60px rgba(0, 0, 0, 0.1), 0 0 40px ${theme.glow}`,
             animation: 'slideUp 0.3s ease',
           }}
         >
           {/* Header */}
-          <div 
-            style={{ 
-              background: 'linear-gradient(135deg, #ff6f00 0%, #ec4899 100%)',
+          <div
+            style={{
+              background: `linear-gradient(135deg, ${brand.primary} 0%, ${brand.accent} 100%)`,
               padding: '16px 20px',
               color: 'white',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -235,34 +254,35 @@ export default function AIChat() {
           </div>
 
           {/* Messages */}
-          <div 
-            style={{ 
-              flex: 1, 
-              overflowY: 'auto', 
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
               padding: '16px',
               backgroundColor: theme.bgSecondary,
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px'
+              gap: '12px',
             }}
           >
             {messages.map((msg) => (
-              <div 
-                key={msg.id} 
-                style={{ 
-                  display: 'flex', 
+              <div
+                key={msg.id}
+                style={{
+                  display: 'flex',
                   justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  animation: 'fadeIn 0.3s ease'
+                  animation: 'fadeIn 0.3s ease',
                 }}
               >
-                <div 
-                  style={{ 
+                <div
+                  style={{
                     maxWidth: '85%',
                     padding: msg.role === 'user' ? '10px 14px' : '12px 14px',
                     borderRadius: msg.role === 'user' ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
-                    background: msg.role === 'user' 
-                      ? 'linear-gradient(135deg, #ff6f00, #ec4899)' 
-                      : theme.messageBg,
+                    background:
+                      msg.role === 'user'
+                        ? `linear-gradient(135deg, ${brand.primary}, ${brand.accent})`
+                        : theme.messageBg,
                     border: msg.role === 'user' ? 'none' : `1px solid ${theme.border}`,
                     color: msg.role === 'user' ? 'white' : theme.text,
                     fontSize: '13px',
@@ -278,24 +298,34 @@ export default function AIChat() {
                 </div>
               </div>
             ))}
+
             {chatLoading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff6f00', fontSize: '13px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: brand.primary,
+                  fontSize: '13px',
+                }}
+              >
                 <FaSpinner size={12} style={{ animation: 'spin 1s linear infinite' }} />
                 <span>Thinking...</span>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}
-          <form 
-            onSubmit={handleSendMessage} 
-            style={{ 
-              display: 'flex', 
-              gap: '8px', 
+          <form
+            onSubmit={handleSendMessage}
+            style={{
+              display: 'flex',
+              gap: '8px',
               padding: '12px',
               borderTop: `1px solid ${theme.border}`,
-              backgroundColor: theme.bg
+              backgroundColor: theme.bg,
             }}
           >
             <input
@@ -318,13 +348,14 @@ export default function AIChat() {
               } as any}
               onFocus={(e) => {
                 e.currentTarget.style.backgroundColor = theme.inputBgFocus
-                e.currentTarget.style.borderColor = 'rgba(255, 111, 0, 0.4)'
+                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.45)'
               }}
               onBlur={(e) => {
                 e.currentTarget.style.backgroundColor = theme.inputBg
                 e.currentTarget.style.borderColor = theme.border
               }}
             />
+
             <button
               type="submit"
               disabled={isDisabled}
@@ -332,7 +363,7 @@ export default function AIChat() {
                 padding: '10px 14px',
                 borderRadius: '10px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #ff6f00, #ec4899)',
+                background: `linear-gradient(135deg, ${brand.primary}, ${brand.accent})`,
                 color: 'white',
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: isDisabled ? 0.5 : 1,
@@ -340,7 +371,7 @@ export default function AIChat() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontWeight: '500'
+                fontWeight: '500',
               }}
               onMouseEnter={(e) => {
                 if (!isDisabled) {
@@ -366,7 +397,7 @@ export default function AIChat() {
                 transform: translateY(0);
               }
             }
-            
+
             @keyframes fadeIn {
               from {
                 opacity: 0;
@@ -395,17 +426,23 @@ export default function AIChat() {
   )
 }
 
+// Formatted assistant message renderer
 function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: boolean }) {
-  const sections = content.split(/(?=\*\*[^*]+\*\*:|###|^-\s)/m).filter(s => s.trim())
+  // Blue text accents for assistant formatting
+  const accentPrimary = isDarkMode ? '#60a5fa' : '#2563eb'
+  const accentSecondary = isDarkMode ? '#93c5fd' : '#1d4ed8'
+
+  const sections = content.split(/(?=\*\*[^*]+\*\*:|###|^-\s)/m).filter((s) => s.trim())
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {sections.map((section, idx) => {
+        // Bold label section
         if (section.match(/\*\*[^*]+\*\*:/)) {
           const match = section.match(/\*\*([^*]+)\*\*:(.*)/)
           return (
             <div key={idx}>
-              <span style={{ color: '#ff6f00', fontWeight: 'bold' }}>
+              <span style={{ color: accentPrimary, fontWeight: 'bold' }}>
                 {match?.[1]}:
               </span>
               <span style={{ marginLeft: '4px' }}>
@@ -415,23 +452,26 @@ function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: b
           )
         }
 
+        // Markdown-style heading
         if (section.trim().startsWith('###')) {
           return (
-            <div key={idx} style={{ color: '#ff8c42', fontWeight: '600', marginTop: '4px' }}>
+            <div key={idx} style={{ color: accentSecondary, fontWeight: '600', marginTop: '4px' }}>
               {section.replace(/^###\s*/, '').trim()}
             </div>
           )
         }
 
+        // Bullet list item
         if (section.trim().startsWith('-')) {
           return (
             <div key={idx} style={{ display: 'flex', gap: '6px', marginLeft: '4px' }}>
-              <span style={{ color: '#ff6f00', minWidth: '12px' }}>•</span>
+              <span style={{ color: accentPrimary, minWidth: '12px' }}>•</span>
               <span>{section.replace(/^-\s*/, '').trim()}</span>
             </div>
           )
         }
 
+        // Default paragraph text
         return section.trim() ? (
           <div key={idx} style={{ lineHeight: '1.4' }}>
             {section.trim()}

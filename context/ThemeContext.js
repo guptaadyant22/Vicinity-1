@@ -2,19 +2,19 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-const ThemeContext = createContext()
+const ThemeContext = createContext({ isDark: true, toggleTheme: () => {}, mounted: false })
 
 export function ThemeProvider({ children }) {
   const [isDark, setIsDark] = useState(true)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
     // Check if user has a saved preference
     const saved = localStorage.getItem('theme')
     if (saved) {
-      setIsDark(saved === 'dark')
-      if (saved === 'dark') {
+      const shouldBeDark = saved === 'dark'
+      setIsDark(shouldBeDark)
+      if (shouldBeDark) {
         document.documentElement.classList.add('dark')
       } else {
         document.documentElement.classList.remove('dark')
@@ -24,6 +24,7 @@ export function ThemeProvider({ children }) {
       setIsDark(true)
       document.documentElement.classList.add('dark')
     }
+    setMounted(true)
   }, [])
 
   const toggleTheme = () => {
@@ -39,10 +40,9 @@ export function ThemeProvider({ children }) {
     }
   }
 
-  if (!mounted) return children
-
+  // Always render the Provider so useTheme() never fails
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDark, toggleTheme, mounted }}>
       {children}
     </ThemeContext.Provider>
   )

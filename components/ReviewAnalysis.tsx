@@ -38,11 +38,11 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
 
   if (loading) {
     return (
-      <div className="p-8 bg-[#0f0f0f] border border-orange-500/25 rounded-2xl animate-pulse backdrop-blur-xl">
-        <div className="h-8 bg-orange-500/20 rounded-lg w-1/3 mb-6"></div>
+      <div className="p-8 bg-white/80 dark:bg-white/[0.04] border border-blue-500/12 dark:border-white/10 rounded-[26px] animate-pulse backdrop-blur-xl shadow-[0_12px_36px_rgba(15,23,42,0.08)]">
+        <div className="h-8 bg-blue-500/15 dark:bg-blue-500/10 rounded-xl w-1/3 mb-6"></div>
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-4 bg-orange-500/15 rounded-lg w-2/3"></div>
+            <div key={i} className="h-4 bg-blue-500/10 dark:bg-white/[0.05] rounded-xl w-2/3"></div>
           ))}
         </div>
       </div>
@@ -51,8 +51,8 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
 
   if (!analysis || analysis.totalReviews === 0) {
     return (
-      <div className="p-8 bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/25 rounded-2xl text-center backdrop-blur-xl">
-        <p className="text-gray-300 font-medium">No reviews yet. Get some reviews to see insights!</p>
+      <div className="p-8 bg-blue-50/60 dark:bg-blue-500/[0.06] border border-blue-500/12 dark:border-white/10 rounded-[26px] text-center backdrop-blur-xl">
+        <p className="text-slate-600 dark:text-slate-300 font-medium">No reviews yet. Get some reviews to see insights!</p>
       </div>
     );
   }
@@ -60,69 +60,69 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
       case 'Very Positive':
-        return 'bg-green-500/15 text-green-300 border-green-500/30';
+        return 'bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30';
       case 'Positive':
-        return 'bg-green-500/10 text-green-400 border-green-500/25';
+        return 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/25';
       case 'Neutral':
-        return 'bg-gray-500/10 text-gray-300 border-gray-500/20';
+        return 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20';
       case 'Negative':
-        return 'bg-orange-500/10 text-orange-300 border-orange-500/20';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/20';
       case 'Very Negative':
-        return 'bg-red-500/10 text-red-300 border-red-500/25';
+        return 'bg-red-500/10 text-red-600 dark:text-red-300 border-red-500/25';
       default:
-        return 'bg-gray-500/10 text-gray-300 border-gray-500/20';
+        return 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20';
     }
   };
 
   return (
-    <div className="bg-[#0f0f0f] rounded-2xl border border-orange-500/25 p-8 space-y-8 backdrop-blur-xl">
-      <div className="flex items-center gap-3 border-b border-orange-500/20 pb-6">
-        <FiBarChart2 className="text-orange-500" size={28} />
-        <h2 className="text-3xl font-bold text-white">Review Insights</h2>
+    <div className="bg-white/80 dark:bg-white/[0.04] rounded-[26px] border border-blue-500/12 dark:border-white/10 p-8 space-y-8 backdrop-blur-xl shadow-[0_12px_36px_rgba(15,23,42,0.08)]">
+      <div className="flex items-center gap-3 border-b border-blue-500/10 dark:border-white/10 pb-6">
+        <FiBarChart2 className="text-blue-600 dark:text-blue-300" size={28} />
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Review Insights</h2>
       </div>
 
       {/* Sentiment Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className={`p-6 rounded-xl border backdrop-blur-sm ${getSentimentColor(analysis.sentimentLabel)}`}>
+        <div className={`p-6 rounded-2xl border backdrop-blur-sm ${getSentimentColor(analysis.sentimentLabel)}`}>
           <p className="text-sm font-semibold opacity-80 mb-2">Overall Sentiment</p>
           <p className="text-3xl font-bold mb-4">{analysis.sentimentLabel}</p>
-          <div className="w-full bg-gray-700/30 h-2 rounded-full">
+          <div className="w-full bg-slate-200 dark:bg-white/10 h-2 rounded-full">
             <div
-              className="bg-gradient-to-r from-orange-500 to-pink-500 h-2 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full transition-all duration-500"
               style={{ width: `${analysis.sentimentScore * 100}%` }}
             ></div>
           </div>
         </div>
 
-        <div className="p-6 bg-gradient-to-br from-yellow-500/15 to-orange-500/15 rounded-xl border border-orange-500/25 backdrop-blur-sm">
-          <p className="text-sm font-semibold text-orange-300 opacity-80 mb-2">Average Rating</p>
-          <p className="text-3xl font-bold text-yellow-300 mb-2">
+        <div className="p-6 bg-blue-50/60 dark:bg-blue-500/[0.08] rounded-2xl border border-blue-500/20 dark:border-blue-500/15 backdrop-blur-sm">
+          <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 opacity-80 mb-2">Average Rating</p>
+          <p className="text-3xl font-bold text-blue-700 dark:text-blue-200 mb-2">
             {analysis.averageRating.toFixed(1)} / 5 ⭐
           </p>
-          <p className="text-sm text-gray-400">From {analysis.totalReviews} reviews</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">From {analysis.totalReviews} reviews</p>
         </div>
 
-        <div className="p-6 bg-gradient-to-br from-blue-500/15 to-purple-500/15 rounded-xl border border-blue-500/25 backdrop-blur-sm">
-          <p className="text-sm font-semibold text-blue-300 opacity-80 mb-2">Engagement</p>
-          <p className="text-3xl font-bold text-blue-300 mb-2">{analysis.totalReviews}</p>
-          <p className="text-sm text-gray-400">Customer reviews</p>
+        <div className="p-6 bg-indigo-50/60 dark:bg-indigo-500/[0.08] rounded-2xl border border-indigo-500/20 dark:border-indigo-500/15 backdrop-blur-sm">
+          <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-300 opacity-80 mb-2">Engagement</p>
+          <p className="text-3xl font-bold text-indigo-700 dark:text-indigo-200 mb-2">{analysis.totalReviews}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Customer reviews</p>
         </div>
       </div>
 
       {/* Strengths */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <FiTrendingUp className="text-green-400" size={24} />
-          <h3 className="text-xl font-bold text-green-400">What Customers Love</h3>
+          <FiTrendingUp className="text-emerald-500 dark:text-emerald-400" size={24} />
+          <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400">What Customers Love</h3>
         </div>
         <div className="space-y-3">
           {analysis.strengths.map((strength, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 p-4 bg-green-500/10 rounded-xl border border-green-500/25 backdrop-blur-sm hover:bg-green-500/15 transition-all"
+              className="flex items-center gap-4 p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/25 backdrop-blur-sm hover:bg-emerald-500/15 transition-all"
             >
-              <span className="text-green-400 text-xl flex-shrink-0">✓</span>
-              <p className="text-green-300 font-medium capitalize">{strength}</p>
+              <span className="text-emerald-500 dark:text-emerald-400 text-xl flex-shrink-0">✓</span>
+              <p className="text-emerald-700 dark:text-emerald-300 font-medium capitalize">{strength}</p>
             </div>
           ))}
         </div>
@@ -131,17 +131,17 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
       {/* Areas for Improvement */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <FiAlertCircle className="text-orange-400" size={24} />
-          <h3 className="text-xl font-bold text-orange-400">Areas to Improve</h3>
+          <FiAlertCircle className="text-amber-500 dark:text-amber-400" size={24} />
+          <h3 className="text-xl font-bold text-amber-600 dark:text-amber-400">Areas to Improve</h3>
         </div>
         <div className="space-y-3">
           {analysis.improvements.map((improvement, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 p-4 bg-orange-500/10 rounded-xl border border-orange-500/25 backdrop-blur-sm hover:bg-orange-500/15 transition-all"
+              className="flex items-center gap-4 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/25 backdrop-blur-sm hover:bg-amber-500/15 transition-all"
             >
-              <span className="text-orange-400 text-xl flex-shrink-0">⚠</span>
-              <p className="text-orange-300 font-medium capitalize">{improvement}</p>
+              <span className="text-amber-500 dark:text-amber-400 text-xl flex-shrink-0">⚠</span>
+              <p className="text-amber-700 dark:text-amber-300 font-medium capitalize">{improvement}</p>
             </div>
           ))}
         </div>
@@ -150,12 +150,12 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
       {/* Key Themes */}
       {analysis.themes.length > 0 && (
         <div>
-          <h3 className="text-xl font-bold text-white mb-4">Popular Themes</h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Popular Themes</h3>
           <div className="flex flex-wrap gap-3">
             {analysis.themes.map((theme, i) => (
               <span
                 key={i}
-                className="px-5 py-2.5 bg-gradient-to-r from-orange-500/20 to-pink-500/20 text-orange-300 rounded-full text-sm font-semibold border border-orange-500/30 hover:border-orange-500/50 hover:bg-orange-500/30 transition-all"
+                className="px-5 py-2.5 bg-blue-500/10 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 rounded-full text-sm font-semibold border border-blue-500/25 dark:border-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/20 transition-all"
               >
                 #{theme}
               </span>
