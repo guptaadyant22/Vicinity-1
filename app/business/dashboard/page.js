@@ -1,7 +1,8 @@
 'use client'
 
-// Business dashboard homepage-style layout
-// Updated to match the Vicinity landing page color theme only
+// Hybrid Vicinity dashboard
+// Mixes the stronger visual style of the original with the cleaner structure
+// Keeps things premium without overwhelming the page
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -10,27 +11,23 @@ import { motion } from 'framer-motion'
 import { Inter, Outfit } from 'next/font/google'
 import {
   FaStar,
-  FaCommentDots,
   FaEye,
-  FaTag,
-  FaStore,
   FaPen,
-  FaCheckCircle,
   FaClock,
   FaArrowRight,
+  FaTag,
+  FaCommentDots,
+  FaCheckCircle,
   FaChartLine,
 } from 'react-icons/fa'
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Cell,
 } from 'recharts'
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
@@ -48,13 +45,13 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-// Shared animation variants
+// Animations
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 22 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: 'easeOut' },
   },
 }
 
@@ -62,11 +59,11 @@ const staggerWrap = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.08 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.06 },
   },
 }
 
-// Landing-page style animated background
+// Animated background
 function HeroBackground() {
   const { isDark } = useTheme()
 
@@ -81,29 +78,29 @@ function HeroBackground() {
         }`}
       />
 
-      {/* Main blue glow */}
+      {/* Main glow */}
       <motion.div
         animate={{
           y: [0, -16, 0],
           scale: [1, 1.05, 1],
-          opacity: [0.25, 0.45, 0.25],
-          transition: { duration: 8, repeat: Infinity, ease: 'easeInOut' },
+          opacity: [0.24, 0.42, 0.24],
         }}
-        className={`absolute left-1/2 top-[8%] h-[540px] w-[540px] -translate-x-1/2 rounded-full blur-[140px] ${
-          isDark ? 'bg-blue-500/18' : 'bg-blue-200/75'
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className={`absolute left-1/2 top-[5%] h-[520px] w-[520px] -translate-x-1/2 rounded-full blur-[140px] ${
+          isDark ? 'bg-blue-500/16' : 'bg-blue-200/75'
         }`}
       />
 
       {/* Left glow */}
       <motion.div
         animate={{
-          x: [0, 16, 0],
-          y: [0, 14, 0],
-          opacity: [0.18, 0.32, 0.18],
-          transition: { duration: 10, repeat: Infinity, ease: 'easeInOut' },
+          x: [0, 14, 0],
+          y: [0, 12, 0],
+          opacity: [0.15, 0.28, 0.15],
         }}
-        className={`absolute left-[-8%] top-[16%] h-[320px] w-[320px] rounded-full blur-[120px] ${
-          isDark ? 'bg-blue-400/12' : 'bg-blue-100/80'
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        className={`absolute left-[-6%] top-[18%] h-[300px] w-[300px] rounded-full blur-[120px] ${
+          isDark ? 'bg-blue-400/12' : 'bg-blue-100/85'
         }`}
       />
 
@@ -112,58 +109,36 @@ function HeroBackground() {
         animate={{
           x: [0, -12, 0],
           y: [0, -10, 0],
-          opacity: [0.14, 0.28, 0.14],
-          transition: { duration: 11, repeat: Infinity, ease: 'easeInOut' },
+          opacity: [0.14, 0.25, 0.14],
         }}
-        className={`absolute right-[-6%] top-[14%] h-[340px] w-[340px] rounded-full blur-[120px] ${
-          isDark ? 'bg-blue-600/12' : 'bg-blue-100/70'
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+        className={`absolute right-[-6%] top-[16%] h-[320px] w-[320px] rounded-full blur-[120px] ${
+          isDark ? 'bg-blue-600/12' : 'bg-blue-100/75'
         }`}
       />
 
-      {/* Bottom glow */}
+      {/* Grid */}
       <motion.div
-        animate={{
-          scale: [1, 1.04, 1],
-          opacity: [0.16, 0.28, 0.16],
-          transition: { duration: 9, repeat: Infinity, ease: 'easeInOut' },
-        }}
-        className={`absolute bottom-[-10%] left-[20%] h-[280px] w-[280px] rounded-full blur-[110px] ${
-          isDark ? 'bg-blue-400/10' : 'bg-blue-50'
-        }`}
-      />
-
-      {/* Top radial wash */}
-      <div
-        className={`absolute inset-0 ${
-          isDark
-            ? 'bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_42%)]'
-            : 'bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_45%)]'
-        }`}
-      />
-
-      {/* Animated grid */}
-      <motion.div
-        animate={{
-          backgroundPosition: ['0px 0px', '72px 72px'],
-          transition: { duration: 18, repeat: Infinity, ease: 'linear' },
-        }}
+        animate={{ backgroundPosition: ['0px 0px', '72px 72px'] }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
         className={`absolute inset-0 ${isDark ? 'opacity-[0.08]' : 'opacity-[0.06]'}`}
         style={{
           backgroundImage:
             'linear-gradient(to right, rgba(59,130,246,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.22) 1px, transparent 1px)',
           backgroundSize: '72px 72px',
           maskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(circle at center, black 45%, transparent 100%)',
         }}
       />
 
       {/* Accent beam */}
       <motion.div
         animate={{
-          opacity: [0.12, 0.35, 0.12],
-          scaleY: [1, 1.15, 1],
-          transition: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+          opacity: [0.12, 0.3, 0.12],
+          scaleY: [1, 1.12, 1],
         }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute right-[12%] top-[14%] h-32 w-[3px] rounded-full bg-blue-400/70 blur-sm"
       />
 
@@ -179,7 +154,7 @@ function HeroBackground() {
   )
 }
 
-// Reusable section glow
+// Soft section glow
 function SectionGlow({ position = 'left' }) {
   const { isDark } = useTheme()
 
@@ -189,44 +164,26 @@ function SectionGlow({ position = 'left' }) {
       <motion.div
         animate={{
           scale: [1, 1.05, 1],
-          opacity: [0.14, 0.28, 0.14],
-          x: [0, position === 'left' ? 18 : -18, 0],
-          transition: { duration: 9, repeat: Infinity, ease: 'easeInOut' },
+          opacity: [0.12, 0.22, 0.12],
+          x: [0, position === 'left' ? 16 : -16, 0],
         }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         className={`absolute ${
-          position === 'left' ? '-left-24 top-10' : '-right-24 top-16'
-        } h-[320px] w-[320px] rounded-full blur-[120px] ${
+          position === 'left' ? '-left-20 top-10' : '-right-20 top-10'
+        } h-[260px] w-[260px] rounded-full blur-[110px] ${
           isDark ? 'bg-blue-500/10' : 'bg-blue-100/80'
-        }`}
-      />
-
-      {/* Smaller glow */}
-      <motion.div
-        animate={{
-          y: [0, -14, 0],
-          opacity: [0.1, 0.2, 0.1],
-          transition: { duration: 7, repeat: Infinity, ease: 'easeInOut' },
-        }}
-        className={`absolute ${
-          position === 'left' ? 'right-10 bottom-0' : 'left-10 bottom-0'
-        } h-[160px] w-[160px] rounded-full blur-[100px] ${
-          isDark ? 'bg-blue-400/10' : 'bg-blue-50'
         }`}
       />
     </>
   )
 }
 
-// Small top badge
-function Eyebrow({ children }) {
+// Reusable premium card
+function GlassCard({ children, className = '' }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.22em] text-blue-700 shadow-[0_0_20px_rgba(59,130,246,0.08)] dark:text-blue-300">
-      {/* Pulse dot */}
-      <motion.span
-        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
-        transition={{ duration: 1.8, repeat: Infinity }}
-        className="h-2.5 w-2.5 rounded-full bg-blue-500"
-      />
+    <div
+      className={`overflow-hidden rounded-[30px] border border-blue-500/15 bg-white/80 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] ${className}`}
+    >
       {children}
     </div>
   )
@@ -238,13 +195,14 @@ export default function BusinessDashboardPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  // Main state
   const [businessData, setBusinessData] = useState(null)
   const [reviews, setReviews] = useState([])
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewTrendData, setReviewTrendData] = useState([])
-  const [ratingBarData, setRatingBarData] = useState([])
 
+  // Load dashboard data
   useEffect(() => {
     const loadData = async () => {
       if (authLoading || !user) return
@@ -259,6 +217,7 @@ export default function BusinessDashboardPage() {
           .eq('owner_id', user.id)
           .single()
 
+        // Redirect if profile is missing
         if (!businessProfile) {
           router.push('/business/profile')
           return
@@ -276,7 +235,7 @@ export default function BusinessDashboardPage() {
         const fetchedReviews = reviewRows || []
         setReviews(fetchedReviews)
 
-        // Load deals
+        // Load active deals
         const { data: dealRows } = await supabase
           .from('deals')
           .select('*')
@@ -284,46 +243,29 @@ export default function BusinessDashboardPage() {
           .eq('is_active', true)
           .order('created_at', { ascending: false })
 
-        const fetchedDeals = dealRows || []
-        setDeals(fetchedDeals)
+        setDeals(dealRows || [])
 
-        // Rating bars
-        const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-
-        fetchedReviews.forEach((review) => {
-          const rounded = Math.round(review.rating || 0)
-          if (counts[rounded] !== undefined) counts[rounded] += 1
-        })
-
-        setRatingBarData(
-          Object.keys(counts).map((star) => ({
-            name: `${star}★`,
-            count: counts[Number(star)],
-            color: Number(star) >= 4 ? '#2563eb' : Number(star) === 3 ? '#60a5fa' : '#cbd5e1',
-          }))
-        )
-
-        // Last 7 days review trend
+        // Build 7-day review trend
         const last7Days = Array.from({ length: 7 }, (_, i) => {
           const d = new Date()
           d.setDate(d.getDate() - (6 - i))
           return d.toISOString().split('T')[0]
         })
 
-        setReviewTrendData(
-          last7Days.map((date) => {
-            const count = fetchedReviews.filter(
-              (review) => review.created_at && review.created_at.startsWith(date)
-            ).length
+        const trend = last7Days.map((date) => {
+          const count = fetchedReviews.filter(
+            (review) => review.created_at && review.created_at.startsWith(date)
+          ).length
 
-            return {
-              date: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
-              reviews: count,
-            }
-          })
-        )
+          return {
+            date: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+            reviews: count,
+          }
+        })
+
+        setReviewTrendData(trend)
       } catch (error) {
-        console.error(error)
+        console.error('Dashboard load error:', error)
       } finally {
         setLoading(false)
       }
@@ -332,43 +274,31 @@ export default function BusinessDashboardPage() {
     loadData()
   }, [authLoading, user, router, supabase])
 
-  // Loading state
-  if (loading) {
-    return (
-      <div
-        className={`${inter.variable} ${outfit.variable} flex h-screen items-center justify-center ${
-          isDark ? 'bg-[#081120]' : 'bg-white'
-        }`}
-        style={{ fontFamily: 'var(--font-inter)' }}
-      >
-        {/* Loading spinner */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
-          className={`h-12 w-12 rounded-full border-[3px] ${
-            isDark
-              ? 'border-blue-500/20 border-t-blue-300'
-              : 'border-blue-200 border-t-blue-600'
-          }`}
-        />
-      </div>
-    )
-  }
-
-  // Derived data
+  // Derived values
   const businessName = businessData?.name || 'Your Business'
   const businessId = businessData?.id
   const totalReviews = reviews.length
+  const latestReview = reviews[0] || null
 
+  // Average rating
   const avgRating =
     totalReviews > 0
       ? reviews.reduce((sum, review) => sum + (review.rating || 0), 0) / totalReviews
       : 0
 
+  // Positive review share
   const positiveReviews = reviews.filter((review) => (review.rating || 0) >= 4).length
   const positiveRate = totalReviews > 0 ? Math.round((positiveReviews / totalReviews) * 100) : 0
-  const latestReview = reviews[0] || null
 
+  // Active valid deals
+  const activeDeals = deals.filter((deal) => {
+    if (!deal.expiry_date) return true
+    return new Date() <= new Date(deal.expiry_date)
+  })
+
+  const activeDealCount = activeDeals.length
+
+  // Last 30 day reviews
   const lastMonthReviews = reviews.filter((review) => {
     if (!review.created_at) return false
     const monthAgo = new Date()
@@ -376,11 +306,7 @@ export default function BusinessDashboardPage() {
     return new Date(review.created_at) >= monthAgo
   }).length
 
-  const activeDealCount = deals.filter((deal) => {
-    if (!deal.expiry_date) return true
-    return new Date() <= new Date(deal.expiry_date)
-  }).length
-
+  // Profile completion
   const profileChecks = [
     businessData?.name,
     businessData?.description,
@@ -392,20 +318,17 @@ export default function BusinessDashboardPage() {
   const completedFields = profileChecks.filter(Boolean).length
   const profileCompletion = Math.round((completedFields / profileChecks.length) * 100)
 
-  // Dashboard summary
-  let dashboardSummary = ''
+  // Short summary for the hero
+  let dashboardSummary = 'Your page is live and ready for quick updates.'
 
   if (totalReviews === 0 && activeDealCount === 0) {
-    dashboardSummary =
-      'You are set up, but the page is still quiet. The clearest next move is to complete your profile and publish a deal so visitors have something timely to engage with.'
+    dashboardSummary = 'Complete your profile and add a deal to make the page feel active.'
   } else if (totalReviews > 0 && positiveRate >= 80) {
-    dashboardSummary = `Your reputation looks strong right now. ${positiveRate}% of your reviews are 4 to 5 stars, which creates a solid trust signal for new visitors.`
+    dashboardSummary = 'Your reviews look strong right now and create a solid first impression.'
   } else if (totalReviews > 0 && positiveRate < 60) {
-    dashboardSummary =
-      'Customer feedback is more mixed at the moment. A strong next step would be reviewing your latest comments and updating your offers or profile details to address recurring concerns.'
+    dashboardSummary = 'Feedback is more mixed, so reviews and offers are the best place to focus next.'
   } else {
-    dashboardSummary =
-      'Your page has healthy activity, but there is still room to make it feel more active and current. Fresh profile details and updated offers can help convert more visitors.'
+    dashboardSummary = 'Your page has activity, and a few updates could make it feel even stronger.'
   }
 
   // Greeting helper
@@ -414,6 +337,49 @@ export default function BusinessDashboardPage() {
     if (hour < 12) return 'Good morning'
     if (hour < 18) return 'Good afternoon'
     return 'Good evening'
+  }
+
+  // Quick stats
+  const stats = [
+    {
+      label: 'Average rating',
+      value: totalReviews > 0 ? avgRating.toFixed(1) : '0.0',
+    },
+    {
+      label: 'Total reviews',
+      value: totalReviews,
+    },
+    {
+      label: 'Active deals',
+      value: activeDealCount,
+    },
+    {
+      label: 'Profile completion',
+      value: `${profileCompletion}%`,
+    },
+  ]
+
+  // Loading state
+  if (loading) {
+    return (
+      <div
+        className={`${inter.variable} ${outfit.variable} flex h-screen items-center justify-center ${
+          isDark ? 'bg-[#081120]' : 'bg-white'
+        }`}
+        style={{ fontFamily: 'var(--font-inter)' }}
+      >
+        {/* Spinner */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.7, repeat: Infinity, ease: 'linear' }}
+          className={`h-12 w-12 rounded-full border-[3px] ${
+            isDark
+              ? 'border-blue-500/20 border-t-blue-300'
+              : 'border-blue-200 border-t-blue-600'
+          }`}
+        />
+      </div>
+    )
   }
 
   return (
@@ -425,229 +391,297 @@ export default function BusinessDashboardPage() {
       <HeroBackground />
 
       <BusinessLayout>
-        <div className="relative z-10 overflow-hidden">
+        <div className="relative z-10">
           <motion.div
             variants={staggerWrap}
             initial="hidden"
             animate="visible"
-            className="mx-auto max-w-7xl px-6 pb-24 lg:px-8"
+            className="mx-auto max-w-7xl px-6 pb-20 pt-8 lg:px-8"
           >
-            {/* Hero section */}
-            <motion.section
-              variants={fadeUp}
-              className="relative px-0 pb-12 pt-8 md:pb-16 md:pt-12"
-            >
-              <div className="grid items-center gap-12 lg:grid-cols-[1.2fr_0.8fr]">
-                {/* Left hero content */}
+            {/* Hero */}
+            <motion.section variants={fadeUp} className="relative pb-8 md:pb-10">
+              <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+                {/* Hero left */}
                 <div className="max-w-4xl">
-                  <Eyebrow>Business home</Eyebrow>
-
-                  {/* Hero title */}
-                  <h1 className="mt-6 font-[var(--font-outfit)] text-4xl font-semibold tracking-[-0.07em] text-slate-900 dark:text-white md:text-6xl lg:text-7xl">
+                  <h1 className="mt-1 font-[var(--font-outfit)] text-4xl font-semibold tracking-[-0.07em] text-slate-900 dark:text-white md:text-6xl">
                     {getGreeting()},{' '}
                     <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent dark:from-blue-300 dark:to-blue-500">
                       {businessName}
                     </span>
                   </h1>
 
-                  {/* Hero description */}
-                  <p className="mt-6 max-w-3xl text-[15px] leading-8 text-slate-600 dark:text-slate-400 md:text-[17px]">
-                    This page is designed more like a home base than a heavy dashboard. It gives you a quick sense of how your business is performing on Vicinity, what customers are saying, and what action is most worth your time next.
-                  </p>
-
-                  {/* Hero summary */}
-                  <p className="mt-5 max-w-3xl text-[15px] leading-8 text-slate-600 dark:text-slate-400">
+                  <p className="mt-5 max-w-2xl text-[15px] leading-8 text-slate-600 dark:text-slate-400 md:text-[16px]">
                     {dashboardSummary}
                   </p>
 
-                  {/* Hero actions */}
                   <div className="mt-8 flex flex-wrap gap-3">
                     <a
                       href={`/business/${businessId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-500/20 bg-white px-5 py-3 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-slate-900 transition-colors hover:border-blue-500/40 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.06]"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-500/20 bg-white px-5 py-3 font-[var(--font-outfit)] text-sm font-semibold text-slate-900 transition-colors hover:border-blue-500/40 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.06]"
                     >
+                      {/* View public page */}
                       <FaEye className="text-xs" />
                       View public profile
                     </a>
 
                     <Link
                       href="/business/profile"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-[var(--font-outfit)] text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
                     >
+                      {/* Edit business */}
                       <FaPen className="text-xs" />
                       Edit business
                     </Link>
                   </div>
                 </div>
 
-                {/* Right hero panel */}
-                <div className="relative mx-auto w-full max-w-xl">
-                  {/* Outer glow */}
-                  <motion.div
-                    animate={{
-                      scale: [1, 1.04, 1],
-                      opacity: [0.18, 0.34, 0.18],
-                      transition: { duration: 7, repeat: Infinity, ease: 'easeInOut' },
-                    }}
-                    className="absolute inset-0 -z-10 rounded-[36px] bg-blue-500/10 blur-3xl"
-                  />
+                {/* Hero right compact overview */}
+                <div className="relative">
+                  <GlassCard className="relative p-6 md:p-7">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/8 via-transparent to-transparent" />
 
-                  <div className="overflow-hidden rounded-[36px] border border-blue-500/15 bg-white/80 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
-                    <div className="border-b border-blue-500/10 px-6 py-4 dark:border-white/10">
+                    <div className="relative z-10">
                       <p className="font-[var(--font-outfit)] text-sm font-medium tracking-[0.02em] text-blue-600 dark:text-blue-300">
                         Today on Vicinity
                       </p>
+
                       <h2 className="mt-2 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
-                        Your page status in one quick read
+                        Your page in one quick read
                       </h2>
-                    </div>
 
-                    <div className="space-y-0 p-6">
-                      {[
-                        {
-                          label: 'Average rating',
-                          text: 'Your overall public score right now.',
-                          value: avgRating.toFixed(1),
-                        },
-                        {
-                          label: 'Total reviews',
-                          text: 'Feedback left by your customers.',
-                          value: totalReviews,
-                        },
-                        {
-                          label: 'Active deals',
-                          text: 'Offers visitors can act on now.',
-                          value: activeDealCount,
-                        },
-                        {
-                          label: 'Profile completion',
-                          text: 'How complete your business page feels.',
-                          value: `${profileCompletion}%`,
-                        },
-                      ].map((item, index) => (
-                        <div key={item.label}>
-                          <div className="flex items-start justify-between gap-5 py-4">
-                            <div>
-                              <p className="font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                                {item.label}
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                                {item.text}
-                              </p>
-                            </div>
-                            <p className="font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
-                              {item.value}
-                            </p>
-                          </div>
+                      <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                        Strong pages stay current, clear, and easy to trust.
+                      </p>
 
-                          {index !== 3 && (
-                            <div className="h-px bg-blue-500/10 dark:bg-white/10" />
-                          )}
+                      <div className="mt-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
+                            Positive reviews
+                          </span>
+                          <span className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white">
+                            {positiveRate}%
+                          </span>
                         </div>
-                      ))}
+
+                        <div className="h-px bg-blue-500/10 dark:bg-white/10" />
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
+                            Reviews this month
+                          </span>
+                          <span className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white">
+                            {lastMonthReviews}
+                          </span>
+                        </div>
+
+                        <div className="h-px bg-blue-500/10 dark:bg-white/10" />
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
+                            Next best move
+                          </span>
+                          <span className="text-right font-[var(--font-outfit)] text-sm font-semibold text-blue-600 dark:text-blue-300">
+                            {activeDealCount === 0 ? 'Add a deal' : 'Check reviews'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </GlassCard>
                 </div>
               </div>
             </motion.section>
 
-            {/* Stat strip */}
-            <motion.section
-              variants={fadeUp}
-              className="relative mb-16 overflow-hidden rounded-[32px] border border-blue-500/15 bg-white/80 px-6 py-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] md:px-8"
-            >
+            {/* Stats row */}
+            <motion.section variants={fadeUp} className="relative pb-8">
               <SectionGlow position="left" />
 
-              <div className="relative z-10 grid grid-cols-2 gap-6 md:grid-cols-4">
-                <div>
-                  <p className="font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                    Positive share
-                  </p>
-                  <p className="mt-2 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white md:text-3xl">
-                    {positiveRate}%
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                    Last 30 days
-                  </p>
-                  <p className="mt-2 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white md:text-3xl">
-                    {lastMonthReviews}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                    Active offers
-                  </p>
-                  <p className="mt-2 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white md:text-3xl">
-                    {activeDealCount}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                    Business page
-                  </p>
-                  <p className="mt-2 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white md:text-3xl">
-                    Live
-                  </p>
-                </div>
+              <div className="relative z-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+                {stats.map((item) => (
+                  <GlassCard key={item.label} className="p-5 md:p-6">
+                    <p className="font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                      {item.label}
+                    </p>
+                    <p className="mt-3 font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
+                      {item.value}
+                    </p>
+                  </GlassCard>
+                ))}
               </div>
             </motion.section>
 
-            {/* Business health section */}
-            <motion.section variants={fadeUp} className="relative py-10 md:py-16">
-              <SectionGlow position="right" />
-
-              <div className="relative z-10 grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
-                {/* Text side */}
-                <div>
-                  <Eyebrow>Business health</Eyebrow>
-
-                  <h2 className="mt-6 font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.06em] text-slate-900 dark:text-white md:text-5xl">
-                    A cleaner read on how your business is doing
-                  </h2>
-
-                  <p className="mt-5 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    Your business currently has {totalReviews} total reviews with an average rating of {avgRating.toFixed(1)}. That tells the broad story, but what matters more is whether the page feels active, trustworthy, and current when someone lands on it for the first time.
-                  </p>
-
-                  <p className="mt-4 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    Right now, {positiveRate}% of your reviews are positive and you have {activeDealCount} active deal{activeDealCount === 1 ? '' : 's'}. Those two signals work together because visitors want both confidence and a reason to act.
-                  </p>
-
-                  <div className="mt-7">
-                    <Link
-                      href="/business/reviews"
-                      className="inline-flex items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
-                    >
-                      Review customer feedback <FaArrowRight className="text-xs" />
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Chart side */}
-                <div className="rounded-[32px] border border-blue-500/15 bg-white/80 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] md:p-6">
-                  <div className="mb-4">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-[var(--font-outfit)] text-sm font-semibold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">
-                      <span className="h-2 w-2 rounded-full bg-blue-500" />
-                      Light analytics
+            {/* Main row */}
+            <motion.section variants={fadeUp} className="relative pb-8">
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Latest review */}
+                <GlassCard className="p-6 md:p-8">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="mt-0 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white md:text-3xl">
+                        Latest review
+                      </h2>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                        See the newest customer feedback at a glance.
+                      </p>
                     </div>
 
-                    <h3 className="mt-4 font-[var(--font-outfit)] text-xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-white md:text-2xl">
-                      Review activity over the last 7 days
-                    </h3>
-
-                    <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">
-                      This is just a quick pulse. It helps you spot whether feedback is arriving steadily or in short bursts without turning the page into a heavy analytics dashboard.
-                    </p>
+                    <Link
+                      href="/business/reviews"
+                      className="hidden items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold text-blue-600 dark:text-blue-300 md:inline-flex"
+                    >
+                      Open reviews <FaArrowRight className="text-xs" />
+                    </Link>
                   </div>
 
-                  <div className="h-72">
+                  {latestReview ? (
+                    <div className="mt-7">
+                      <div className="flex items-start gap-4">
+                        {/* Avatar */}
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.22)]">
+                          {(latestReview.user_name || 'C').charAt(0).toUpperCase()}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                            <div>
+                              <h3 className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white">
+                                {latestReview.user_name || 'Customer'}
+                              </h3>
+
+                              {/* Stars */}
+                              <div className="mt-2 flex gap-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <FaStar
+                                    key={i}
+                                    size={14}
+                                    className={
+                                      i < (latestReview.rating || 0)
+                                        ? 'text-blue-500'
+                                        : isDark
+                                        ? 'text-slate-700'
+                                        : 'text-slate-300'
+                                    }
+                                  />
+                                ))}
+                              </div>
+                            </div>
+
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {latestReview.created_at
+                                ? new Date(latestReview.created_at).toLocaleDateString()
+                                : 'No date'}
+                            </span>
+                          </div>
+
+                          <p className="mt-4 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
+                            {truncateText(latestReview.text || '', 260)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Link
+                        href="/business/reviews"
+                        className="mt-6 inline-flex items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200 md:hidden"
+                      >
+                        Open reviews <FaArrowRight className="text-xs" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="mt-7 rounded-3xl border border-blue-500/10 bg-white/70 p-5 dark:border-white/10 dark:bg-white/[0.03]">
+                      <p className="text-[15px] leading-7 text-slate-600 dark:text-slate-400">
+                        No reviews yet. New customer feedback will show here.
+                      </p>
+                    </div>
+                  )}
+                </GlassCard>
+
+                {/* Deals */}
+                <GlassCard className="p-6 md:p-8">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="mt-0 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white md:text-3xl">
+                        Active deals
+                      </h2>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                        Keep your page feeling current with live offers.
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/business/deals"
+                      className="hidden items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold text-blue-600 dark:text-blue-300 md:inline-flex"
+                    >
+                      Manage deals <FaArrowRight className="text-xs" />
+                    </Link>
+                  </div>
+
+                  <div className="mt-7 space-y-4">
+                    {activeDeals.length > 0 ? (
+                      activeDeals.slice(0, 2).map((deal) => (
+                        <div
+                          key={deal.id}
+                          className="rounded-3xl border border-blue-500/10 bg-white/72 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-white/[0.03]"
+                        >
+                          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-[var(--font-outfit)] text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">
+                            <FaTag className="text-[10px]" />
+                            Live offer
+                          </div>
+
+                          <h3 className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white">
+                            {deal.title || 'Untitled deal'}
+                          </h3>
+
+                          <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                            {truncateText(deal.description || 'No description provided.', 120)}
+                          </p>
+
+                          {deal.expiry_date && (
+                            <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                              <FaClock size={11} />
+                              Ends {new Date(deal.expiry_date).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-3xl border border-blue-500/10 bg-white/72 p-5 dark:border-white/10 dark:bg-white/[0.03]">
+                        <p className="text-[15px] leading-7 text-slate-600 dark:text-slate-400">
+                          No active deals right now.
+                        </p>
+
+                        <Link
+                          href="/business/deals"
+                          className="mt-4 inline-flex items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+                        >
+                          Create your first deal <FaArrowRight className="text-xs" />
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </GlassCard>
+              </div>
+            </motion.section>
+
+            {/* Bottom row */}
+            <motion.section variants={fadeUp} className="relative pb-12">
+              <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+                {/* Light analytics */}
+                <GlassCard className="p-6 md:p-7">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="mt-0 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
+                        Review activity
+                      </h2>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                        Just enough detail to spot momentum without clutter.
+                      </p>
+                    </div>
+
+                    <FaChartLine className="mt-1 text-blue-500" />
+                  </div>
+
+                  <div className="mt-6 h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={reviewTrendData}>
                         <defs>
@@ -700,379 +734,53 @@ export default function BusinessDashboardPage() {
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                </div>
-              </div>
-            </motion.section>
+                </GlassCard>
 
-            {/* Latest review section */}
-            <motion.section variants={fadeUp} className="relative py-10 md:py-16">
-              <SectionGlow position="left" />
-
-              <div className="relative z-10 grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-                {/* Review card */}
-                <div className="rounded-[32px] border border-blue-500/15 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] md:p-8">
-                  <Eyebrow>Latest feedback</Eyebrow>
-
-                  <h2 className="mt-6 font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.05em] text-slate-900 dark:text-white md:text-4xl">
-                    What your most recent customer is saying
+                {/* Next actions */}
+                <GlassCard className="p-6 md:p-7">
+                  <h2 className="mt-0 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
+                    Keep your page active
                   </h2>
 
-                  {latestReview ? (
-                    <div className="mt-8">
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.22)]">
-                          {(latestReview.user_name || 'C').charAt(0).toUpperCase()}
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                            <div>
-                              <h3 className="font-[var(--font-outfit)] text-lg font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">
-                                {latestReview.user_name || 'Customer'}
-                              </h3>
-
-                              <div className="mt-2 flex gap-1">
-                                {[...Array(5)].map((_, i) => (
-                                  <FaStar
-                                    key={i}
-                                    size={14}
-                                    className={
-                                      i < (latestReview.rating || 0)
-                                        ? 'text-blue-500'
-                                        : isDark
-                                        ? 'text-slate-700'
-                                        : 'text-slate-300'
-                                    }
-                                  />
-                                ))}
-                              </div>
-                            </div>
-
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              {new Date(latestReview.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-
-                          <p className="mt-5 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                            {truncateText(latestReview.text || '', 420)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-8">
-                      <p className="text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                        No one has left a review yet. Once feedback starts coming in, this section becomes one of the most useful parts of the page because it shows you the newest customer impression in plain language.
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="mt-8">
-                    <Link
-                      href="/business/reviews"
-                      className="inline-flex items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
-                    >
-                      Open full review history <FaArrowRight className="text-xs" />
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Review text side */}
-                <div>
-                  <Eyebrow>Customer perception</Eyebrow>
-
-                  <h2 className="mt-6 font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.06em] text-slate-900 dark:text-white md:text-5xl">
-                    Reviews do more than raise or lower a score
-                  </h2>
-
-                  <p className="mt-5 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    For most people, reviews are not just proof that your business exists. They shape the emotional tone of the page. They tell visitors whether your service feels reliable, welcoming, and worth trying.
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                    A few focused updates go further than lots of extra content.
                   </p>
 
-                  <p className="mt-4 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    That is why this page highlights the newest review in a more editorial way. It helps you notice what people are actually experiencing instead of only looking at summary numbers.
-                  </p>
-
-                  <div className="mt-7 flex flex-wrap gap-3">
-                    <Link
-                      href="/business/reviews"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-500/20 bg-white px-4 py-2 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-slate-900 transition-colors hover:border-blue-500/40 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.06]"
-                    >
-                      <FaCommentDots className="text-xs text-blue-600 dark:text-blue-300" />
-                      Manage reviews
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </motion.section>
-
-            {/* Deals section */}
-            <motion.section variants={fadeUp} className="relative py-10 md:py-16">
-              <SectionGlow position="right" />
-
-              <div className="relative z-10 grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
-                {/* Text side */}
-                <div>
-                  <Eyebrow>Offers and momentum</Eyebrow>
-
-                  <h2 className="mt-6 font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.06em] text-slate-900 dark:text-white md:text-5xl">
-                    Active deals make your page feel current
-                  </h2>
-
-                  <p className="mt-5 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    A business page with a timely offer usually feels more alive than one that only shows static information. It gives people a reason to pay attention now, not later.
-                  </p>
-
-                  <p className="mt-4 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    You currently have {activeDealCount} active deal{activeDealCount === 1 ? '' : 's'}. Even one well-written offer can make the profile feel more relevant, more useful, and more actionable for a visitor browsing nearby options.
-                  </p>
-
-                  <div className="mt-7">
-                    <Link
-                      href="/business/deals"
-                      className="inline-flex items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
-                    >
-                      Manage offers and deals <FaArrowRight className="text-xs" />
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Deals card */}
-                <div className="rounded-[32px] border border-blue-500/15 bg-white/80 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] md:p-8">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-[var(--font-outfit)] text-sm font-semibold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">
-                        <span className="h-2 w-2 rounded-full bg-blue-500" />
-                        Current offers
-                      </div>
-
-                      <h3 className="mt-4 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
-                        Active deals on your page
-                      </h3>
-                    </div>
-
-                    <Link
-                      href="/business/deals"
-                      className="font-[var(--font-outfit)] text-sm font-semibold text-blue-600 dark:text-blue-300"
-                    >
-                      View all
-                    </Link>
-                  </div>
-
-                  <div className="mt-6 space-y-4">
-                    {deals.length > 0 ? (
-                      deals.slice(0, 3).map((deal) => (
-                        <div
-                          key={deal.id}
-                          className="group relative overflow-hidden rounded-3xl border border-blue-500/10 bg-white/75 p-5 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all duration-300 hover:border-blue-500/30 hover:shadow-[0_20px_60px_rgba(59,130,246,0.12)] dark:border-white/10 dark:bg-white/[0.04]"
-                        >
-                          {/* Hover glow */}
-                          <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-blue-500/0 blur-3xl transition-all duration-500 group-hover:bg-blue-500/15" />
-
-                          <div className="relative z-10 flex items-start justify-between gap-4">
-                            <div className="max-w-2xl">
-                              <div className="mb-3 inline-flex rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-[var(--font-outfit)] text-xs font-medium tracking-[0.02em] text-blue-700 dark:text-blue-300">
-                                Live offer
-                              </div>
-
-                              <h4 className="font-[var(--font-outfit)] text-lg font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
-                                {deal.title || 'Untitled Deal'}
-                              </h4>
-
-                              <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
-                                {truncateText(deal.description || 'No description provided.', 150)}
-                              </p>
-
-                              {deal.expiry_date && (
-                                <div className="mt-4 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                  <FaClock size={11} />
-                                  Ends {new Date(deal.expiry_date).toLocaleDateString()}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="shrink-0 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 font-[var(--font-outfit)] text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-600 dark:text-blue-300">
-                              Active
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="rounded-3xl border border-blue-500/10 bg-white/75 p-5 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
-                        <h4 className="font-[var(--font-outfit)] text-lg font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
-                          No active deals yet
-                        </h4>
-
-                        <p className="mt-3 text-sm leading-8 text-slate-600 dark:text-slate-400">
-                          Your page would feel more current with at least one live offer. A deal creates urgency and gives visitors an immediate reason to engage.
-                        </p>
-
-                        <Link
-                          href="/business/deals"
-                          className="mt-5 inline-flex items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
-                        >
-                          Create your first deal <FaArrowRight className="text-xs" />
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </motion.section>
-
-            {/* Insights section */}
-            <motion.section variants={fadeUp} className="relative py-10 md:py-16">
-              <SectionGlow position="left" />
-
-              <div className="relative z-10 grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-                {/* Chart panel */}
-                <div className="rounded-[32px] border border-blue-500/15 bg-white/80 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] md:p-6">
-                  <div className="mb-4">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-[var(--font-outfit)] text-sm font-semibold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">
-                      <span className="h-2 w-2 rounded-full bg-blue-500" />
-                      Rating spread
-                    </div>
-
-                    <h3 className="mt-4 font-[var(--font-outfit)] text-xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-white md:text-2xl">
-                      How your ratings are distributed
-                    </h3>
-
-                    <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">
-                      This chart is intentionally small. It helps you see whether your average rating is backed by consistent reviews or pulled around by a small number of extremes.
-                    </p>
-                  </div>
-
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={ratingBarData} margin={{ top: 8, right: 10, left: -18, bottom: 0 }}>
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(59,130,246,0.10)'}
-                          vertical={false}
-                        />
-
-                        <XAxis
-                          dataKey="name"
-                          stroke={isDark ? '#94a3b8' : '#64748b'}
-                          fontSize={12}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-
-                        <YAxis
-                          stroke={isDark ? '#94a3b8' : '#64748b'}
-                          fontSize={11}
-                          tickLine={false}
-                          axisLine={false}
-                          allowDecimals={false}
-                        />
-
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: isDark ? '#0d1424' : '#ffffff',
-                            border: isDark
-                              ? '1px solid rgba(255,255,255,0.08)'
-                              : '1px solid rgba(59,130,246,0.18)',
-                            borderRadius: '16px',
-                            color: isDark ? '#fff' : '#0f172a',
-                          }}
-                          cursor={{
-                            fill: isDark
-                              ? 'rgba(255,255,255,0.04)'
-                              : 'rgba(59,130,246,0.05)',
-                          }}
-                        />
-
-                        <Bar dataKey="count" radius={[10, 10, 0, 0]} barSize={44}>
-                          {ratingBarData.map((entry, index) => (
-                            <Cell key={`bar-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Text side */}
-                <div>
-                  <Eyebrow>Reputation insight</Eyebrow>
-
-                  <h2 className="mt-6 font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.06em] text-slate-900 dark:text-white md:text-5xl">
-                    Reputation is clearer when you see the shape, not just the score
-                  </h2>
-
-                  <p className="mt-5 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    A strong average rating matters, but consistency matters too. If most reviews cluster around 4 and 5 stars, visitors usually read that as stable trust. If the spread is more uneven, people may hesitate even when the average looks decent.
-                  </p>
-
-                  <p className="mt-4 text-[15px] leading-8 text-slate-600 dark:text-slate-400">
-                    That is why the dashboard keeps one simple rating chart instead of overloading the page with analytics. It gives you just enough context to understand how your reputation is forming.
-                  </p>
-
-                  <div className="mt-7 flex flex-wrap gap-3">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-blue-700 dark:text-blue-300">
-                      <FaChartLine className="text-xs" />
-                      Minimal but useful
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.section>
-
-            {/* CTA section */}
-            <motion.section variants={fadeUp} className="relative px-0 pb-20 pt-8 md:pb-24">
-              <SectionGlow position="right" />
-
-              <div className="relative z-10 overflow-hidden rounded-[32px] border border-blue-500/15 bg-white/80 px-8 py-10 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04] md:px-12 md:py-12">
-                {/* CTA glow */}
-                <motion.div
-                  animate={{
-                    x: ['-10%', '10%', '-10%'],
-                    opacity: [0.08, 0.18, 0.08],
-                    transition: { duration: 8, repeat: Infinity, ease: 'easeInOut' },
-                  }}
-                  className="absolute inset-0 bg-blue-500/10 blur-3xl"
-                />
-
-                <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                  <div className="max-w-2xl">
-                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-[var(--font-outfit)] text-xs font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">
-                      <FaCheckCircle className="text-[11px]" />
-                      Built for clarity
-                    </div>
-
-                    <h3 className="font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.05em] text-slate-900 dark:text-white md:text-4xl">
-                      Keep your Vicinity page active, clear, and worth visiting again
-                    </h3>
-
-                    <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-400 md:text-[15px]">
-                      The strongest business pages on Vicinity stay complete, stay current, and keep giving people a reason to trust what they see. That usually means maintaining profile quality, responding to feedback, and running at least one useful active offer.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="mt-6 space-y-3">
                     <Link
                       href="/business/profile"
-                      className="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3.5 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-white shadow-[0_12px_30px_rgba(59,130,246,0.22)]"
+                      className="flex items-center justify-between rounded-2xl border border-blue-500/15 bg-white/70 px-4 py-4 font-[var(--font-outfit)] text-sm font-semibold text-slate-900 transition-colors hover:border-blue-500/35 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]"
                     >
-                      Update profile
-                    </Link>
-
-                    <Link
-                      href="/business/deals"
-                      className="inline-flex items-center justify-center rounded-2xl border border-blue-500/20 bg-white px-6 py-3.5 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-slate-900 transition-colors hover:border-blue-500/40 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.06]"
-                    >
-                      Manage deals
+                      <span>Update profile</span>
+                      <FaPen className="text-xs text-blue-600 dark:text-blue-300" />
                     </Link>
 
                     <Link
                       href="/business/reviews"
-                      className="inline-flex items-center justify-center rounded-2xl border border-blue-500/20 bg-white px-6 py-3.5 font-[var(--font-outfit)] text-sm font-semibold tracking-[0.01em] text-slate-900 transition-colors hover:border-blue-500/40 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.06]"
+                      className="flex items-center justify-between rounded-2xl border border-blue-500/15 bg-white/70 px-4 py-4 font-[var(--font-outfit)] text-sm font-semibold text-slate-900 transition-colors hover:border-blue-500/35 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]"
                     >
-                      Review feedback
+                      <span>Review feedback</span>
+                      <FaCommentDots className="text-xs text-blue-600 dark:text-blue-300" />
+                    </Link>
+
+                    <Link
+                      href="/business/deals"
+                      className="flex items-center justify-between rounded-2xl border border-blue-500/15 bg-white/70 px-4 py-4 font-[var(--font-outfit)] text-sm font-semibold text-slate-900 transition-colors hover:border-blue-500/35 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]"
+                    >
+                      <span>Manage deals</span>
+                      <FaTag className="text-xs text-blue-600 dark:text-blue-300" />
                     </Link>
                   </div>
-                </div>
+
+                  <div className="mt-6 rounded-2xl border border-blue-500/15 bg-blue-500/6 p-4 dark:bg-blue-500/8">
+                    <div className="flex items-start gap-3">
+                      <FaCheckCircle className="mt-1 text-blue-500" />
+                      <p className="text-sm leading-7 text-slate-600 dark:text-slate-400">
+                        Keep this page focused: one clear update, one active offer, and one recent review signal are usually enough.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
               </div>
             </motion.section>
           </motion.div>
@@ -1082,7 +790,7 @@ export default function BusinessDashboardPage() {
   )
 }
 
-// Text helper
+// Small text helper
 function truncateText(text, maxLength) {
   if (!text) return ''
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text

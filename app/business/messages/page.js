@@ -1,14 +1,8 @@
 'use client'
 
-// =============================================================================
-// BUSINESS MESSAGES PAGE — Vicinity
-// =============================================================================
-// Flow:
-// 1. Business owner views incoming message requests
-// 2. Can filter by pending / active / ignored
-// 3. Can accept or ignore pending requests via RPC
-// 4. Once accepted, can chat with the user in real-time
-// =============================================================================
+// BUSINESS MESSAGES PAGE
+// Vicinity
+// Same backend logic, compact UI only
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -26,28 +20,32 @@ import {
   FaExclamationTriangle,
 } from 'react-icons/fa'
 import { Inter, Outfit } from 'next/font/google'
-
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-// -- Font setup --------------------------------------------------------------
+// Font setup
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 
-// -- Theme tokens (Vicinity design language) ---------------------------------
-const PAGE_WRAP = `${inter.variable} ${outfit.variable} relative min-h-screen overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#081120] dark:text-white`
+// Shared UI styles
+const PAGE_WRAP =
+  `${inter.variable} ${outfit.variable} relative min-h-screen overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#081120] dark:text-white`
 
-const GLASS_BG = 'bg-white/75 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 transition-colors duration-300'
+const PANEL =
+  'rounded-[24px] border border-blue-500/12 bg-white/78 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.07)] transition-colors duration-300 dark:border-white/10 dark:bg-[#0f172a]/92 dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)]'
 
-const GLASS_CARD = 'bg-white/80 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 rounded-[28px] p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] hover:border-blue-500/28 hover:shadow-[0_20px_60px_rgba(59,130,246,0.10)] transition-all duration-300'
+const SOFT_BUTTON =
+  'inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-500/15 bg-white px-4 py-2.5 font-[var(--font-outfit)] text-xs font-semibold text-slate-700 transition-all hover:border-blue-500/30 hover:bg-blue-50 dark:border-white/10 dark:bg-[#162033] dark:text-slate-300 dark:hover:bg-[#1d2a44]'
 
-const GLASS_INPUT = 'w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:bg-blue-50/50 dark:focus:bg-[#162033] focus:outline-none transition-all'
+const FILTER_BUTTON =
+  'inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 font-[var(--font-outfit)] text-xs font-semibold transition-all'
 
-// -- Background component ----------------------------------------------------
+// Background
 function PageBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Base */}
       <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
 
       {/* Main glow */}
@@ -56,9 +54,9 @@ function PageBackground() {
           y: [0, -16, 0],
           scale: [1, 1.05, 1],
           opacity: [0.22, 0.4, 0.22],
-          transition: { duration: 8, repeat: Infinity, ease: 'easeInOut' },
         }}
-        className="absolute left-1/2 top-[8%] h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/16"
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute left-1/2 top-[4%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-200/75 blur-[140px] dark:bg-blue-500/16"
       />
 
       {/* Left glow */}
@@ -66,10 +64,10 @@ function PageBackground() {
         animate={{
           x: [0, 16, 0],
           y: [0, 14, 0],
-          opacity: [0.15, 0.28, 0.15],
-          transition: { duration: 10, repeat: Infinity, ease: 'easeInOut' },
+          opacity: [0.14, 0.26, 0.14],
         }}
-        className="absolute left-[-8%] top-[16%] h-[320px] w-[320px] rounded-full bg-blue-100/80 blur-[120px] dark:bg-blue-400/10"
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute left-[-8%] top-[18%] h-[280px] w-[280px] rounded-full bg-blue-100/85 blur-[120px] dark:bg-blue-400/10"
       />
 
       {/* Right glow */}
@@ -77,35 +75,37 @@ function PageBackground() {
         animate={{
           x: [0, -12, 0],
           y: [0, -10, 0],
-          opacity: [0.12, 0.24, 0.12],
-          transition: { duration: 11, repeat: Infinity, ease: 'easeInOut' },
+          opacity: [0.12, 0.22, 0.12],
         }}
-        className="absolute right-[-6%] top-[14%] h-[340px] w-[340px] rounded-full bg-blue-100/70 blur-[120px] dark:bg-blue-600/10"
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute right-[-6%] top-[16%] h-[300px] w-[300px] rounded-full bg-blue-100/70 blur-[120px] dark:bg-blue-600/10"
       />
 
-      {/* Grid pattern */}
+      {/* Grid */}
       <motion.div
-        animate={{
-          backgroundPosition: ['0px 0px', '72px 72px'],
-          transition: { duration: 18, repeat: Infinity, ease: 'linear' },
-        }}
+        animate={{ backgroundPosition: ['0px 0px', '72px 72px'] }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
         className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]"
         style={{
-          backgroundImage: 'linear-gradient(to right, rgba(59,130,246,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.22) 1px, transparent 1px)',
+          backgroundImage:
+            'linear-gradient(to right, rgba(59,130,246,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.22) 1px, transparent 1px)',
           backgroundSize: '72px 72px',
           maskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(circle at center, black 45%, transparent 100%)',
         }}
       />
 
+      {/* Bottom fade */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-[#081120]" />
     </div>
   )
 }
 
-// -- Helpers -----------------------------------------------------------------
+// Helpers
 const formatTime = (dateValue) => {
   if (!dateValue) return 'Recently'
+
   return new Date(dateValue).toLocaleString(undefined, {
     month: 'short',
     day: 'numeric',
@@ -116,26 +116,28 @@ const formatTime = (dateValue) => {
 }
 
 const getStatusBadgeClasses = (status) => {
-  if (status === 'active') return 'bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300'
-  if (status === 'ignored') return 'bg-slate-100 dark:bg-[#162033] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300'
+  if (status === 'active') {
+    return 'bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300'
+  }
+
+  if (status === 'ignored') {
+    return 'bg-slate-100 dark:bg-[#162033] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300'
+  }
+
   return 'bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-300'
 }
 
-
-// =============================================================================
-// MAIN PAGE COMPONENT
-// =============================================================================
 export default function BusinessMessagesPage() {
   const { user, loading: authLoading } = useAuth()
   const [supabase] = useState(() => createClient())
 
-  // -- Data state ------------------------------------------------------------
+  // Data state
   const [business, setBusiness] = useState(null)
   const [requests, setRequests] = useState([])
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [currentMessages, setCurrentMessages] = useState([])
 
-  // -- UI state --------------------------------------------------------------
+  // UI state
   const [loading, setLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [success, setSuccess] = useState(null)
@@ -144,176 +146,196 @@ export default function BusinessMessagesPage() {
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
 
-  // -- Stable ref to preserve selection across realtime updates ---------------
+  // Refs
   const selectedRequestIdRef = useRef(null)
   const messagesEndRef = useRef(null)
 
-  // Keep ref in sync
+  // Keep selected ref synced
   useEffect(() => {
     selectedRequestIdRef.current = selectedRequest?.id || null
   }, [selectedRequest?.id])
 
-  // Auto-scroll to bottom when messages change
+  // Auto scroll messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [currentMessages])
 
+  // Load conversation
+  const loadConversation = useCallback(
+    async (requestId, showLoader = true) => {
+      if (!requestId) {
+        setCurrentMessages([])
+        return
+      }
 
-  // -- LOAD CONVERSATION MESSAGES --------------------------------------------
-  const loadConversation = useCallback(async (requestId, showLoader = true) => {
-    if (!requestId) { setCurrentMessages([]); return }
+      try {
+        if (showLoader) setMessagesLoading(true)
 
-    try {
-      if (showLoader) setMessagesLoading(true)
+        const { data, error: fetchErr } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('request_id', requestId)
+          .order('created_at', { ascending: true })
 
-      const { data, error: fetchErr } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('request_id', requestId)
-        .order('created_at', { ascending: true })
+        if (fetchErr) throw fetchErr
 
-      if (fetchErr) throw fetchErr
-      setCurrentMessages(data || [])
+        setCurrentMessages(data || [])
 
-      // Refresh the selected request to pick up status/timestamp changes
-      const { data: freshReq } = await supabase
-        .from('message_requests')
-        .select(`*, businesses (id, name, image_url, city, state, type)`)
-        .eq('id', requestId)
-        .single()
-
-      if (freshReq) setSelectedRequest(freshReq)
-    } catch (e) {
-      console.error('Error loading conversation:', e)
-      setError('Failed to load conversation.')
-    } finally {
-      if (showLoader) setMessagesLoading(false)
-    }
-  }, [supabase])
-
-  // -- LOAD ALL REQUESTS -----------------------------------------------------
-  const loadRequests = useCallback(async (showLoader = true) => {
-    if (!user?.id) return
-
-    try {
-      if (showLoader) setLoading(true)
-      setError(null)
-
-      let bizData = business
-
-      // Load business record once
-      if (!bizData) {
-        const { data, error: bizErr } = await supabase
-          .from('businesses')
-          .select('id, name, image_url')
-          .eq('owner_id', user.id)
+        // Refresh selected request
+        const { data: freshReq } = await supabase
+          .from('message_requests')
+          .select('*, businesses(id, name, image_url, city, state, type)')
+          .eq('id', requestId)
           .single()
 
-        if (bizErr) throw bizErr
-        if (!data) {
-          setError('No business profile found.')
-          setRequests([])
+        if (freshReq) setSelectedRequest(freshReq)
+      } catch (e) {
+        console.error('Error loading conversation:', e)
+        setError('Failed to load conversation.')
+      } finally {
+        if (showLoader) setMessagesLoading(false)
+      }
+    },
+    [supabase]
+  )
+
+  // Load all requests
+  const loadRequests = useCallback(
+    async (showLoader = true) => {
+      if (!user?.id) return
+
+      try {
+        if (showLoader) setLoading(true)
+        setError(null)
+
+        let bizData = business
+
+        // Load business
+        if (!bizData) {
+          const { data, error: bizErr } = await supabase
+            .from('businesses')
+            .select('id, name, image_url')
+            .eq('owner_id', user.id)
+            .single()
+
+          if (bizErr) throw bizErr
+
+          if (!data) {
+            setError('No business profile found.')
+            setRequests([])
+            setSelectedRequest(null)
+            setCurrentMessages([])
+            return
+          }
+
+          bizData = data
+          setBusiness(data)
+        }
+
+        // Load message request threads
+        const { data: rows, error: reqErr } = await supabase
+          .from('message_requests')
+          .select('*, businesses(id, name, image_url, city, state, type)')
+          .eq('business_id', bizData.id)
+          .order('updated_at', { ascending: false })
+
+        if (reqErr) throw reqErr
+
+        const list = rows || []
+        setRequests(list)
+
+        if (list.length === 0) {
           setSelectedRequest(null)
           setCurrentMessages([])
           return
         }
 
-        bizData = data
-        setBusiness(data)
+        // Preserve selection across refreshes
+        const currentId = selectedRequestIdRef.current
+        const stillExists = currentId ? list.find((r) => r.id === currentId) : null
+        const next = stillExists || list[0]
+
+        setSelectedRequest(next)
+
+        if (currentId !== next.id || currentMessages.length === 0) {
+          await loadConversation(next.id, false)
+        }
+      } catch (e) {
+        console.error('Error loading business requests:', e)
+        setError(`Failed to load messages: ${e.message}`)
+      } finally {
+        if (showLoader) setLoading(false)
       }
+    },
+    [user?.id, business, supabase, loadConversation, currentMessages.length]
+  )
 
-      // Load request threads sorted by most recently updated
-      const { data: rows, error: reqErr } = await supabase
-        .from('message_requests')
-        .select(`*, businesses (id, name, image_url, city, state, type)`)
-        .eq('business_id', bizData.id)
-        .order('updated_at', { ascending: false })
-
-      if (reqErr) throw reqErr
-
-      const list = rows || []
-      setRequests(list)
-
-      if (list.length === 0) {
-        setSelectedRequest(null)
-        setCurrentMessages([])
-        return
-      }
-
-      // Preserve current selection across refreshes
-      const currentId = selectedRequestIdRef.current
-      const stillExists = currentId ? list.find((r) => r.id === currentId) : null
-      const next = stillExists || list[0]
-
-      setSelectedRequest(next)
-
-      if (currentId !== next.id || currentMessages.length === 0) {
-        await loadConversation(next.id, false)
-      }
-    } catch (e) {
-      console.error('Error loading business requests:', e)
-      setError(`Failed to load messages: ${e.message}`)
-    } finally {
-      if (showLoader) setLoading(false)
-    }
-  }, [user?.id, business, supabase, loadConversation, currentMessages.length])
-
-
-  // -- INITIAL LOAD ----------------------------------------------------------
+  // Initial load
   useEffect(() => {
     if (!user?.id) return
     loadRequests()
   }, [user?.id])
 
-  // -- REALTIME: REQUEST LIST ------------------------------------------------
+  // Realtime requests
   useEffect(() => {
     if (!business?.id) return
 
     const channel = supabase
       .channel(`biz-requests-${business.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'message_requests',
-        filter: `business_id=eq.${business.id}`,
-      }, () => loadRequests(false))
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_requests',
+          filter: `business_id=eq.${business.id}`,
+        },
+        () => loadRequests(false)
+      )
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [business?.id, supabase, loadRequests])
 
-  // -- REALTIME: MESSAGES FOR SELECTED THREAD --------------------------------
+  // Realtime selected thread
   useEffect(() => {
     if (!selectedRequest?.id) return
 
     const channel = supabase
       .channel(`biz-msgs-${selectedRequest.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'messages',
-        filter: `request_id=eq.${selectedRequest.id}`,
-      }, () => loadConversation(selectedRequest.id, false))
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `request_id=eq.${selectedRequest.id}`,
+        },
+        () => loadConversation(selectedRequest.id, false)
+      )
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [selectedRequest?.id, supabase, loadConversation])
 
-  // -- ACCEPT REQUEST (RPC with fallback) ------------------------------------
+  // Accept request
   const handleAcceptRequest = async (requestId) => {
     try {
       setError(null)
       const now = new Date().toISOString()
 
-      // Try the RPC first
       const { error: rpcErr } = await supabase.rpc('update_request_status', {
         p_request_id: requestId,
         p_new_status: 'active',
       })
 
       if (rpcErr) {
-        console.warn('[Vicinity] Accept RPC failed, falling back:', rpcErr.message)
-        // Fallback: direct update
+        console.warn('Vicinity Accept RPC failed, falling back:', rpcErr.message)
+
         const { error: updateErr } = await supabase
           .from('message_requests')
           .update({ status: 'active', updated_at: now })
@@ -322,35 +344,35 @@ export default function BusinessMessagesPage() {
         if (updateErr) throw updateErr
       }
 
-      setSuccess('✅ Request accepted!')
+      setSuccess('Request accepted!')
       setTimeout(() => setSuccess(null), 2000)
 
       await loadRequests(false)
+
       if (selectedRequest?.id === requestId) {
         await loadConversation(requestId, false)
       }
     } catch (err) {
-      console.error('[Vicinity] Accept request error:', err)
+      console.error('Vicinity Accept request error:', err)
       setError(err.message || 'Failed to accept request.')
       setTimeout(() => setError(null), 3000)
     }
   }
 
-  // -- IGNORE REQUEST (RPC with fallback) ------------------------------------
+  // Ignore request
   const handleIgnoreRequest = async (requestId) => {
     try {
       setError(null)
       const now = new Date().toISOString()
 
-      // Try the RPC first
       const { error: rpcErr } = await supabase.rpc('update_request_status', {
         p_request_id: requestId,
         p_new_status: 'ignored',
       })
 
       if (rpcErr) {
-        console.warn('[Vicinity] Ignore RPC failed, falling back:', rpcErr.message)
-        // Fallback: direct update
+        console.warn('Vicinity Ignore RPC failed, falling back:', rpcErr.message)
+
         const { error: updateErr } = await supabase
           .from('message_requests')
           .update({ status: 'ignored', updated_at: now })
@@ -359,24 +381,28 @@ export default function BusinessMessagesPage() {
         if (updateErr) throw updateErr
       }
 
-      setSuccess('👋 Request ignored')
+      setSuccess('Request ignored')
       setTimeout(() => setSuccess(null), 2000)
 
       await loadRequests(false)
+
       if (selectedRequest?.id === requestId) {
         await loadConversation(requestId, false)
       }
     } catch (err) {
-      console.error('[Vicinity] Ignore request error:', err)
+      console.error('Vicinity Ignore request error:', err)
       setError(err.message || 'Failed to ignore request.')
       setTimeout(() => setError(null), 3000)
     }
   }
 
-  // -- SEND BUSINESS REPLY (RPC with fallback) -------------------------------
+  // Send reply
   const handleReply = async (e) => {
     e.preventDefault()
-    if (!replyText.trim() || !selectedRequest?.id || selectedRequest.status !== 'active') return
+
+    if (!replyText.trim() || !selectedRequest?.id || selectedRequest.status !== 'active') {
+      return
+    }
 
     try {
       setSendingReply(true)
@@ -385,8 +411,7 @@ export default function BusinessMessagesPage() {
       const messageText = replyText.trim()
       const now = new Date().toISOString()
 
-      // Try the RPC first (bypasses RLS cleanly)
-      console.log('[Vicinity] Sending business reply via RPC...')
+      console.log('Vicinity Sending business reply via RPC...')
       const { error: rpcErr } = await supabase.rpc('send_chat_message', {
         p_request_id: selectedRequest.id,
         p_sender: 'business',
@@ -394,20 +419,18 @@ export default function BusinessMessagesPage() {
       })
 
       if (rpcErr) {
-        console.warn('[Vicinity] Reply RPC failed, falling back:', rpcErr.message)
+        console.warn('Vicinity Reply RPC failed, falling back:', rpcErr.message)
 
-        // Fallback: direct insert
-        const { error: insertErr } = await supabase.from('messages').insert([{
+        const { error: insertErr } = await supabase.from('messages').insert({
           request_id: selectedRequest.id,
           sender: 'business',
           text: messageText,
           created_at: now,
           user_id: selectedRequest.user_id,
-        }])
+        })
 
         if (insertErr) throw insertErr
 
-        // Manually update timestamp
         await supabase
           .from('message_requests')
           .update({ updated_at: now })
@@ -415,11 +438,12 @@ export default function BusinessMessagesPage() {
       }
 
       setReplyText('')
-      setSuccess('✅ Message sent!')
+      setSuccess('Message sent!')
       setTimeout(() => setSuccess(null), 2000)
+
       await loadRequests(false)
     } catch (err) {
-      console.error('[Vicinity] Reply error:', err)
+      console.error('Vicinity Reply error:', err)
       setError(`Failed to send message: ${err.message || 'Unknown error'}`)
       setTimeout(() => setError(null), 3000)
     } finally {
@@ -427,7 +451,7 @@ export default function BusinessMessagesPage() {
     }
   }
 
-  // -- FILTERED REQUESTS -----------------------------------------------------
+  // Filtered requests
   const filteredRequests = useMemo(() => {
     if (filterType === 'pending') return requests.filter((r) => r.status === 'pending')
     if (filterType === 'active') return requests.filter((r) => r.status === 'active')
@@ -435,30 +459,23 @@ export default function BusinessMessagesPage() {
     return requests
   }, [requests, filterType])
 
-  // -- STATS -----------------------------------------------------------------
-  const stats = useMemo(() => ({
-    pendingRequests: requests.filter((r) => r.status === 'pending').length,
-    activeChats: requests.filter((r) => r.status === 'active').length,
-    ignoredRequests: requests.filter((r) => r.status === 'ignored').length,
-    totalMessages: currentMessages.length,
-  }), [requests, currentMessages.length])
-
-  // -- DERIVED STATE ---------------------------------------------------------
+  // Derived state
   const isPending = selectedRequest?.status === 'pending'
   const isActive = selectedRequest?.status === 'active'
   const isIgnored = selectedRequest?.status === 'ignored'
 
-  // -- LOADING SCREEN --------------------------------------------------------
+  // Loading
   if (loading || authLoading) {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
           <PageBackground />
-          <div className="relative z-10 h-screen flex items-center justify-center">
+          <div className="relative z-10 flex h-screen items-center justify-center">
+            {/* Spinner */}
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-12 h-12 rounded-full border-[3px] border-blue-500/30 border-t-blue-600 dark:border-blue-400/20 dark:border-t-blue-300"
+              className="h-12 w-12 rounded-full border-[3px] border-blue-500/30 border-t-blue-600 dark:border-blue-400/20 dark:border-t-blue-300"
             />
           </div>
         </div>
@@ -466,27 +483,57 @@ export default function BusinessMessagesPage() {
     )
   }
 
-  // -- RENDER ----------------------------------------------------------------
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
         <PageBackground />
 
-        {/* Top header bar */}
-        <div className="relative z-10 border-b border-blue-500/10 dark:border-white/10 bg-white/70 dark:bg-[#0b1322] backdrop-blur-xl transition-colors duration-300">
+        {/* Header */}
+        <div className="relative z-10 border-b border-blue-500/10 bg-white/70 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-[#0b1322]">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
+            <div className="absolute left-10 top-12 h-24 w-24 -translate-y-12 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
             <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-blue-100/50 blur-3xl dark:bg-blue-400/10" />
           </div>
 
-          <div className="relative flex min-h-[88px] items-center px-8">
+          <div className="relative mx-auto flex max-w-7xl flex-col gap-3 px-5 py-5 lg:flex-row lg:items-center lg:justify-between lg:px-6">
             <div>
               <h1 className="font-[var(--font-outfit)] text-[30px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
                 Messages
               </h1>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Manage customer requests & conversations
+                Review customer requests and continue active conversations
               </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'pending', label: 'Pending', icon: <FaEnvelope size={12} /> },
+                { key: 'active', label: 'Active', icon: <FaComments size={12} /> },
+                { key: 'ignored', label: 'Ignored', icon: <FaTimesCircle size={12} /> },
+              ].map((filter) => {
+                const active = filterType === filter.key
+
+                return (
+                  <button
+                    key={filter.key}
+                    onClick={() => setFilterType(filter.key)}
+                    className={`${FILTER_BUTTON} ${
+                      active
+                        ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]'
+                        : 'border border-blue-500/15 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 dark:border-white/10 dark:bg-[#162033] dark:text-slate-300 dark:hover:bg-[#1d2a44] dark:hover:text-blue-300'
+                    }`}
+                  >
+                    {filter.icon}
+                    {filter.label}
+                  </button>
+                )
+              })}
+
+              <button onClick={() => loadRequests()} className={SOFT_BUTTON}>
+                {/* Refresh */}
+                <FaSync size={12} />
+                Refresh
+              </button>
             </div>
           </div>
         </div>
@@ -498,10 +545,12 @@ export default function BusinessMessagesPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="px-8 py-3 bg-red-50/90 dark:bg-[#1f1720] border-b border-red-300/50 dark:border-red-400/20 text-red-700 dark:text-red-300 text-sm flex items-center gap-3 relative z-10 backdrop-blur-xl"
+              className="relative z-10 mx-auto mt-3 max-w-7xl px-5 lg:px-6"
             >
-              <FaExclamationTriangle />
-              {error}
+              <div className="flex items-center gap-3 rounded-2xl border border-red-300/50 bg-red-50/90 px-4 py-3 text-sm text-red-700 backdrop-blur-xl dark:border-red-400/20 dark:bg-[#1f1720] dark:text-red-300">
+                <FaExclamationTriangle />
+                {error}
+              </div>
             </motion.div>
           )}
 
@@ -510,313 +559,340 @@ export default function BusinessMessagesPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="px-8 py-3 bg-blue-50/90 dark:bg-[#0f172a] border-b border-blue-300/50 dark:border-blue-400/20 text-blue-700 dark:text-blue-300 text-sm flex items-center gap-3 relative z-10 backdrop-blur-xl"
+              className="relative z-10 mx-auto mt-3 max-w-7xl px-5 lg:px-6"
             >
-              <FaCheck />
-              {success}
+              <div className="flex items-center gap-3 rounded-2xl border border-blue-300/50 bg-blue-50/90 px-4 py-3 text-sm text-blue-700 backdrop-blur-xl dark:border-blue-400/20 dark:bg-[#0f172a] dark:text-blue-300">
+                <FaCheck />
+                {success}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <main className="flex-1 overflow-y-auto relative z-10">
-          <div className="max-w-7xl mx-auto p-8 pb-20">
-            {/* Stats grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={GLASS_CARD}>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em]">Pending Requests</p>
-                  <div className="p-2 bg-blue-500/10 rounded-2xl text-blue-600 dark:text-blue-300 border border-blue-500/20">
-                    <FaEnvelope size={16} />
-                  </div>
-                </div>
-                <p className="text-4xl font-[var(--font-outfit)] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">{stats.pendingRequests}</p>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={GLASS_CARD}>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em]">Active Chats</p>
-                  <div className="p-2 bg-blue-500/10 rounded-2xl text-blue-600 dark:text-blue-300 border border-blue-500/20">
-                    <FaCheck size={16} />
-                  </div>
-                </div>
-                <p className="text-4xl font-[var(--font-outfit)] font-semibold tracking-[-0.05em] text-blue-600 dark:text-blue-300">{stats.activeChats}</p>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={GLASS_CARD}>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em]">Ignored</p>
-                  <div className="p-2 bg-blue-500/10 rounded-2xl text-blue-600 dark:text-blue-300 border border-blue-500/20">
-                    <FaTimesCircle size={16} />
-                  </div>
-                </div>
-                <p className="text-4xl font-[var(--font-outfit)] font-semibold tracking-[-0.05em] text-slate-500 dark:text-slate-300">{stats.ignoredRequests}</p>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={GLASS_CARD}>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em]">Open Thread Messages</p>
-                  <div className="p-2 bg-blue-500/10 rounded-2xl text-blue-600 dark:text-blue-300 border border-blue-500/20">
-                    <FaComments size={16} />
-                  </div>
-                </div>
-                <p className="text-4xl font-[var(--font-outfit)] font-semibold tracking-[-0.05em] text-blue-600 dark:text-blue-300">{stats.totalMessages}</p>
-              </motion.div>
-            </div>
-
-            {/* Filter bar */}
-            <div className={`${GLASS_BG} flex items-center justify-between px-6 py-4 rounded-[28px] mb-8`}>
-              <div className="flex gap-2 overflow-x-auto flex-1 no-scrollbar">
-                {[
-                  { key: 'pending', label: 'Pending Requests', icon: '📥' },
-                  { key: 'active', label: 'Active Chats', icon: '💬' },
-                  { key: 'ignored', label: 'Ignored', icon: '👋' },
-                ].map((filter) => (
-                  <motion.button
-                    key={filter.key}
-                    onClick={() => setFilterType(filter.key)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`px-4 py-2 rounded-2xl font-[var(--font-outfit)] font-semibold text-xs whitespace-nowrap transition-all border ${
-                      filterType === filter.key
-                        ? 'bg-blue-600 text-white border-transparent shadow-[0_10px_30px_rgba(59,130,246,0.24)]'
-                        : 'bg-white dark:bg-[#162033] text-slate-500 dark:text-slate-400 border-blue-500/15 dark:border-white/10 hover:border-blue-500/30 hover:text-blue-600 dark:hover:text-blue-300'
-                    }`}
-                  >
-                    {filter.icon} {filter.label}
-                  </motion.button>
-                ))}
-              </div>
-
-              <motion.button
-                onClick={() => loadRequests()}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 bg-white dark:bg-[#162033] hover:bg-blue-50 dark:hover:bg-[#1d2a44] rounded-2xl text-slate-500 dark:text-slate-300 font-[var(--font-outfit)] font-semibold text-xs border border-blue-500/15 dark:border-white/10 flex items-center gap-2 transition-all shadow-sm ml-4"
-              >
-                <FaSync size={12} /> Refresh
-              </motion.button>
-            </div>
-
-            {/* Main two-column layout */}
-            <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
-              {/* Request list */}
-              <div className="space-y-4">
-                {filteredRequests.length > 0 ? (
-                  filteredRequests.map((request, idx) => (
-                    <RequestCard
-                      key={request.id}
-                      request={request}
-                      idx={idx}
-                      selected={selectedRequest?.id === request.id}
-                      onAccept={handleAcceptRequest}
-                      onIgnore={handleIgnoreRequest}
-                      onSelect={async () => {
-                        setSelectedRequest(request)
-                        await loadConversation(request.id)
-                      }}
-                    />
-                  ))
-                ) : (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className={GLASS_CARD}>
-                    <FaInbox size={40} className="mx-auto mb-4 text-blue-300 dark:text-blue-500/40" />
-                    <h3 className="text-slate-900 dark:text-white font-[var(--font-outfit)] font-semibold mb-1 text-center">No requests</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm text-center">
-                      {filterType === 'pending' ? 'No pending customer requests' : filterType === 'active' ? 'No active conversations' : 'No ignored requests'}
+        <main className="relative z-10 mx-auto max-w-7xl px-5 pb-5 pt-4 lg:px-6">
+          <div className="grid gap-4 xl:grid-cols-[310px_minmax(0,1fr)]">
+            {/* Inbox rail */}
+            <section className={`${PANEL} flex h-[calc(100vh-170px)] min-h-[560px] flex-col overflow-hidden`}>
+              {/* Inbox top */}
+              <div className="border-b border-blue-500/10 px-4 py-3 dark:border-white/10">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-[var(--font-outfit)] text-lg font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
+                      Inbox
+                    </h2>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {filteredRequests.length} conversation{filteredRequests.length === 1 ? '' : 's'}
                     </p>
-                  </motion.div>
-                )}
+                  </div>
+
+                  <div className="rounded-2xl border border-blue-500/15 bg-blue-500/8 px-3 py-1.5 text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:border-blue-500/20 dark:text-blue-300">
+                    {filterType}
+                  </div>
+                </div>
               </div>
 
-              {/* Conversation panel */}
-              <div className={`${GLASS_CARD} min-h-[720px]`}>
-                {selectedRequest ? (
-                  <>
-                    {/* Conversation header */}
-                    <div className="flex items-start justify-between gap-4 border-b border-blue-500/12 dark:border-white/10 pb-4 mb-6">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-[0_10px_30px_rgba(59,130,246,0.24)]">
-                            <FaUser size={16} />
-                          </div>
-                          <div>
-                            <h2 className="text-xl font-[var(--font-outfit)] font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
-                              User {selectedRequest.user_id?.slice(-4)}
-                            </h2>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              Started {formatTime(selectedRequest.created_at)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                          <div className={`px-3 py-1 rounded-full text-xs font-[var(--font-outfit)] font-semibold ${getStatusBadgeClasses(selectedRequest.status)}`}>
-                            {selectedRequest.status}
-                          </div>
-                          <div className="px-3 py-1 rounded-full text-xs font-[var(--font-outfit)] font-semibold bg-white dark:bg-[#162033] border border-blue-500/15 dark:border-white/10 text-slate-600 dark:text-slate-300">
-                            {selectedRequest.businesses?.name || business?.name || 'Business'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* First request summary */}
-                    <div className="mb-6 p-4 rounded-[22px] bg-white/80 dark:bg-[#111827] border border-blue-500/12 dark:border-white/10 transition-colors duration-300">
-                      <p className="text-xs font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2 tracking-[0.16em]">First request</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                        {selectedRequest.summary || 'No request summary'}
+              {/* Request list */}
+              <div className="flex-1 overflow-y-auto p-2.5">
+                {filteredRequests.length > 0 ? (
+                  <div className="space-y-2.5">
+                    {filteredRequests.map((request, idx) => (
+                      <InboxRow
+                        key={request.id}
+                        request={request}
+                        idx={idx}
+                        selected={selectedRequest?.id === request.id}
+                        onSelect={async () => {
+                          setSelectedRequest(request)
+                          await loadConversation(request.id)
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex h-full items-center justify-center p-3">
+                    <div className="w-full rounded-[22px] border border-dashed border-blue-300/60 bg-white/40 p-6 text-center dark:border-white/15 dark:bg-[#0d1526]">
+                      <FaInbox size={30} className="mx-auto mb-3 text-blue-300 dark:text-blue-500/40" />
+                      <h3 className="font-[var(--font-outfit)] text-base font-semibold text-slate-900 dark:text-white">
+                        No requests
+                      </h3>
+                      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                        {filterType === 'pending'
+                          ? 'No pending customer requests.'
+                          : filterType === 'active'
+                          ? 'No active conversations.'
+                          : 'No ignored requests.'}
                       </p>
                     </div>
-
-                    {/* Status-specific banners */}
-                    {isPending && (
-                      <div className="mb-4 p-4 rounded-[22px] bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-start gap-3">
-                        <FaLock className="text-blue-600 dark:text-blue-300 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-[var(--font-outfit)] font-semibold text-blue-700 dark:text-blue-300 mb-1">
-                            Pending request
-                          </p>
-                          <p className="text-sm text-blue-700/80 dark:text-blue-200">
-                            Review the user's first message below, then accept or ignore it.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {isActive && (
-                      <div className="mb-4 p-4 rounded-[22px] bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
-                        <p className="text-sm font-[var(--font-outfit)] font-semibold text-blue-700 dark:text-blue-300 mb-1">Chat is active</p>
-                        <p className="text-sm text-blue-700/80 dark:text-blue-200">
-                          This request was accepted. You can reply below.
-                        </p>
-                      </div>
-                    )}
-
-                    {isIgnored && (
-                      <div className="mb-4 p-4 rounded-[22px] bg-slate-100 dark:bg-[#162033] border border-slate-200 dark:border-white/10">
-                        <p className="text-sm font-[var(--font-outfit)] font-semibold text-slate-700 dark:text-slate-300 mb-1">Request ignored</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          This conversation is closed. No further messages can be sent.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Messages list */}
-                    <div className="min-h-[420px] max-h-[520px] overflow-y-auto space-y-4 pr-1">
-                      {messagesLoading ? (
-                        <div className="h-56 flex items-center justify-center">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="w-10 h-10 rounded-full border-[3px] border-blue-500/30 border-t-blue-600 dark:border-blue-400/20 dark:border-t-blue-300"
-                          />
-                        </div>
-                      ) : currentMessages.length > 0 ? (
-                        currentMessages.map((msg, idx) => {
-                          const isBusinessMessage = msg.sender === 'business'
-
-                          return (
-                            <motion.div
-                              key={msg.id || idx}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className={`flex ${isBusinessMessage ? 'justify-end' : 'justify-start'}`}
-                            >
-                              <div
-                                className={`max-w-[80%] rounded-[22px] px-4 py-3 shadow-sm ${
-                                  isBusinessMessage
-                                    ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.18)]'
-                                    : 'bg-white dark:bg-[#111827] border border-blue-500/15 dark:border-white/10 text-slate-800 dark:text-slate-200 transition-colors duration-300'
-                                }`}
-                              >
-                                <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
-                                <p className={`text-[11px] mt-2 ${isBusinessMessage ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}>
-                                  {formatTime(msg.created_at)}
-                                </p>
-                              </div>
-                            </motion.div>
-                          )
-                        })
-                      ) : (
-                        <div className="text-center py-24 rounded-[28px] border border-dashed border-blue-300/60 dark:border-white/15 bg-white/40 dark:bg-[#0d1526] transition-colors duration-300">
-                          <FaStore size={32} className="mx-auto mb-4 text-blue-300 dark:text-blue-500/40" />
-                          <h3 className="text-slate-900 dark:text-white font-[var(--font-outfit)] font-semibold mb-1">No messages yet</h3>
-                          <p className="text-slate-500 dark:text-slate-400 text-sm">
-                            When a request is opened, its messages will show here.
-                          </p>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Composer / action area */}
-                    <div className="border-t border-blue-500/12 dark:border-white/10 pt-4 mt-6">
-                      {/* Pending — show accept/ignore buttons */}
-                      {isPending && (
-                        <div className="flex items-center gap-3">
-                          <motion.button
-                            onClick={() => handleAcceptRequest(selectedRequest.id)}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="flex-1 py-3 rounded-2xl font-[var(--font-outfit)] font-semibold text-sm bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
-                          >
-                            ✅ Accept Request
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleIgnoreRequest(selectedRequest.id)}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="flex-1 py-3 rounded-2xl font-[var(--font-outfit)] font-semibold text-sm bg-white dark:bg-[#162033] hover:bg-blue-50 dark:hover:bg-[#1d2a44] text-slate-700 dark:text-slate-300 border border-blue-500/15 dark:border-white/10 transition-all"
-                          >
-                            👋 Ignore
-                          </motion.button>
-                        </div>
-                      )}
-
-                      {/* Active — show reply composer */}
-                      {isActive && (
-                        <form onSubmit={handleReply} className="flex gap-3">
-                          <input
-                            type="text"
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder="Reply to this customer..."
-                            className={GLASS_INPUT}
-                          />
-                          <motion.button
-                            type="submit"
-                            disabled={sendingReply || !replyText.trim()}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="px-5 py-3 rounded-2xl font-[var(--font-outfit)] font-semibold text-sm bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)] disabled:opacity-50 flex items-center gap-2"
-                          >
-                            <FaPaperPlane size={13} />
-                            {sendingReply ? 'Sending...' : 'Send'}
-                          </motion.button>
-                        </form>
-                      )}
-
-                      {/* Ignored — closed notice */}
-                      {isIgnored && (
-                        <div className="p-4 rounded-[22px] bg-white/80 dark:bg-[#111827] border border-blue-500/12 dark:border-white/10 text-sm text-slate-500 dark:text-slate-400 transition-colors duration-300">
-                          This request has been ignored, so replying is disabled.
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  /* No request selected */
-                  <div className="text-center py-24">
-                    <FaComments size={42} className="mx-auto mb-4 text-blue-300 dark:text-blue-500/40" />
-                    <h3 className="text-xl font-[var(--font-outfit)] font-semibold tracking-[-0.03em] text-slate-900 dark:text-white mb-2">
-                      No request selected
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Pick a request from the left to view the customer's first message and full conversation.
-                    </p>
                   </div>
                 )}
               </div>
-            </div>
+            </section>
+
+            {/* Conversation workspace */}
+            <section className={`${PANEL} flex h-[calc(100vh-170px)] min-h-[560px] flex-col overflow-hidden`}>
+              {selectedRequest ? (
+                <>
+                  {/* Chat top bar */}
+                  <div className="border-b border-blue-500/10 px-4 py-3 dark:border-white/10">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex items-center gap-3">
+                        {/* Avatar */}
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]">
+                          <FaUser size={14} />
+                        </div>
+
+                        <div>
+                          <h2 className="font-[var(--font-outfit)] text-lg font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
+                            User {selectedRequest.user_id?.slice(-4)}
+                          </h2>
+                          <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                            Started {formatTime(selectedRequest.created_at)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div
+                          className={`rounded-full px-3 py-1 text-[11px] font-[var(--font-outfit)] font-semibold ${getStatusBadgeClasses(
+                            selectedRequest.status
+                          )}`}
+                        >
+                          {selectedRequest.status}
+                        </div>
+
+                        <div className="rounded-full border border-blue-500/15 bg-white px-3 py-1 text-[11px] font-[var(--font-outfit)] font-semibold text-slate-600 dark:border-white/10 dark:bg-[#162033] dark:text-slate-300">
+                          {selectedRequest.businesses?.name || business?.name || 'Business'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Workspace body */}
+                  <div className="grid min-h-0 flex-1 lg:grid-cols-[220px_minmax(0,1fr)]">
+                    {/* Side info */}
+                    <aside className="border-b border-blue-500/10 bg-white/35 p-3 dark:border-white/10 dark:bg-white/[0.02] lg:border-b-0 lg:border-r">
+                      <div className="space-y-3">
+                        {/* Summary */}
+                        <div className="rounded-[20px] border border-blue-500/12 bg-white/80 p-3 dark:border-white/10 dark:bg-[#111827]">
+                          <p className="text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                            First request
+                          </p>
+                          <p className="mt-2 text-[13px] leading-6 text-slate-700 dark:text-slate-300">
+                            {selectedRequest.summary || 'No request summary'}
+                          </p>
+                        </div>
+
+                        {/* Status box */}
+                        {isPending && (
+                          <div className="rounded-[20px] border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+                            <div className="flex items-start gap-2.5">
+                              <FaLock className="mt-1 text-blue-600 dark:text-blue-300" />
+                              <div>
+                                <p className="font-[var(--font-outfit)] text-sm font-semibold text-blue-700 dark:text-blue-300">
+                                  Pending request
+                                </p>
+                                <p className="mt-1.5 text-[13px] leading-5 text-blue-700/80 dark:text-blue-200">
+                                  Accept this request before replying.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {isActive && (
+                          <div className="rounded-[20px] border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+                            <p className="font-[var(--font-outfit)] text-sm font-semibold text-blue-700 dark:text-blue-300">
+                              Active conversation
+                            </p>
+                            <p className="mt-1.5 text-[13px] leading-5 text-blue-700/80 dark:text-blue-200">
+                              This thread is open and ready for replies.
+                            </p>
+                          </div>
+                        )}
+
+                        {isIgnored && (
+                          <div className="rounded-[20px] border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-[#162033]">
+                            <p className="font-[var(--font-outfit)] text-sm font-semibold text-slate-700 dark:text-slate-300">
+                              Request ignored
+                            </p>
+                            <p className="mt-1.5 text-[13px] leading-5 text-slate-600 dark:text-slate-400">
+                              This thread is closed and reply is disabled.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Pending actions */}
+                        {isPending && (
+                          <div className="space-y-2.5 rounded-[20px] border border-blue-500/12 bg-white/80 p-3 dark:border-white/10 dark:bg-[#111827]">
+                            <p className="text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                              Actions
+                            </p>
+
+                            <motion.button
+                              onClick={() => handleAcceptRequest(selectedRequest.id)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 font-[var(--font-outfit)] text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
+                            >
+                              Accept request
+                            </motion.button>
+
+                            <motion.button
+                              onClick={() => handleIgnoreRequest(selectedRequest.id)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="flex w-full items-center justify-center rounded-xl border border-blue-500/15 bg-white px-4 py-2.5 font-[var(--font-outfit)] text-sm font-semibold text-slate-700 transition-all hover:bg-blue-50 dark:border-white/10 dark:bg-[#162033] dark:text-slate-300 dark:hover:bg-[#1d2a44]"
+                            >
+                              Ignore
+                            </motion.button>
+                          </div>
+                        )}
+                      </div>
+                    </aside>
+
+                    {/* Chat area */}
+                    <div className="flex min-h-0 flex-col">
+                      {/* Messages */}
+                      <div className="flex-1 overflow-y-auto px-3 py-3 md:px-4">
+                        {messagesLoading ? (
+                          <div className="flex h-full items-center justify-center">
+                            {/* Spinner */}
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                              className="h-10 w-10 rounded-full border-[3px] border-blue-500/30 border-t-blue-600 dark:border-blue-400/20 dark:border-t-blue-300"
+                            />
+                          </div>
+                        ) : currentMessages.length > 0 ? (
+                          <div className="space-y-3">
+                            {currentMessages.map((msg, idx) => {
+                              const isBusinessMessage = msg.sender === 'business'
+
+                              return (
+                                <motion.div
+                                  key={msg.id || idx}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className={`flex ${isBusinessMessage ? 'justify-end' : 'justify-start'}`}
+                                >
+                                  <div className="max-w-[90%] md:max-w-[74%]">
+                                    {!isBusinessMessage && (
+                                      <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
+                                        Customer
+                                      </p>
+                                    )}
+
+                                    {isBusinessMessage && (
+                                      <p className="mb-1 px-1 text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-500 dark:text-blue-300">
+                                        You
+                                      </p>
+                                    )}
+
+                                    <div
+                                      className={`rounded-[20px] px-4 py-2.5 shadow-sm ${
+                                        isBusinessMessage
+                                          ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.18)]'
+                                          : 'border border-blue-500/12 bg-white text-slate-800 dark:border-white/10 dark:bg-[#111827] dark:text-slate-200'
+                                      }`}
+                                    >
+                                      <p className="text-sm leading-6 whitespace-pre-line">
+                                        {msg.text}
+                                      </p>
+                                      <p
+                                        className={`mt-2 text-[10px] ${
+                                          isBusinessMessage
+                                            ? 'text-white/80'
+                                            : 'text-slate-500 dark:text-slate-400'
+                                        }`}
+                                      >
+                                        {formatTime(msg.created_at)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )
+                            })}
+
+                            <div ref={messagesEndRef} />
+                          </div>
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <div className="w-full max-w-md rounded-[24px] border border-dashed border-blue-300/60 bg-white/45 p-8 text-center dark:border-white/15 dark:bg-[#0d1526]">
+                              <FaStore size={30} className="mx-auto mb-3 text-blue-300 dark:text-blue-500/40" />
+                              <h3 className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white">
+                                No messages yet
+                              </h3>
+                              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                When this thread has messages, they’ll appear here.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Composer */}
+                      <div className="border-t border-blue-500/10 bg-white/70 p-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#0f172a]/96 md:p-4">
+                        {isActive && (
+                          <form onSubmit={handleReply} className="space-y-2.5">
+                            <div className="rounded-[22px] border border-blue-500/15 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-[#111827]">
+                              {/* Reply input */}
+                              <input
+                                type="text"
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="Write a reply..."
+                                className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:outline-none dark:text-white dark:placeholder-slate-500"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                Keep replies clear and helpful.
+                              </p>
+
+                              <motion.button
+                                type="submit"
+                                disabled={sendingReply || !replyText.trim()}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 font-[var(--font-outfit)] text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)] disabled:opacity-50"
+                              >
+                                <FaPaperPlane size={12} />
+                                {sendingReply ? 'Sending...' : 'Send reply'}
+                              </motion.button>
+                            </div>
+                          </form>
+                        )}
+
+                        {isIgnored && (
+                          <div className="rounded-[18px] border border-blue-500/12 bg-white/80 p-3 text-sm text-slate-500 dark:border-white/10 dark:bg-[#111827] dark:text-slate-400">
+                            This request has been ignored, so replying is disabled.
+                          </div>
+                        )}
+
+                        {isPending && (
+                          <div className="rounded-[18px] border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-200">
+                            Accept this request to start messaging.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex h-full items-center justify-center p-4">
+                  <div className="w-full max-w-lg rounded-[26px] border border-dashed border-blue-300/60 bg-white/45 p-8 text-center dark:border-white/15 dark:bg-[#0d1526]">
+                    <FaComments size={38} className="mx-auto mb-4 text-blue-300 dark:text-blue-500/40" />
+                    <h3 className="font-[var(--font-outfit)] text-xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
+                      No request selected
+                    </h3>
+                    <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                      Pick a conversation from the inbox to view the request details and full message thread.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
         </main>
       </div>
@@ -824,95 +900,58 @@ export default function BusinessMessagesPage() {
   )
 }
 
-
-// =============================================================================
-// REQUEST CARD COMPONENT
-// =============================================================================
-function RequestCard({ request, idx, selected, onAccept, onIgnore, onSelect }) {
-  const CARD_CLASS = 'bg-white/80 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 rounded-[28px] p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] hover:border-blue-500/28 hover:shadow-[0_20px_60px_rgba(59,130,246,0.10)] transition-all duration-300'
-
+// Inbox row
+function InboxRow({ request, idx, selected, onSelect }) {
   const isPending = request.status === 'pending'
   const isActive = request.status === 'active'
 
   return (
-    <motion.div
+    <motion.button
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: idx * 0.05 }}
-      whileHover={{ scale: selected ? 1 : 1.01 }}
-      className={`${CARD_CLASS} ${selected ? 'ring-2 ring-blue-500/25 shadow-[0_20px_60px_rgba(59,130,246,0.12)]' : ''} cursor-pointer group relative overflow-hidden`}
+      transition={{ delay: idx * 0.04 }}
       onClick={onSelect}
+      className={`group w-full rounded-[20px] border p-3 text-left transition-all ${
+        selected
+          ? 'border-blue-500/30 bg-blue-50 shadow-[0_12px_30px_rgba(59,130,246,0.10)] dark:border-blue-500/20 dark:bg-blue-500/10'
+          : 'border-blue-500/10 bg-white/70 hover:border-blue-500/22 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]'
+      }`}
     >
-      {/* Hover glow */}
-      <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-blue-500/0 blur-3xl transition-all duration-500 group-hover:bg-blue-500/15" />
+      <div className="flex items-start gap-3">
+        {/* Status icon */}
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-[0_8px_20px_rgba(59,130,246,0.20)] ${
+            isPending ? 'bg-blue-600' : isActive ? 'bg-blue-600' : 'bg-slate-500'
+          }`}
+        >
+          {isPending ? <FaEnvelope size={12} /> : isActive ? <FaComments size={12} /> : <FaTimesCircle size={12} />}
+        </div>
 
-      <div className="relative z-10">
-        {/* Header row */}
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-3 flex-1">
-            <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-semibold text-xl shadow-[0_10px_30px_rgba(59,130,246,0.24)] ${
-                isPending ? 'bg-blue-600' : isActive ? 'bg-blue-600' : 'bg-slate-500'
-              }`}
-            >
-              {isPending ? '📥' : isActive ? '💬' : '👋'}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <h4 className="font-[var(--font-outfit)] font-semibold text-slate-900 dark:text-white text-lg tracking-[-0.03em] truncate">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h4 className="truncate font-[var(--font-outfit)] text-[14px] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">
                 User {request.user_id?.slice(-4)}
               </h4>
-              <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-1">
+              <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
                 {request.created_at ? formatTime(request.created_at) : 'Just now'}
-              </span>
+              </p>
             </div>
-          </div>
 
-          <div className="flex gap-1">
-            <div className={`px-2 py-1 rounded-full text-xs font-[var(--font-outfit)] font-semibold ${getStatusBadgeClasses(request.status)}`}>
+            <div
+              className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.12em] ${getStatusBadgeClasses(
+                request.status
+              )}`}
+            >
               {request.status}
             </div>
           </div>
-        </div>
 
-        {/* Summary */}
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-3">
-          {request.summary || 'No request message'}
-        </p>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 border-t border-blue-500/12 dark:border-white/10 pt-4 mt-4">
-          {isPending ? (
-            <>
-              <motion.button
-                onClick={(e) => { e.stopPropagation(); onAccept(request.id) }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex-1 py-2 rounded-2xl font-[var(--font-outfit)] font-semibold text-xs bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)] transition-all"
-              >
-                ✅ Accept
-              </motion.button>
-              <motion.button
-                onClick={(e) => { e.stopPropagation(); onIgnore(request.id) }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex-1 py-2 rounded-2xl font-[var(--font-outfit)] font-semibold text-xs bg-white dark:bg-[#162033] hover:bg-blue-50 dark:hover:bg-[#1d2a44] text-slate-700 dark:text-slate-300 border border-blue-500/15 dark:border-white/10 transition-all"
-              >
-                👋 Ignore
-              </motion.button>
-            </>
-          ) : (
-            <motion.button
-              onClick={(e) => { e.stopPropagation(); onSelect() }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 py-2 rounded-2xl font-[var(--font-outfit)] font-semibold text-xs bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)] transition-all"
-            >
-              💬 Open Chat
-            </motion.button>
-          )}
+          <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-slate-600 dark:text-slate-300">
+            {request.summary || 'No request message'}
+          </p>
         </div>
       </div>
-    </motion.div>
+    </motion.button>
   )
 }
