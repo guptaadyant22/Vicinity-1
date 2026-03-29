@@ -1,13 +1,19 @@
 import React from 'react'
 import { UI_SETTINGS } from '../lib/ui'
 
+interface VicinityLogoProps {
+  className?: string
+  textClassName?: string
+  showText?: boolean
+}
+
 // Vicinity logo component
 // Uses the newer blue Vicinity accent styling
 export default function VicinityLogo({
   className = '',
   textClassName = 'text-slate-900 dark:text-white',
   showText = true,
-}) {
+}: VicinityLogoProps) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       {/* Brand mark */}

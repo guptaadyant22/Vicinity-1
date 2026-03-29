@@ -92,7 +92,7 @@ const CATEGORY_MAP = {
   'japanese': { short: 'Japanese' },
 }
 
-const formatBusinessType = (type) => {
+const formatBusinessType = (type: string) => {
   if (!type) return 'Other'
 
   const lowercase = type.toLowerCase().trim()
@@ -115,7 +115,7 @@ const formatBusinessType = (type) => {
 }
 
 // HELPER FUNCTION TO CHECK IF DEAL IS EXPIRED
-const isDealExpired = (expiryDate) => {
+const isDealExpired = (expiryDate: string | null) => {
   if (!expiryDate) return false
   const now = new Date()
   const expiry = new Date(expiryDate)
@@ -125,8 +125,16 @@ const isDealExpired = (expiryDate) => {
 // Header is now the shared UserNavbar component
 
 // Stat card
-const StatCard = ({ label, value, icon: Icon, color, delay }) => {
-  const t = statTheme[color] || statTheme.blue
+interface DashboardStatCardProps {
+  label: string;
+  value: string | number;
+  icon: React.ComponentType<{ size?: number }>;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ label, value, icon: Icon, color, delay }: DashboardStatCardProps) => {
+  const t = statTheme[color as keyof typeof statTheme] || statTheme.blue
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -153,7 +161,7 @@ const StatCard = ({ label, value, icon: Icon, color, delay }) => {
 }
 
 // Loading skeleton
-const SkeletonCard = ({ viewMode }) => (
+const SkeletonCard = ({ viewMode }: { viewMode: string }) => (
   <div className={`rounded-[24px] ${UI.shellSoft} overflow-hidden ${viewMode === 'list' ? 'flex h-80' : 'h-[400px]'}`}>
     <div className={`${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'w-full h-56'} bg-gradient-to-br from-slate-100 to-blue-100 dark:from-slate-800 dark:to-slate-900 animate-pulse`} />
     <div className={`${viewMode === 'list' ? 'flex-1 p-6' : 'w-full'} p-5 space-y-3`}>
@@ -168,7 +176,7 @@ const SkeletonCard = ({ viewMode }) => (
 )
 
 // Filter section
-const FilterSection = ({ title, icon: Icon, children }) => {
+const FilterSection = ({ title, icon: Icon, children }: { title: string; icon?: React.ComponentType<{ size?: number; className?: string }>; children: React.ReactNode }) => {
   const [expanded, setExpanded] = useState(true)
 
   return (
@@ -207,7 +215,7 @@ export default function UserDashboardPage() {
   const [businessesWithRatings, setBusinessesWithRatings] = useState([])
   const [userReviews, setUserReviews] = useState([])
   const [savedIds, setSavedIds] = useState(new Set())
-  const [viewMode, setViewMode] = useState('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [filterOpen, setFilterOpen] = useState(true)
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -291,7 +299,7 @@ export default function UserDashboardPage() {
         setBusinesses(formattedBusinesses)
         setSavedIds(new Set((fData || []).map((f) => f.business_id)))
 
-        const categoryCount = {}
+        const categoryCount: Record<string, number> = {}
         formattedBusinesses.forEach(b => {
           const type = b.type
           categoryCount[type] = (categoryCount[type] || 0) + 1
@@ -384,10 +392,10 @@ export default function UserDashboardPage() {
       }
     ).subscribe()
 
-    return () => supabase.removeChannel(channel)
+    return () => { supabase.removeChannel(channel) }
   }, [user, supabase])
 
-  const isBusinessOpenNow = (hours) => {
+  const isBusinessOpenNow = (hours: string | Record<string, string> | null) => {
     if (!hours || typeof hours !== 'string') return true
 
     const todayHours = hours.trim()
@@ -410,7 +418,7 @@ export default function UserDashboardPage() {
     }
 
     try {
-      const parseTime = (timeStr) => {
+      const parseTime = (timeStr: string) => {
         if (!timeStr || typeof timeStr !== 'string') return null
         try {
           const trimmed = timeStr.trim()
@@ -452,7 +460,7 @@ export default function UserDashboardPage() {
     }
   }
 
-  const handleSearchInputChange = (e) => {
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchQuery(value)
 
@@ -475,7 +483,7 @@ export default function UserDashboardPage() {
     }
   }, [])
 
-  const handleAiSearch = async (e) => {
+  const handleAiSearch = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
     if (!searchQuery.trim()) {
       setAiSearchResults(null)
@@ -535,7 +543,7 @@ export default function UserDashboardPage() {
       result.sort((a, b) => {
         const dateA = new Date(a.created_at || 0)
         const dateB = new Date(b.created_at || 0)
-        return dateB - dateA
+        return dateB.getTime() - dateA.getTime()
       })
     }
 
@@ -556,7 +564,7 @@ export default function UserDashboardPage() {
   const startIndex = (currentPage - 1) * PAGE_SIZE + 1
   const endIndex = Math.min(currentPage * PAGE_SIZE, filteredBusinesses.length)
 
-  const handleSave = async (id) => {
+  const handleSave = async (id: string) => {
     if (!user) return
     const newSaved = new Set(savedIds)
     const isSaving = !newSaved.has(id)

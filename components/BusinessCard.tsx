@@ -16,7 +16,7 @@ import {
 } from 'react-icons/fa'
 import { createClient } from '../lib/supabase'
 
-const shimmer = (w, h) => `
+const shimmer = (w: number, h: number): string => `
 <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <linearGradient id="g">
@@ -30,12 +30,12 @@ const shimmer = (w, h) => `
   <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite" />
 </svg>`
 
-const toBase64 = (str) =>
+const toBase64 = (str: string): string =>
   typeof window === 'undefined' ? Buffer.from(str).toString('base64') : window.btoa(str)
 
 const placeholderImage = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23334155' width='400' height='300'/%3E%3Crect fill='%232563eb' x='0' y='0' width='400' height='4'/%3E%3Crect fill='%232563eb' x='0' y='296' width='400' height='4'/%3E%3Ctext x='200' y='130' text-anchor='middle' fill='%232563eb' font-size='28' font-weight='bold' font-family='Arial, sans-serif'%3EBUSINESS%3C/text%3E%3Ctext x='200' y='170' text-anchor='middle' fill='%2394a3b8' font-size='14' font-family='Arial, sans-serif'%3ENo Image Available%3C/text%3E%3Ccircle cx='60' cy='60' r='30' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3Ccircle cx='340' cy='240' r='25' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3C/svg%3E`
 
-const parseTime = (timeStr) => {
+const parseTime = (timeStr: string | null | undefined): Date | null => {
   if (!timeStr || typeof timeStr !== 'string') return null
   try {
     const trimmed = timeStr.trim()
@@ -63,7 +63,7 @@ const parseTime = (timeStr) => {
   }
 }
 
-const getBusinessStatus = (hours) => {
+const getBusinessStatus = (hours: string | null | undefined) => {
   if (!hours || typeof hours !== 'string') {
     return { isOpen: true, status: 'Open', nextStatus: '' }
   }
@@ -99,7 +99,7 @@ const getBusinessStatus = (hours) => {
     const isOpen = now >= openTime && now < closeTime
 
     if (isOpen) {
-      const minutesUntilClose = (closeTime - now) / (1000 * 60)
+      const minutesUntilClose = (closeTime.getTime() - now.getTime()) / (1000 * 60)
       const hoursUntilClose = Math.floor(minutesUntilClose / 60)
       const minsUntilClose = Math.floor(minutesUntilClose % 60)
 
@@ -129,20 +129,29 @@ const getBusinessStatus = (hours) => {
 }
 
 // HELPER FUNCTION TO CHECK IF DEAL IS EXPIRED
-const isDealExpired = (expiryDate) => {
+const isDealExpired = (expiryDate: string | null | undefined): boolean => {
   if (!expiryDate) return false
   const now = new Date()
   const expiry = new Date(expiryDate)
   return expiry < now
 }
 
-export default function BusinessCard({ business, isSaved, onSave, isTrending, viewMode = 'grid' }) {
+interface BusinessCardProps {
+  business: any
+  isSaved: boolean
+  onSave: (id: string) => void | Promise<void>
+  isTrending?: boolean
+  viewMode?: 'grid' | 'list'
+  index?: number
+}
+
+export default function BusinessCard({ business, isSaved, onSave, isTrending, viewMode = 'grid' }: BusinessCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [rating, setRating] = useState(parseFloat(business.rating || 0))
   const [reviewCount, setReviewCount] = useState(parseInt(business.review_count || 0))
   const [businessStatus, setBusinessStatus] = useState({ isOpen: true, status: 'Open', nextStatus: '' })
   const [hasDeal, setHasDeal] = useState(false)
-  const [dealInfo, setDealInfo] = useState(null)
+  const [dealInfo, setDealInfo] = useState<any>(null)
   const supabase = createClient()
   const router = useRouter()
 
@@ -237,7 +246,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
     return () => clearInterval(interval)
   }, [business.hours])
 
-  const handleSaveClick = async (e) => {
+  const handleSaveClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
     setIsLoading(true)
     try {
@@ -250,7 +259,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
   }
 
   // NAVIGATE TO BUSINESS PAGE
-  const handleViewClick = (e) => {
+  const handleViewClick = (e: React.MouseEvent) => {
     e.preventDefault()
     router.push(`/business/${business.id}`)
   }

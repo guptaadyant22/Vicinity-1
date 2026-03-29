@@ -378,7 +378,7 @@ export default function UserMessagesPage() {
       }, () => loadRequests(false))
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    return () => { supabase.removeChannel(channel) }
   }, [user?.id, supabase, loadRequests])
 
 
@@ -396,7 +396,7 @@ export default function UserMessagesPage() {
       }, () => loadMessages(selectedRequest.id, false))
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    return () => { supabase.removeChannel(channel) }
   }, [selectedRequest?.id, supabase, loadMessages])
 
   // -- SEND FIRST MESSAGE (RPC with fallback) --------------------------------

@@ -1,4 +1,4 @@
-// components/ThemeToggle.jsx
+// components/ThemeToggle.tsx
 'use client'
 
 import { useTheme } from '../context/ThemeContext'

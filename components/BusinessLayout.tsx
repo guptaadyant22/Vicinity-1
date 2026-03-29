@@ -102,7 +102,7 @@ const VicinityLogo = ({ className = '', textClassName = '' }) => (
 // Animated blue dashboard background
 const Background = () => (
   <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none transition-colors duration-300 bg-white dark:bg-[#081120]">
-    <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
+    <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:from-[#081120] dark:via-[#081120] dark:to-[#081120]" />
 
     {/* Main glow */}
     <motion.div
@@ -717,7 +717,7 @@ function DealsSection({ business }) {
           {deals.map((deal, idx) => {
             const isExpired = new Date(deal.expiry_date) < new Date()
             const daysLeft = Math.ceil(
-              (new Date(deal.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)
+              (new Date(deal.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
             )
 
             return (

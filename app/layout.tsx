@@ -1,6 +1,7 @@
 // Root layout component for Next.js app with theme, auth providers, and global styles
 // Removed custom loading overlay since it is not needed between pages
 
+import { ReactNode } from 'react'
 import dynamic from 'next/dynamic'
 import '../context/ThemeContext'
 import { ThemeProvider } from '../context/ThemeContext'
@@ -19,7 +20,7 @@ export const metadata = {
   },
 }
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

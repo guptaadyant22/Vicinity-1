@@ -107,20 +107,20 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState('')
-  const [fieldErrors, setFieldErrors] = useState({})
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const router = useRouter()
   const supabase = createClient()
   const { signInWithGoogle } = useAuth()
 
   // Validate email format
-  const isValidEmail = (email) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const isValidEmail = (emailVal: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)
   }
 
   // Validate form fields
   const validateForm = () => {
-    const errors = {}
+    const errors: Record<string, string> = {}
 
     if (!email.trim()) {
       errors.email = ERROR_MESSAGES.EMAIL_REQUIRED
@@ -143,7 +143,7 @@ export default function LoginPage() {
   }
 
   // Handle email field updates
-  const handleEmailChange = (e) => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
 
     if (fieldErrors.email) {
@@ -156,7 +156,7 @@ export default function LoginPage() {
   }
 
   // Handle password field updates
-  const handlePasswordChange = (e) => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
 
     if (fieldErrors.password) {
@@ -169,7 +169,7 @@ export default function LoginPage() {
   }
 
   // Handle email/password sign in
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     setError('')
@@ -421,7 +421,17 @@ export default function LoginPage() {
 }
 
 // Reusable input
-const Input = ({ label, type, value, onChange, placeholder, error, disabled }) => (
+interface LoginInputProps {
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  error?: string;
+  disabled?: boolean;
+}
+
+const Input = ({ label, type, value, onChange, placeholder, error, disabled }: LoginInputProps) => (
   <div className="space-y-1.5">
     <label className={LABEL_STYLE}>{label}</label>
     <input
@@ -439,7 +449,14 @@ const Input = ({ label, type, value, onChange, placeholder, error, disabled }) =
 )
 
 // Reusable checkbox
-const Checkbox = ({ label, checked, onChange, disabled }) => (
+interface CheckboxProps {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}
+
+const Checkbox = ({ label, checked, onChange, disabled }: CheckboxProps) => (
   <button
     type="button"
     onClick={() => !disabled && onChange(!checked)}

@@ -3,6 +3,7 @@
 // Landing navbar with smooth-scroll section links
 // Uses the current blue glass Vicinity UI style
 
+import React from 'react'
 import { motion } from 'framer-motion'
 import VicinityLogo from './VicinityLogo'
 import ThemeToggle from './ThemeToggle'
@@ -10,7 +11,7 @@ import { LANDING_NAV_ITEMS } from '../lib/ui'
 
 export default function Navbar() {
   // Smooth scroll to landing page sections
-  const handleNavClick = (e, href) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault()
     const targetId = href.replace('#', '')
     const element = document.getElementById(targetId)

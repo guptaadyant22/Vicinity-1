@@ -13,14 +13,25 @@ import { FaUser } from 'react-icons/fa'
 import VicinityLogo from './VicinityLogo'
 import ThemeToggle from './ThemeToggle'
 
-const NAV_LINKS = [
+interface NavLink {
+  name: string
+  href: string
+  key: string
+}
+
+const NAV_LINKS: NavLink[] = [
   { name: 'Browse', href: '/user/dashboard', key: 'dashboard' },
   { name: 'Saved', href: '/user/saved', key: 'saved' },
   { name: 'Reviews', href: '/user/reviews', key: 'reviews' },
   { name: 'Messages', href: '/user/messages', key: 'messages' },
 ]
 
-export default function UserNavbar({ activePage = '', onLogout }) {
+interface UserNavbarProps {
+  activePage?: string
+  onLogout?: () => void
+}
+
+export default function UserNavbar({ activePage = '', onLogout }: UserNavbarProps) {
   const router = useRouter()
 
   return (

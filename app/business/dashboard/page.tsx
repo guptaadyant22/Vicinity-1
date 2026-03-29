@@ -31,7 +31,7 @@ import {
 } from 'recharts'
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
-import BusinessLayout from '../../../components/BusinessLayout.jsx'
+import BusinessLayout from '../../../components/BusinessLayout'
 import { useTheme } from '../../../context/ThemeContext'
 
 // Font setup

@@ -129,7 +129,7 @@ const AnimatedBg = () => (
 );
 
 // Shared skeleton state
-const SkeletonCard = ({ viewMode }) => (
+const SkeletonCard = ({ viewMode }: { viewMode: string }) => (
   <div
     className={`overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/80 shadow-[0_14px_40px_rgba(15,23,42,0.05)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0f172a] ${
       viewMode === "list" ? "flex h-80" : "h-[400px]"
@@ -154,7 +154,7 @@ const SkeletonCard = ({ viewMode }) => (
 );
 
 // Shared filter section
-const FilterSection = ({ title, icon: Icon, children }) => {
+const FilterSection = ({ title, icon: Icon, children }: { title: string; icon?: React.ComponentType<{ size?: number; className?: string }>; children: React.ReactNode }) => {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -197,7 +197,7 @@ export default function BrowsePage() {
 
   const [loading, setLoading] = useState(true);
   const [businesses, setBusinesses] = useState([]);
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>("grid");
   const [filterOpen, setFilterOpen] = useState(true);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -236,7 +236,7 @@ export default function BrowsePage() {
 
         setBusinesses(formattedBusinesses);
 
-        const categoryCount = {};
+        const categoryCount: Record<string, number> = {};
         formattedBusinesses.forEach((b) => {
           const type = b.type;
           categoryCount[type] = (categoryCount[type] || 0) + 1;

@@ -1,7 +1,7 @@
-// components/AISearchBar.jsx
+// components/AISearchBar.tsx
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   FaSearch,
@@ -14,22 +14,30 @@ const THEME = {
   accentGrad: 'from-blue-500 to-cyan-400',
 }
 
+interface AISearchBarProps {
+  searchTerm: string
+  onSearchChange: (value: string) => void
+  onAISearch: (term: string) => void
+  isSearching?: boolean
+  onClear?: () => void
+}
+
 export default function AISearchBar({
   searchTerm,
   onSearchChange,
   onAISearch,
   isSearching = false,
   onClear,
-}) {
-  const searchInputRef = useRef(null)
+}: AISearchBarProps) {
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchTerm.trim() && !isSearching) {
       onAISearch(searchTerm)
     }
   }
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     onSearchChange(value)
   }

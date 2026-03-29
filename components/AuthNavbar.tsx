@@ -7,7 +7,13 @@ import VicinityLogo from './VicinityLogo'
 import ThemeToggle from './ThemeToggle'
 import { UI_SETTINGS } from '../lib/ui'
 
-export default function AuthNavbar({ linkTo, linkText, homeText = "Home" }) {
+interface AuthNavbarProps {
+    linkTo?: string
+    linkText?: string
+    homeText?: string
+}
+
+export default function AuthNavbar({ linkTo, linkText, homeText = "Home" }: AuthNavbarProps) {
     return (
         <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
             <div className="w-full max-w-5xl bg-white/82 dark:bg-[#0d142488] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[24px] p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)] transition-all duration-300 pointer-events-auto flex items-center justify-between pl-4 pr-2">

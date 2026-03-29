@@ -49,11 +49,9 @@ function SectionGlow({ position = "left" }) {
         x: [0, position === "left" ? 20 : -20, 0],
         transition: { duration: 10, repeat: Infinity, ease: "easeInOut" },
       }}
-      className={`absolute ${
-        position === "left" ? "-left-32 top-10" : "-right-32 top-16"
-      } h-[360px] w-[360px] rounded-full blur-[140px] ${
-        isDark ? "bg-blue-500/10" : "bg-blue-100/70"
-      }`}
+      className={`absolute ${position === "left" ? "-left-32 top-10" : "-right-32 top-16"
+        } h-[360px] w-[360px] rounded-full blur-[140px] ${isDark ? "bg-blue-500/10" : "bg-blue-100/70"
+        }`}
     />
   );
 }
@@ -357,9 +355,8 @@ function ShowcasePanel() {
           {/* Right panel */}
           <div className="border-t border-blue-500/8 p-6 dark:border-white/8 lg:border-l lg:border-t-0 lg:p-8">
             <div
-              className={`relative overflow-hidden rounded-[24px] p-5 ${
-                isDark ? "border border-white/8 bg-[#0a1628]" : "border border-blue-500/8 bg-slate-50/80"
-              }`}
+              className={`relative overflow-hidden rounded-[24px] p-5 ${isDark ? "border border-white/8 bg-[#0a1628]" : "border border-blue-500/8 bg-slate-50/80"
+                }`}
             >
               {/* Shimmer */}
               <motion.div
@@ -769,19 +766,17 @@ function FAQSection() {
                   viewport={{ once: true }}
                   custom={i * 0.06}
                   variants={fadeUp}
-                  className={`overflow-hidden rounded-[20px] border backdrop-blur-xl transition-all duration-300 ${
-                    isOpen
+                  className={`overflow-hidden rounded-[20px] border backdrop-blur-xl transition-all duration-300 ${isOpen
                       ? "border-blue-500/20 bg-white/90 shadow-[0_8px_32px_rgba(59,130,246,0.08)] dark:border-blue-500/15 dark:bg-white/[0.05] dark:shadow-[0_8px_32px_rgba(59,130,246,0.06)]"
                       : "border-blue-500/6 bg-white/70 shadow-[0_2px_12px_rgba(15,23,42,0.02)] hover:border-blue-500/15 dark:border-white/6 dark:bg-white/[0.02] dark:hover:border-white/12"
-                  }`}
+                    }`}
                 >
                   <button onClick={() => setOpenIndex(isOpen ? null : i)} className="flex w-full items-center gap-4 px-6 py-5 text-left">
                     <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold font-[var(--font-outfit)] shrink-0 transition-all duration-300 ${
-                        isOpen
+                      className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold font-[var(--font-outfit)] shrink-0 transition-all duration-300 ${isOpen
                           ? "bg-blue-600 text-white shadow-[0_4px_14px_rgba(59,130,246,0.3)]"
                           : "bg-blue-500/8 text-blue-600 dark:text-blue-300"
-                      }`}
+                        }`}
                     >
                       {String(i + 1).padStart(2, "0")}
                     </span>
@@ -793,9 +788,8 @@ function FAQSection() {
                     <motion.div
                       animate={{ rotate: isOpen ? 180 : 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className={`shrink-0 transition-colors duration-300 ${
-                        isOpen ? "text-blue-600 dark:text-blue-400" : "text-slate-300 dark:text-white/20"
-                      }`}
+                      className={`shrink-0 transition-colors duration-300 ${isOpen ? "text-blue-600 dark:text-blue-400" : "text-slate-300 dark:text-white/20"
+                        }`}
                     >
                       <FaChevronDown size={11} />
                     </motion.div>

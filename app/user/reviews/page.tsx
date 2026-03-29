@@ -354,7 +354,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
 
 // --- REVIEW CARD ---
 // Individual review card
-const ReviewCard = React.forwardRef(({ review, index, onViewDetails }, ref) => {
+const ReviewCard = React.forwardRef<HTMLDivElement, { review: any; index: number; onViewDetails: (review: any) => void }>(({ review, index, onViewDetails }, ref) => {
   // Rating chip style
   const getRatingColor = (rating) => {
     if (rating >= 4.5) {
@@ -448,11 +448,11 @@ export default function ReviewsPage() {
 
   // Main state
   const [loading, setLoading] = useState(true)
-  const [reviews, setReviews] = useState([])
+  const [reviews, setReviews] = useState<any[]>([])
   const [filterRating, setFilterRating] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
-  const [error, setError] = useState(null)
-  const [selectedReview, setSelectedReview] = useState(null)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedReview, setSelectedReview] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Auth redirect
@@ -522,28 +522,30 @@ export default function ReviewsPage() {
         },
         async (payload) => {
           if (payload.eventType === 'INSERT') {
+            const newRecord = payload.new as any
             const { data: businessData } = await supabase
               .from('businesses')
               .select('name, type')
-              .eq('id', payload.new.business_id)
+              .eq('id', newRecord.business_id)
               .single()
 
             const enrichedReview = {
-              ...payload.new,
+              ...newRecord,
               business_name: businessData?.name || 'Unknown Business',
               business_type: businessData?.type || 'Business',
             }
 
             setReviews((prev) => [enrichedReview, ...prev])
           } else if (payload.eventType === 'UPDATE') {
+            const newRecord = payload.new as any
             const { data: businessData } = await supabase
               .from('businesses')
               .select('name, type')
-              .eq('id', payload.new.business_id)
+              .eq('id', newRecord.business_id)
               .single()
 
             const enrichedReview = {
-              ...payload.new,
+              ...newRecord,
               business_name: businessData?.name || 'Unknown Business',
               business_type: businessData?.type || 'Business',
             }

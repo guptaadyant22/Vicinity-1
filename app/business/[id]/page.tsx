@@ -124,7 +124,7 @@ const formatReviewDate = (timestamp) => {
   try {
     const date = new Date(timestamp)
     const now = new Date()
-    const diffMs = now - date
+    const diffMs = now.getTime() - date.getTime()
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
     if (diffDays === 0) return 'Today'
@@ -630,14 +630,14 @@ export default function BusinessDetailPage() {
           table: 'favorites',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
+        (payload: any) => {
           if (payload.new?.business_id === businessId) setIsFavorited(true)
           if (payload.old?.business_id === businessId) setIsFavorited(false)
         }
       )
       .subscribe()
 
-    return () => supabase.removeChannel(favChannel)
+    return () => { supabase.removeChannel(favChannel) }
   }, [user, businessId, supabase])
 
   // computed values

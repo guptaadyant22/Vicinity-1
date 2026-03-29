@@ -34,6 +34,17 @@ import {
 } from 'react-icons/fa'
 import { createClient } from '../../lib/supabase'
 import AuthNavbar from '../../components/AuthNavbar'
+import type { IconType } from 'react-icons'
+
+// Declare grecaptcha on window
+declare global {
+  interface Window {
+    grecaptcha: {
+      render: (el: HTMLElement | null, opts: { sitekey: string | undefined; theme: string }) => void;
+      getResponse: () => string;
+    };
+  }
+}
 
 // Shared blue theme constants
 const GLASS_CARD =
@@ -110,9 +121,9 @@ export default function SignupPage() {
   const supabase = createClient()
   const router = useRouter()
 
-  const [accountType, setAccountType] = useState(null)
+  const [accountType, setAccountType] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
 
   const [businessForm, setBusinessForm] = useState({
@@ -143,13 +154,13 @@ export default function SignupPage() {
     agreeToGuidelines: false,
   })
 
-  const [businessErrors, setBusinessErrors] = useState({})
-  const [communityErrors, setCommunityErrors] = useState({})
+  const [businessErrors, setBusinessErrors] = useState<Record<string, string>>({})
+  const [communityErrors, setCommunityErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   // Account type selection
-  const handleAccountTypeSelect = (type) => {
+  const handleAccountTypeSelect = (type: string) => {
     setAccountType(type)
     setCurrentStep(1)
     setBusinessErrors({})
@@ -158,7 +169,7 @@ export default function SignupPage() {
   }
 
   // Business input change
-  const handleBusinessInputChange = (field, value) => {
+  const handleBusinessInputChange = (field: string, value: string | boolean) => {
     setBusinessForm((prev) => ({ ...prev, [field]: value }))
     if (businessErrors[field]) {
       setBusinessErrors((prev) => ({ ...prev, [field]: '' }))
@@ -166,7 +177,7 @@ export default function SignupPage() {
   }
 
   // Community input change
-  const handleCommunityInputChange = (field, value) => {
+  const handleCommunityInputChange = (field: string, value: string | boolean) => {
     setCommunityForm((prev) => ({ ...prev, [field]: value }))
     if (communityErrors[field]) {
       setCommunityErrors((prev) => ({ ...prev, [field]: '' }))
@@ -174,7 +185,7 @@ export default function SignupPage() {
   }
 
   // Interest toggle
-  const handleInterestToggle = (interest) => {
+  const handleInterestToggle = (interest: string) => {
     setCommunityForm((prev) => ({
       ...prev,
       interests: prev.interests.includes(interest)
@@ -184,11 +195,11 @@ export default function SignupPage() {
   }
 
   // Email validation
-  const isValidEmail = (email) => /^\S+@\S+\.\S+$/.test(email)
+  const isValidEmail = (emailVal: string) => /^\S+@\S+\.\S+$/.test(emailVal)
 
   // Business step validation
-  const validateBusinessStep = (step) => {
-    const errors = {}
+  const validateBusinessStep = (step: number) => {
+    const errors: Record<string, string> = {}
 
     if (step === 1) {
       if (!businessForm.name.trim()) errors.name = 'Required'
@@ -225,8 +236,8 @@ export default function SignupPage() {
   }
 
   // Community step validation
-  const validateCommunityStep = (step) => {
-    const errors = {}
+  const validateCommunityStep = (step: number) => {
+    const errors: Record<string, string> = {}
 
     if (step === 1) {
       if (!communityForm.name.trim()) errors.name = 'Required'
@@ -275,7 +286,7 @@ export default function SignupPage() {
   }
 
   // Business submit
-  const handleBusinessSubmit = async (e) => {
+  const handleBusinessSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -372,14 +383,14 @@ export default function SignupPage() {
       }
 
       router.push('/business/profile')
-    } catch (err) {
-      setError(err.message || 'An error occurred.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred.')
       setIsLoading(false)
     }
   }
 
   // Community submit
-  const handleCommunitySubmit = async (e) => {
+  const handleCommunitySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -439,14 +450,14 @@ export default function SignupPage() {
       if (signinError) throw signinError
 
       router.push('/user/dashboard')
-    } catch (err) {
-      setError(err.message || 'An error occurred.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred.')
       setIsLoading(false)
     }
   }
 
   // Password strength helper
-  const getPasswordStrength = (password) => {
+  const getPasswordStrength = (password: string) => {
     if (!password) return { level: 0, percentage: 0, color: '#334155' }
     if (password.length < 6) return { level: 1, percentage: 33, color: '#ef4444' }
     if (password.length < 10) return { level: 2, percentage: 66, color: '#3b82f6' }
@@ -521,7 +532,7 @@ export default function SignupPage() {
 }
 
 // Account type selection screen
-const AccountTypeSelection = ({ onSelect }) => (
+const AccountTypeSelection = ({ onSelect }: { onSelect: (type: string) => void }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -557,7 +568,15 @@ const AccountTypeSelection = ({ onSelect }) => (
 )
 
 // Account card
-const AccountCard = ({ icon: Icon, title, subtitle, features, onClick }) => (
+interface AccountCardProps {
+  icon: IconType;
+  title: string;
+  subtitle: string;
+  features: string[];
+  onClick: () => void;
+}
+
+const AccountCard = ({ icon: Icon, title, subtitle, features, onClick }: AccountCardProps) => (
   <motion.button
     whileHover={{ y: -8, scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
@@ -596,7 +615,15 @@ const AccountCard = ({ icon: Icon, title, subtitle, features, onClick }) => (
 )
 
 // Step form shell
-const StepFormContainer = ({ accountType, currentStep, onBack, error, children }) => {
+interface StepFormContainerProps {
+  accountType: string;
+  currentStep: number;
+  onBack: () => void;
+  error: string | null;
+  children: React.ReactNode;
+}
+
+const StepFormContainer = ({ accountType, currentStep, onBack, error, children }: StepFormContainerProps) => {
   const isBusiness = accountType === 'business'
   const steps = isBusiness ? BUSINESS_STEPS : COMMUNITY_STEPS
 
@@ -692,6 +719,50 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
 }
 
 // Business multi-step form
+interface BusinessFormData {
+  name: string;
+  businessName: string;
+  email: string;
+  website: string;
+  phone: string;
+  businessType: string;
+  customBusinessType: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  password: string;
+  confirmPassword: string;
+  isRealBusiness: boolean;
+}
+
+interface CommunityFormData {
+  name: string;
+  email: string;
+  city: string;
+  zipCode: string;
+  password: string;
+  confirmPassword: string;
+  interests: string[];
+  agreeToGuidelines: boolean;
+}
+
+interface BusinessStepFormProps {
+  step: number;
+  form: BusinessFormData;
+  onInputChange: (field: string, value: string | boolean) => void;
+  errors: Record<string, string>;
+  showPassword: boolean;
+  setShowPassword: (v: boolean) => void;
+  showConfirmPassword: boolean;
+  setShowConfirmPassword: (v: boolean) => void;
+  getPasswordStrength: (password: string) => { level: number; percentage: number; color: string };
+  onNext: () => void;
+  onPrev: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  isLoading: boolean;
+}
+
 const BusinessStepForm = ({
   step,
   form,
@@ -706,8 +777,8 @@ const BusinessStepForm = ({
   onPrev,
   onSubmit,
   isLoading,
-}) => {
-  const recaptchaRef = useRef(null)
+}: BusinessStepFormProps) => {
+  const recaptchaRef = useRef<HTMLDivElement>(null)
   const strength = getPasswordStrength(form.password)
 
   useEffect(() => {
@@ -925,6 +996,23 @@ const BusinessStepForm = ({
 }
 
 // Community multi-step form
+interface CommunityStepFormProps {
+  step: number;
+  form: CommunityFormData;
+  onInputChange: (field: string, value: string | boolean) => void;
+  onInterestToggle: (interest: string) => void;
+  errors: Record<string, string>;
+  showPassword: boolean;
+  setShowPassword: (v: boolean) => void;
+  showConfirmPassword: boolean;
+  setShowConfirmPassword: (v: boolean) => void;
+  getPasswordStrength: (password: string) => { level: number; percentage: number; color: string };
+  onNext: () => void;
+  onPrev: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  isLoading: boolean;
+}
+
 const CommunityStepForm = ({
   step,
   form,
@@ -940,8 +1028,8 @@ const CommunityStepForm = ({
   onPrev,
   onSubmit,
   isLoading,
-}) => {
-  const recaptchaRef = useRef(null)
+}: CommunityStepFormProps) => {
+  const recaptchaRef = useRef<HTMLDivElement>(null)
   const strength = getPasswordStrength(form.password)
 
   useEffect(() => {
@@ -1161,7 +1249,14 @@ const CommunityStepForm = ({
 }
 
 // Reusable input
-const Input = ({ label, required, error, icon: Icon, ...props }) => {
+interface SignupInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  required?: boolean;
+  error?: string;
+  icon?: IconType;
+}
+
+const Input = ({ label, required, error, icon: Icon, ...props }: SignupInputProps) => {
   return (
     <div className="space-y-1.5">
       {label && (
@@ -1191,6 +1286,14 @@ const Input = ({ label, required, error, icon: Icon, ...props }) => {
 }
 
 // Reusable select
+interface SignupSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  required?: boolean;
+  error?: string;
+  options: string[];
+  placeholder?: string;
+}
+
 const Select = ({
   label,
   required,
@@ -1198,7 +1301,7 @@ const Select = ({
   options,
   placeholder = 'Select...',
   ...props
-}) => {
+}: SignupSelectProps) => {
   return (
     <div className="space-y-1.5">
       {label && (

@@ -44,7 +44,7 @@ const GridBackground = () => (
 )
 
 // --- VICINITY LOGO (BLUE THEMED) ---
-const VicinityLogo = ({ className = "", textClassName = "" }) => (
+const VicinityLogo = ({ className = "", textClassName = "" }: { className?: string; textClassName?: string }) => (
   <div className={`flex items-center gap-2 ${className}`}>
     <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8 shrink-0">
       <g fill="#2563eb" fillRule="nonzero">
@@ -83,16 +83,16 @@ export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [resetErrors, setResetErrors] = useState({})
+  const [resetErrors, setResetErrors] = useState<Record<string, string>>({})
 
-  const handleEmailSubmit = async (e) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setSuccess(null)
@@ -115,19 +115,19 @@ export default function ForgotPasswordPage() {
 
       setSuccess('Password reset link sent! Check your email.')
       setStep(2)
-    } catch (err) {
-      setError(err.message || 'Failed to send reset link. Please try again.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to send reset link. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handlePasswordReset = async (e) => {
+  const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setResetErrors({})
 
-    const errors = {}
+    const errors: Record<string, string> = {}
     if (!newPassword || newPassword.length < 8) {
       errors.newPassword = 'Password must be at least 8 characters'
     }
@@ -156,14 +156,14 @@ export default function ForgotPasswordPage() {
       setTimeout(() => {
         router.push('/login')
       }, 2000)
-    } catch (err) {
-      setError(err.message || 'Failed to reset password. Please try again.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to reset password. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   const passwordStrength = getPasswordStrength(newPassword)
 
   return (
@@ -214,7 +214,15 @@ export default function ForgotPasswordPage() {
   )
 }
 
-const EmailResetForm = ({ email, setEmail, isLoading, error, onSubmit }) => (
+interface EmailResetFormProps {
+  email: string;
+  setEmail: (v: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+const EmailResetForm = ({ email, setEmail, isLoading, error, onSubmit }: EmailResetFormProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -235,7 +243,7 @@ const EmailResetForm = ({ email, setEmail, isLoading, error, onSubmit }) => (
             Forgot Password?
           </h1>
           <p className={TEXT_MUTED}>
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
         </div>
 
@@ -295,7 +303,13 @@ const EmailResetForm = ({ email, setEmail, isLoading, error, onSubmit }) => (
   </motion.div>
 )
 
-const ConfirmationMessage = ({ email, onResend, isLoading }) => (
+interface ConfirmationMessageProps {
+  email: string;
+  onResend: (e: React.FormEvent) => void;
+  isLoading: boolean;
+}
+
+const ConfirmationMessage = ({ email, onResend, isLoading }: ConfirmationMessageProps) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -327,13 +341,13 @@ const ConfirmationMessage = ({ email, onResend, isLoading }) => (
             Check Your Email
           </h2>
           <p className={TEXT_MUTED}>
-            We've sent a password reset link to <span className={`font-semibold ${TEXT_MAIN}`}>{email}</span>
+            We&apos;ve sent a password reset link to <span className={`font-semibold ${TEXT_MAIN}`}>{email}</span>
           </p>
         </div>
 
         <div className="bg-blue-50/60 dark:bg-blue-500/[0.06] border border-blue-500/12 dark:border-blue-500/15 rounded-2xl p-4">
           <p className={`text-sm ${TEXT_MUTED}`}>
-            The reset link will expire in <span className={`font-semibold ${TEXT_MAIN}`}>30 minutes</span>. If you don't see the email, check your spam folder.
+            The reset link will expire in <span className={`font-semibold ${TEXT_MAIN}`}>30 minutes</span>. If you don&apos;t see the email, check your spam folder.
           </p>
         </div>
 
@@ -360,6 +374,23 @@ const ConfirmationMessage = ({ email, onResend, isLoading }) => (
   </motion.div>
 )
 
+interface PasswordResetFormProps {
+  newPassword: string;
+  setNewPassword: (v: string) => void;
+  confirmPassword: string;
+  setConfirmPassword: (v: string) => void;
+  showPassword: boolean;
+  setShowPassword: (v: boolean) => void;
+  showConfirmPassword: boolean;
+  setShowConfirmPassword: (v: boolean) => void;
+  isLoading: boolean;
+  error: string | null;
+  success: string | null;
+  errors: Record<string, string>;
+  onSubmit: (e: React.FormEvent) => void;
+  passwordStrength: { level: number; percentage: number; color: string };
+}
+
 const PasswordResetForm = ({
   newPassword,
   setNewPassword,
@@ -375,7 +406,7 @@ const PasswordResetForm = ({
   errors,
   onSubmit,
   passwordStrength,
-}) => (
+}: PasswordResetFormProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -512,7 +543,7 @@ const PasswordResetForm = ({
   </motion.div>
 )
 
-function getPasswordStrength(password) {
+function getPasswordStrength(password: string) {
   if (!password) return { level: 0, percentage: 0, color: '#334155' }
   if (password.length < 6) return { level: 1, percentage: 33, color: '#ef4444' }
   if (password.length < 10) return { level: 2, percentage: 66, color: '#3b82f6' }

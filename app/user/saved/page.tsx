@@ -123,7 +123,7 @@ export default function SavedPage() {
 
   // Main page state
   const [loading, setLoading] = useState(true)
-  const [savedBusinesses, setSavedBusinesses] = useState([])
+  const [savedBusinesses, setSavedBusinesses] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('recent')
 
@@ -132,14 +132,14 @@ export default function SavedPage() {
   const getTopCategory = () => {
     if (savedBusinesses.length === 0) return 'N/A'
 
-    const counts = {}
+    const counts: Record<string, number> = {}
     savedBusinesses.forEach((b) => {
       const type = b.type ? b.type.trim() : 'Other'
       counts[type] = (counts[type] || 0) + 1
     })
 
     let maxCount = 0
-    let winners = []
+    let winners: string[] = []
 
     Object.entries(counts).forEach(([type, count]) => {
       if (count > maxCount) {
@@ -256,7 +256,7 @@ export default function SavedPage() {
     .sort((a, b) => {
       if (sortBy === 'rating') return b.rating - a.rating
       if (sortBy === 'name') return a.name.localeCompare(b.name)
-      return new Date(b.saved_at) - new Date(a.saved_at)
+      return new Date(b.saved_at).getTime() - new Date(a.saved_at).getTime()
     })
 
   if (authLoading || !user) {

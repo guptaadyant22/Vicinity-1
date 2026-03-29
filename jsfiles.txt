@@ -1,0 +1,3 @@
+﻿C:\Users\gupta\Desktop\Vicinity\next.config.js
+C:\Users\gupta\Desktop\Vicinity\postcss.config.js
+C:\Users\gupta\Desktop\Vicinity\tailwind.config.js

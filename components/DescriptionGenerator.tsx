@@ -128,7 +128,7 @@ export default function DescriptionGenerator({
           </div>
         </div>
       ) : (
-        <p className="text-slate-500 dark:text-slate-400 text-sm italic">Click "Generate with AI" to create a description</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm italic">Click &quot;Generate with AI&quot; to create a description</p>
       )}
     </div>
   );

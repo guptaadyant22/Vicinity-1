@@ -993,7 +993,7 @@ export default function DealsPage() {
 // Individual deal card
 function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCode, dealTypes }) {
   const isExpired = new Date(deal.expiry_date) < new Date()
-  const daysLeft = Math.ceil((new Date(deal.expiry_date) - new Date()) / (1000 * 60 * 60 * 24))
+  const daysLeft = Math.ceil((new Date(deal.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
   const dealType = dealTypes.find((d) => d.id === deal.discount_type)
 
   // Card helpers
