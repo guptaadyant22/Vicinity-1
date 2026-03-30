@@ -7,12 +7,7 @@
 // SIDEBAR NAV - Desktop and mobile sidebar navigation
 // DEALS MODAL - Create and edit deal entries
 // DEALS SECTION - Business deal management area
-// HELPER FUNCTIONS:
-// HANDLE LOGOUT - Signs the user out and redirects home
-// FETCH DEALS - Loads all deals for the active business
-// HANDLE SUBMIT - Creates or updates deals
-// TOGGLE DEAL ACTIVE - Toggles a deal visibility state
-// HANDLE DELETE - Deletes a deal permanently
+
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'

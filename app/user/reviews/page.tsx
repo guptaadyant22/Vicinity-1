@@ -19,13 +19,12 @@ import {
 } from 'react-icons/fa'
 import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
-import VicinityLogo from '../../../components/VicinityLogo'
 import UserNavbar from '../../../components/UserNavbar'
 
 // --- SHARED UI SYSTEM ---
-// Matches the attached blue glass UI style
+// Main page wrapper is now relative + isolate to avoid wrapper/stacking issues
 const UI = {
-  page: 'min-h-screen text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300',
+  page: 'relative isolate min-h-screen text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300',
   card: 'bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-colors duration-300',
   cardSoft: 'bg-white dark:bg-[#111827] border border-blue-500/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none transition-colors duration-300',
   modal: 'bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 rounded-[30px] p-8 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)] transition-colors duration-300',
@@ -37,58 +36,106 @@ const UI = {
 }
 
 // --- PAGE BACKGROUND ---
-// Same animated blue glow + grid style
+// White in the middle, blue toward the edges, fixed behind content
 const Background = () => {
   return (
-    <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none transition-colors duration-300 bg-white dark:bg-[#081120]">
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
-
-      {/* Main glow */}
-      <motion.div
-        animate={{ y: [0, -14, 0], scale: [1, 1.05, 1], opacity: [0.2, 0.38, 0.2] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute left-1/2 top-8 h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/15"
+    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none transition-colors duration-300 bg-white dark:bg-[#081120]">
+      {/* Light mode base */}
+      <div
+        className="absolute inset-0 dark:hidden"
+        style={{
+          background:
+            'radial-gradient(circle at center, #ffffff 0%, #ffffff 34%, #f8fbff 52%, #eef6ff 68%, #dbeafe 84%, #bfdbfe 100%)',
+        }}
       />
 
-      {/* Left glow */}
+      {/* Dark mode base */}
+      <div
+        className="absolute inset-0 hidden dark:block"
+        style={{
+          background:
+            'radial-gradient(circle at center, #0f172a 0%, #0b1530 35%, #0a1738 58%, #102c5c 82%, #1d4ed8 100%)',
+        }}
+      />
+
+      {/* Top edge glow */}
       <motion.div
-        animate={{ x: [0, 14, 0], y: [0, 10, 0], opacity: [0.12, 0.24, 0.12] }}
+        animate={{ y: [0, -8, 0], opacity: [0.04, 0.08, 0.04] }}
+        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute inset-x-0 top-0 h-[220px] bg-blue-200/40 dark:bg-blue-500/10 blur-[120px]"
+      />
+
+      {/* Bottom edge glow */}
+      <motion.div
+        animate={{ y: [0, 8, 0], opacity: [0.04, 0.08, 0.04] }}
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute left-[-32px] top-[18%] h-[320px] w-[320px] rounded-full bg-cyan-100/80 blur-[120px] dark:bg-cyan-500/10"
+        className="absolute inset-x-0 bottom-0 h-[240px] bg-blue-200/35 dark:bg-blue-500/10 blur-[120px]"
       />
 
-      {/* Right glow */}
+      {/* Left edge glow */}
       <motion.div
-        animate={{ x: [0, -16, 0], y: [0, -8, 0], opacity: [0.12, 0.24, 0.12] }}
+        animate={{ x: [0, -8, 0], opacity: [0.04, 0.07, 0.04] }}
         transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute right-[-32px] top-[10%] h-[340px] w-[340px] rounded-full bg-indigo-100/70 blur-[120px] dark:bg-indigo-500/10"
+        className="absolute left-0 top-0 h-full w-[220px] bg-cyan-100/45 dark:bg-cyan-500/10 blur-[120px]"
+      />
+
+      {/* Right edge glow */}
+      <motion.div
+        animate={{ x: [0, 8, 0], opacity: [0.04, 0.07, 0.04] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute right-0 top-0 h-full w-[220px] bg-indigo-100/45 dark:bg-indigo-500/10 blur-[120px]"
+      />
+
+      {/* Corner bloom */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(circle at 0% 0%, rgba(96,165,250,0.08), transparent 20%),
+            radial-gradient(circle at 100% 0%, rgba(96,165,250,0.08), transparent 20%),
+            radial-gradient(circle at 0% 100%, rgba(96,165,250,0.08), transparent 20%),
+            radial-gradient(circle at 100% 100%, rgba(96,165,250,0.08), transparent 20%)
+          `,
+        }}
       />
 
       {/* Grid */}
       <motion.div
         animate={{ backgroundPosition: ['0px 0px', '72px 72px'] }}
         transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-        className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]"
+        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(59,130,246,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.22) 1px, transparent 1px)',
+            'linear-gradient(to right, rgba(59,130,246,0.18) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.18) 1px, transparent 1px)',
           backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
+          maskImage: 'radial-gradient(circle at center, black 42%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 42%, transparent 100%)',
         }}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-[#081120]" />
+      {/* Light center wash */}
+      <div
+        className="absolute inset-0 dark:hidden"
+        style={{
+          background:
+            'radial-gradient(circle at center, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.42) 28%, rgba(255,255,255,0) 58%)',
+        }}
+      />
+
+      {/* Dark center wash */}
+      <div
+        className="absolute inset-0 hidden dark:block"
+        style={{
+          background:
+            'radial-gradient(circle at center, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 28%, rgba(255,255,255,0) 58%)',
+        }}
+      />
     </div>
   )
 }
 
-// --- HEADER ---
-// Top navbar styled to match attached UI
-// Header is now the shared UserNavbar component
-
 // --- STAT CARD ---
-// Top stats card
+// Small top stats card
 const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
   const iconStyleMap = {
     blue: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300',
@@ -128,7 +175,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const supabase = createClient()
 
-  // Sync modal state when selection changes
+  // Sync state when selected review changes
   useEffect(() => {
     if (review) {
       setEditedComment(review.comment)
@@ -144,9 +191,10 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     return 'text-orange-400'
   }
 
-  // Save changes
+  // Save edited review
   const handleSaveEdit = async () => {
     setIsSaving(true)
+
     try {
       const { error } = await supabase
         .from('reviews')
@@ -179,6 +227,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     if (!confirm('Are you sure you want to delete this review?')) return
 
     setIsDeleting(true)
+
     try {
       const { error } = await supabase.from('reviews').delete().eq('id', review.id)
       if (error) throw error
@@ -198,7 +247,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay */}
+          {/* Modal overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -207,7 +256,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
             onClick={onClose}
           />
 
-          {/* Modal */}
+          {/* Modal shell */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -290,7 +339,7 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
                 Posted on {new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
 
-              {/* Actions */}
+              {/* Action buttons */}
               <div className="flex gap-3">
                 {!isEditing ? (
                   <>
@@ -353,90 +402,94 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
 }
 
 // --- REVIEW CARD ---
-// Individual review card
-const ReviewCard = React.forwardRef<HTMLDivElement, { review: any; index: number; onViewDetails: (review: any) => void }>(({ review, index, onViewDetails }, ref) => {
-  // Rating chip style
-  const getRatingColor = (rating) => {
-    if (rating >= 4.5) {
+// Single review preview card
+const ReviewCard = React.forwardRef<HTMLDivElement, { review: any; index: number; onViewDetails: (review: any) => void }>(
+  ({ review, index, onViewDetails }, ref) => {
+    // Rating chip style helper
+    const getRatingColor = (rating) => {
+      if (rating >= 4.5) {
+        return {
+          bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+          border: 'border-emerald-200 dark:border-emerald-500/20',
+          text: 'text-emerald-600 dark:text-emerald-300',
+        }
+      }
+
+      if (rating >= 3.5) {
+        return {
+          bg: 'bg-amber-50 dark:bg-amber-500/10',
+          border: 'border-amber-200 dark:border-amber-500/20',
+          text: 'text-amber-600 dark:text-amber-300',
+        }
+      }
+
       return {
-        bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-        border: 'border-emerald-200 dark:border-emerald-500/20',
-        text: 'text-emerald-600 dark:text-emerald-300',
+        bg: 'bg-orange-50 dark:bg-orange-500/10',
+        border: 'border-orange-200 dark:border-orange-500/20',
+        text: 'text-orange-600 dark:text-orange-300',
       }
     }
-    if (rating >= 3.5) {
-      return {
-        bg: 'bg-amber-50 dark:bg-amber-500/10',
-        border: 'border-amber-200 dark:border-amber-500/20',
-        text: 'text-amber-600 dark:text-amber-300',
-      }
-    }
-    return {
-      bg: 'bg-orange-50 dark:bg-orange-500/10',
-      border: 'border-orange-200 dark:border-orange-500/20',
-      text: 'text-orange-600 dark:text-orange-300',
-    }
+
+    const ratingStyle = getRatingColor(review.rating)
+
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        whileHover={{ y: -6 }}
+        onClick={() => onViewDetails(review)}
+        className="group cursor-pointer h-full"
+      >
+        <div className={`${UI.cardSoft} h-full overflow-hidden hover:border-blue-500/18 dark:hover:border-white/20 transition-all`}>
+          {/* Card header */}
+          <div className={`p-5 border-b ${ratingStyle.bg} ${ratingStyle.border}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+                  {review.business_name}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase mt-1">{review.business_type}</p>
+              </div>
+
+              <div className={`flex items-center gap-1 px-3 py-1.5 rounded-2xl border ${ratingStyle.border} ${ratingStyle.bg} whitespace-nowrap flex-shrink-0`}>
+                <FaStar size={14} className={ratingStyle.text} />
+                <span className={`font-black text-sm ${ratingStyle.text}`}>{review.rating}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Comment preview */}
+          <div className="p-5">
+            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-4 mb-4">{review.comment}</p>
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-300 group-hover:text-blue-700 dark:group-hover:text-blue-200 transition-colors">
+              <span>View full review</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+          </div>
+
+          {/* Card footer */}
+          <div className="px-5 py-3 border-t border-blue-500/10 dark:border-white/10 bg-slate-50/70 dark:bg-[#0b1220]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                <FaCalendarAlt size={12} />
+                <span>{new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+              </div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="text-xs font-bold px-2.5 py-1 rounded-2xl border transition-all bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-500/20"
+              >
+                Edit
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    )
   }
-
-  const ratingStyle = getRatingColor(review.rating)
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={{ y: -6 }}
-      onClick={() => onViewDetails(review)}
-      className="group cursor-pointer h-full"
-    >
-      <div className={`${UI.cardSoft} h-full overflow-hidden hover:border-blue-500/18 dark:hover:border-white/20 transition-all`}>
-        {/* Header */}
-        <div className={`p-5 border-b ${ratingStyle.bg} ${ratingStyle.border}`}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
-                {review.business_name}
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase mt-1">{review.business_type}</p>
-            </div>
-
-            <div className={`flex items-center gap-1 px-3 py-1.5 rounded-2xl border ${ratingStyle.border} ${ratingStyle.bg} whitespace-nowrap flex-shrink-0`}>
-              <FaStar size={14} className={ratingStyle.text} />
-              <span className={`font-black text-sm ${ratingStyle.text}`}>{review.rating}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Comment preview */}
-        <div className="p-5">
-          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-4 mb-4">{review.comment}</p>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-300 group-hover:text-blue-700 dark:group-hover:text-blue-200 transition-colors">
-            <span>View full review</span>
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-5 py-3 border-t border-blue-500/10 dark:border-white/10 bg-slate-50/70 dark:bg-[#0b1220]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-              <FaCalendarAlt size={12} />
-              <span>{new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-            </div>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="text-xs font-bold px-2.5 py-1 rounded-2xl border transition-all bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-500/20"
-            >
-              Edit
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  )
-})
+)
 
 ReviewCard.displayName = 'ReviewCard'
 
@@ -455,7 +508,7 @@ export default function ReviewsPage() {
   const [selectedReview, setSelectedReview] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Auth redirect
+  // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login')
@@ -463,7 +516,7 @@ export default function ReviewsPage() {
     }
   }, [user, authLoading, router])
 
-  // Fetch and subscribe to reviews
+  // Fetch and subscribe to user reviews
   useEffect(() => {
     if (!user?.id) return
 
@@ -472,7 +525,7 @@ export default function ReviewsPage() {
         setLoading(true)
         setError(null)
 
-        // Get reviews
+        // Load reviews
         const { data: reviewsData, error: rError } = await supabase
           .from('reviews')
           .select('*')
@@ -481,7 +534,7 @@ export default function ReviewsPage() {
 
         if (rError) throw rError
 
-        // Enrich with business data
+        // Add business info
         const enrichedReviews = await Promise.all(
           (reviewsData || []).map(async (review) => {
             const { data: businessData } = await supabase
@@ -509,7 +562,7 @@ export default function ReviewsPage() {
 
     fetchData()
 
-    // Realtime updates
+    // Live updates
     const channel = supabase
       .channel(`user-reviews-${user.id}`)
       .on(
@@ -557,6 +610,7 @@ export default function ReviewsPage() {
             }
           } else if (payload.eventType === 'DELETE') {
             setReviews((prev) => prev.filter((r) => r.id !== payload.old.id))
+
             if (selectedReview?.id === payload.old.id) {
               setIsModalOpen(false)
             }
@@ -570,13 +624,13 @@ export default function ReviewsPage() {
     }
   }, [user?.id, supabase, selectedReview?.id])
 
-  // Logout
+  // Logout handler
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  // Open detail modal
+  // Open modal
   const handleViewDetails = (review) => {
     setSelectedReview(review)
     setIsModalOpen(true)
@@ -593,7 +647,7 @@ export default function ReviewsPage() {
     setSelectedReview(updatedReview)
   }
 
-  // Filters
+  // Filtered review list
   const filteredReviews = reviews.filter((r) => {
     const matchesRating = filterRating === 0 || r.rating >= filterRating
     const matchesSearch =
@@ -605,13 +659,14 @@ export default function ReviewsPage() {
     return matchesRating && matchesSearch
   })
 
-  // Stats
+  // Dashboard stats
   const stats = {
     total: reviews.length,
     avgRating: reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0',
     impact: (reviews.length * 8).toLocaleString() + '+',
   }
 
+  // Loading auth shell
   if (authLoading || !user) {
     return <div className="min-h-screen bg-white dark:bg-[#081120] transition-colors" />
   }
@@ -633,9 +688,10 @@ export default function ReviewsPage() {
         onUpdate={handleUpdateReview}
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
+      {/* Main page content */}
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-10 pt-32">
         <section className="mb-16">
-          {/* Page intro */}
+          {/* Intro */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
             <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
               Your Voice, <br />
@@ -683,7 +739,7 @@ export default function ReviewsPage() {
             </div>
           </motion.div>
 
-          {/* Filter row */}
+          {/* Filters */}
           <div className={`${UI.cardSoft} flex flex-wrap items-center gap-4 p-4`}>
             <FaFilter className="text-slate-400 dark:text-slate-500" />
             <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Filter by Rating:</span>

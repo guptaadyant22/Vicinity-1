@@ -1,13 +1,15 @@
 // Root layout component for Next.js app with theme, auth providers, and global styles
-// Removed custom loading overlay since it is not needed between pages
+// FIXES:
+// - Removes duplicate theme boot script
+// - Applies dark class before hydration
+// - Gives html/body the same dark-safe background
+// - Cleans unused imports
 
 import { ReactNode } from 'react'
 import dynamic from 'next/dynamic'
-import '../context/ThemeContext'
 import { ThemeProvider } from '../context/ThemeContext'
 import { AuthProvider } from '../context/AuthContext'
 import '../styles/globals.css'
-import ThemeToggle from '../components/ThemeToggle'
 
 // Load AIChat dynamically on client only
 const AIChat = dynamic(() => import('../components/AIChat'), { ssr: false })
@@ -31,28 +33,47 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if (!localStorage.getItem('theme') || localStorage.getItem('theme') === 'dark') {
-                document.documentElement.classList.add('dark');
-              } else {
-                document.documentElement.classList.remove('dark');
-              }
+              (function () {
+                try {
+                  var saved = localStorage.getItem('theme');
+                  var root = document.documentElement;
+
+                  if (saved === 'light') {
+                    root.classList.remove('dark');
+                  } else {
+                    root.classList.add('dark');
+                  }
+                } catch (e) {
+                  document.documentElement.classList.add('dark');
+                }
+              })();
             `,
           }}
         />
 
-        {/* Global inline shell styles */}
+        {/* Global shell styles */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              html, body { width: 100%; height: 100%; }
+              html, body { width: 100%; min-height: 100%; }
 
               html {
                 scroll-behavior: smooth;
-                background: #ffffff;
+                background: #f8fafc;
+                color-scheme: light;
               }
 
               html.dark {
+                background: #081120;
+                color-scheme: dark;
+              }
+
+              body {
+                background: #f8fafc;
+              }
+
+              html.dark body {
                 background: #081120;
               }
 
@@ -67,28 +88,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
       <body
         suppressHydrationWarning
-        className="font-sans antialiased bg-white dark:bg-[#081120] text-slate-900 dark:text-white transition-colors duration-300 relative"
+        className="font-sans antialiased bg-slate-50 dark:bg-[#081120] text-slate-900 dark:text-white transition-colors duration-300 relative min-h-screen"
       >
-        {/* Prevent flash of wrong theme before hydration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var saved = localStorage.getItem('theme');
-                  if (saved === 'light') {
-                    document.documentElement.classList.remove('dark');
-                  } else {
-                    document.documentElement.classList.add('dark');
-                  }
-                } catch(e) {
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
-          }}
-        />
-
         {/* App providers */}
         <ThemeProvider>
           <AuthProvider>

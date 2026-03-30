@@ -23,7 +23,7 @@ import {
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useTheme } from "../context/ThemeContext";
-import { FogBackground } from "@/components/ui/fog";
+import { BackgroundBeamsWithCollision } from "@/components/ui/beams-collision";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -49,9 +49,11 @@ function SectionGlow({ position = "left" }) {
         x: [0, position === "left" ? 20 : -20, 0],
         transition: { duration: 10, repeat: Infinity, ease: "easeInOut" },
       }}
-      className={`absolute ${position === "left" ? "-left-32 top-10" : "-right-32 top-16"
-        } h-[360px] w-[360px] rounded-full blur-[140px] ${isDark ? "bg-blue-500/10" : "bg-blue-100/70"
-        }`}
+      className={`absolute ${
+        position === "left" ? "-left-32 top-10" : "-right-32 top-16"
+      } h-[360px] w-[360px] rounded-full blur-[140px] ${
+        isDark ? "bg-blue-500/10" : "bg-blue-100/70"
+      }`}
     />
   );
 }
@@ -117,118 +119,272 @@ function FeatureCard({ icon, title, text, badge, delay = 0 }) {
   );
 }
 
-// Hero section
 function HeroSection() {
-  const words = ["restaurants", "salons", "gyms", "cafes", "shops"];
+  const words = ["spas","cafes", "shops", "salons", "gyms"];
   const [currentWord, setCurrentWord] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentWord((prev) => (prev + 1) % words.length);
-    }, 2500);
+    }, 2400);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <section className="relative overflow-hidden px-6 pb-24 pt-40 md:pb-32 md:pt-48">
-      {/* Hero-only fog background */}
-      <FogBackground className="absolute inset-0" />
-
-      {/* Hero content */}
-      <div className="relative z-10 mx-auto max-w-5xl text-center">
-        {/* Main heading */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.08 }}
-          className="mx-auto max-w-4xl font-[var(--font-outfit)] text-[clamp(2.5rem,6vw,4.5rem)] font-semibold tracking-[-0.07em] text-slate-900 dark:text-white leading-[1.05]"
-        >
-          Find the best local{" "}
-          <span className="relative inline-block">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={words[currentWord]}
-                initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -20, filter: "blur(4px)" }}
-                transition={{ duration: 0.4 }}
-                className="inline-block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-300"
-              >
-                {words[currentWord]}
-              </motion.span>
-            </AnimatePresence>
-
-            {/* Underline accent */}
-            <motion.div
-              animate={{ scaleX: [0.7, 1, 0.7], opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
-            />
-          </span>{" "}
-          around you.
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.15 }}
-          className="mx-auto mt-7 max-w-2xl text-[16px] leading-[1.9] text-slate-500 dark:text-slate-400"
-        >
-          Search local businesses, read real reviews, grab exclusive deals, and message owners directly — all powered by AI.
-        </motion.p>
-
-        {/* CTA buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.22 }}
-          className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-        >
-          <motion.a
-            whileHover={{ scale: 1.04, y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            href="/browse"
-            className="group inline-flex items-center gap-2.5 rounded-2xl bg-blue-600 px-7 py-3.5 font-[var(--font-outfit)] text-sm font-semibold text-white shadow-[0_12px_36px_rgba(59,130,246,0.28)] hover:bg-blue-700 hover:shadow-[0_18px_48px_rgba(59,130,246,0.35)] transition-all"
-          >
-            Explore nearby
-            <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
-          </motion.a>
-
-          <motion.a
-            whileHover={{ scale: 1.04, y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            href="/signup"
-            className="inline-flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-white/80 px-7 py-3.5 font-[var(--font-outfit)] text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-xl transition-all hover:border-blue-500/35 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.07]"
-          >
-            Create free account
-          </motion.a>
-        </motion.div>
-
-        {/* Trust bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.3 }}
-          className="mx-auto mt-14 flex flex-wrap items-center justify-center gap-8 text-sm text-slate-400 dark:text-slate-500"
-        >
-          {[
-            { icon: <FaStore />, text: "500+ businesses" },
-            { icon: <FaStar />, text: "10k+ reviews" },
-            { icon: <FaUsers />, text: "Growing community" },
-          ].map((item) => (
-            <div key={item.text} className="flex items-center gap-2">
-              <span className="text-blue-500 dark:text-blue-400">{item.icon}</span>
-              <span className="font-medium">{item.text}</span>
-            </div>
-          ))}
-        </motion.div>
+    <section className="relative overflow-hidden px-6 pb-20 pt-32 md:pb-24 md:pt-40">
+      {/* Background beams */}
+      <div className="absolute inset-0">
+        <BackgroundBeamsWithCollision className="h-full w-full">
+          <div className="pointer-events-none absolute inset-0 bg-white/45 dark:bg-slate-950/40" />
+        </BackgroundBeamsWithCollision>
       </div>
 
-      {/* Showcase */}
-      <div className="relative z-10 mx-auto mt-20 max-w-5xl">
-        <ShowcasePanel />
+      {/* Soft glow */}
+      <div className="pointer-events-none absolute left-1/2 top-20 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[110px] dark:bg-cyan-400/10" />
+
+      <div className="relative z-10 mx-auto max-w-[72rem]">
+        {/* Top text */}
+        <div className="mx-auto max-w-3xl text-center">
+
+          {/* Heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="mx-auto max-w-3xl font-[var(--font-outfit)] text-[clamp(2.6rem,5.2vw,4.5rem)] font-semibold leading-[1] tracking-[-0.07em] text-slate-900 dark:text-white"
+          >
+            Find the best local{" "}
+            <span className="relative inline-block min-w-[1.15em]">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={words[currentWord]}
+                  initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -18, filter: "blur(6px)" }}
+                  transition={{ duration: 0.4 }}
+                  className="inline-block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-300"
+                >
+                  {words[currentWord]}
+                </motion.span>
+              </AnimatePresence>
+
+              {/* Accent underline */}
+              <motion.div
+                animate={{ scaleX: [0.75, 1, 0.75], opacity: [0.35, 0.85, 0.35] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
+              />
+            </span>{" "}
+            around you
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.14 }}
+            className="mx-auto mt-6 max-w-2xl text-[15px] leading-7 text-slate-500 dark:text-slate-400"
+          >
+            Search businesses, read trusted reviews, message owners, and discover
+            deals near you with a cleaner local experience.
+          </motion.p>
+
+          {/* Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.22 }}
+            className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          >
+            <motion.a
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              href="#browse"
+              className="group inline-flex items-center gap-2.5 rounded-2xl bg-blue-600 px-7 py-3.5 font-[var(--font-outfit)] text-sm font-semibold text-white shadow-[0_12px_32px_rgba(59,130,246,0.24)] transition-all hover:bg-blue-700"
+            >
+              Explore nearby
+              <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
+            </motion.a>
+
+            <motion.a
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              href="#signup"
+              className="inline-flex items-center gap-2 rounded-2xl border border-blue-500/15 bg-white/80 px-7 py-3.5 font-[var(--font-outfit)] text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-xl transition-all hover:border-blue-500/30 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.07]"
+            >
+              Create free account
+            </motion.a>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.3 }}
+            className="mx-auto mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400 dark:text-slate-500"
+          >
+            <div className="flex items-center gap-2">
+              <FaStore className="text-blue-500 dark:text-blue-400" />
+              <span className="font-medium">500+ businesses</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaStar className="text-blue-500 dark:text-blue-400" />
+              <span className="font-medium">10k reviews</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaUsers className="text-blue-500 dark:text-blue-400" />
+              <span className="font-medium">Growing community</span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Compact showcase */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.28 }}
+          className="relative mx-auto mt-14 max-w-4xl"
+        >
+          {/* Glow behind card */}
+          <div className="absolute inset-0 -z-10 rounded-[32px] bg-blue-500/10 blur-[55px]" />
+
+          <div className="overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/80 shadow-[0_28px_80px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_28px_80px_rgba(0,0,0,0.38)]">
+            {/* Browser top bar */}
+            <div className="flex items-center gap-3 border-b border-blue-500/10 px-5 py-3 dark:border-white/10">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
+              </div>
+              <div className="ml-3 flex-1 rounded-xl bg-slate-100/90 px-4 py-1.5 text-center text-xs font-medium tracking-wide text-slate-400 dark:bg-white/[0.05] dark:text-slate-500">
+                vicinity.app/discover
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-[1fr_0.85fr]">
+              {/* Left side */}
+              <div className="p-5 md:p-6">
+                {/* Search row */}
+                <div className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+                  <FaSearch className="text-sm text-blue-500 dark:text-blue-400" />
+                  <span className="flex-1 text-sm text-slate-400 dark:text-slate-500">
+                    Best coffee near me
+                  </span>
+                  <span className="rounded-xl bg-blue-600 px-3 py-1 text-[11px] font-bold text-white">
+                    AI
+                  </span>
+                </div>
+
+                {/* Results */}
+                <div className="mt-4 space-y-3">
+                  {[
+                    { name: "Harbor Café", meta: "Coffee • 4.9 • 0.8 mi", deal: "20% OFF" },
+                    { name: "Northline Books", meta: "Bookstore • 4.8 • 1.5 mi", deal: "BOGO" },
+                    { name: "Summit Fitness", meta: "Gym • 4.7 • 1.2 mi", deal: null },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.45, delay: 0.38 + i * 0.08 }}
+                      className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white/80 p-3.5 dark:border-white/10 dark:bg-white/[0.03]"
+                    >
+                      {/* Avatar */}
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/10 text-sm font-semibold text-blue-600 dark:text-blue-300">
+                        {item.name.charAt(0)}
+                      </div>
+
+                      {/* Text */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate font-[var(--font-outfit)] text-sm font-semibold text-slate-900 dark:text-white">
+                            {item.name}
+                          </p>
+                          {item.deal && (
+                            <span className="shrink-0 rounded-md border border-green-500/15 bg-green-500/10 px-1.5 py-0.5 text-[10px] font-bold text-green-600 dark:text-green-300">
+                              {item.deal}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                          {item.meta}
+                        </p>
+                      </div>
+
+                      <FaHeart className="shrink-0 text-sm text-slate-300 dark:text-white/20" />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right side */}
+              <div className="border-t border-blue-500/10 p-5 dark:border-white/10 lg:border-l lg:border-t-0 md:p-6">
+                <div className="rounded-[22px] border border-blue-500/10 bg-slate-50/90 p-4 dark:border-white/10 dark:bg-[#0d1728]">
+                  {/* Business header */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-[var(--font-outfit)] text-[15px] font-semibold text-slate-900 dark:text-white">
+                        Harbor Café
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                        Open now • Cozy atmosphere
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 rounded-xl border border-blue-500/15 bg-blue-500/10 px-2.5 py-1">
+                      <FaStar className="text-[10px] text-yellow-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        4.9
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Image block */}
+                  <div className="mt-4 flex h-28 items-center justify-center rounded-xl border border-blue-500/10 bg-gradient-to-br from-blue-100 to-cyan-50 dark:border-white/10 dark:from-blue-900/20 dark:to-cyan-900/10">
+                    <span className="text-3xl">☕</span>
+                  </div>
+
+                  {/* Quick actions */}
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    {[
+                      { icon: <FaEnvelope />, label: "Message" },
+                      { icon: <FaTag />, label: "Deals" },
+                      { icon: <FaHeart />, label: "Save" },
+                    ].map((action) => (
+                      <div
+                        key={action.label}
+                        className="flex flex-col items-center gap-1.5 rounded-xl border border-blue-500/10 bg-white/70 p-2.5 text-center dark:border-white/10 dark:bg-white/[0.03]"
+                      >
+                        <span className="text-xs text-blue-500 dark:text-blue-400">
+                          {action.icon}
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                          {action.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Review */}
+                  <div className="mt-4 rounded-xl border border-blue-500/10 bg-white/70 p-3 dark:border-white/10 dark:bg-white/[0.03]">
+                    <div className="mb-2 flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-[9px] font-bold text-white">
+                        S
+                      </div>
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                        Sarah M.
+                      </span>
+                    </div>
+                    <p className="text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                      Best coffee in town. Cozy vibe, fast service, and super friendly staff.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -355,8 +511,9 @@ function ShowcasePanel() {
           {/* Right panel */}
           <div className="border-t border-blue-500/8 p-6 dark:border-white/8 lg:border-l lg:border-t-0 lg:p-8">
             <div
-              className={`relative overflow-hidden rounded-[24px] p-5 ${isDark ? "border border-white/8 bg-[#0a1628]" : "border border-blue-500/8 bg-slate-50/80"
-                }`}
+              className={`relative overflow-hidden rounded-[24px] p-5 ${
+                isDark ? "border border-white/8 bg-[#0a1628]" : "border border-blue-500/8 bg-slate-50/80"
+              }`}
             >
               {/* Shimmer */}
               <motion.div
@@ -512,7 +669,6 @@ function HowItWorksSection() {
           text="Whether you're looking for a new coffee shop, a trusted mechanic, or tonight's dinner spot — Vicinity gets you there faster."
           center
         />
-
         <div className="grid gap-6 md:grid-cols-3">
           {steps.map((step, i) => (
             <motion.div
@@ -655,7 +811,6 @@ function AudienceSection() {
 // FAQ section
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);
-
   const faqs = [
     {
       question: "What is Vicinity?",
@@ -766,17 +921,19 @@ function FAQSection() {
                   viewport={{ once: true }}
                   custom={i * 0.06}
                   variants={fadeUp}
-                  className={`overflow-hidden rounded-[20px] border backdrop-blur-xl transition-all duration-300 ${isOpen
+                  className={`overflow-hidden rounded-[20px] border backdrop-blur-xl transition-all duration-300 ${
+                    isOpen
                       ? "border-blue-500/20 bg-white/90 shadow-[0_8px_32px_rgba(59,130,246,0.08)] dark:border-blue-500/15 dark:bg-white/[0.05] dark:shadow-[0_8px_32px_rgba(59,130,246,0.06)]"
                       : "border-blue-500/6 bg-white/70 shadow-[0_2px_12px_rgba(15,23,42,0.02)] hover:border-blue-500/15 dark:border-white/6 dark:bg-white/[0.02] dark:hover:border-white/12"
-                    }`}
+                  }`}
                 >
                   <button onClick={() => setOpenIndex(isOpen ? null : i)} className="flex w-full items-center gap-4 px-6 py-5 text-left">
                     <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold font-[var(--font-outfit)] shrink-0 transition-all duration-300 ${isOpen
+                      className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold font-[var(--font-outfit)] shrink-0 transition-all duration-300 ${
+                        isOpen
                           ? "bg-blue-600 text-white shadow-[0_4px_14px_rgba(59,130,246,0.3)]"
                           : "bg-blue-500/8 text-blue-600 dark:text-blue-300"
-                        }`}
+                      }`}
                     >
                       {String(i + 1).padStart(2, "0")}
                     </span>
@@ -788,8 +945,9 @@ function FAQSection() {
                     <motion.div
                       animate={{ rotate: isOpen ? 180 : 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className={`shrink-0 transition-colors duration-300 ${isOpen ? "text-blue-600 dark:text-blue-400" : "text-slate-300 dark:text-white/20"
-                        }`}
+                      className={`shrink-0 transition-colors duration-300 ${
+                        isOpen ? "text-blue-600 dark:text-blue-400" : "text-slate-300 dark:text-white/20"
+                      }`}
                     >
                       <FaChevronDown size={11} />
                     </motion.div>

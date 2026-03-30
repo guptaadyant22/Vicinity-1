@@ -22,22 +22,39 @@ function joinClasses(...classes: Array<string | undefined | null | false>) {
 export function FogBackground({
   className,
   children,
-  color = "#3b82f6",
+  color = "#60a5fa",
   darkColor = "#2563eb",
-  opacity = 0.22,
+  opacity = 0.08,
   speed = 1,
 }: FogBackgroundProps) {
   const { isDark } = useTheme();
 
+  // Animation timings
   const duration1 = 60 / speed;
   const duration2 = 80 / speed;
   const duration3 = 100 / speed;
 
-  const baseBackground = isDark
-    ? "linear-gradient(to bottom, #06101f 0%, #0b1730 45%, #081224 100%)"
-    : "radial-gradient(ellipse 85% 70% at 50% 50%, #ffffff 0%, #ffffff 34%, #f8fbff 52%, #dbeafe 72%, #93c5fd 88%, #60a5fa 100%)";
-
   const fogColor = isDark ? darkColor : color;
+
+  // White in the middle, blue toward all edges/corners
+  const baseBackground = isDark
+    ? `
+      radial-gradient(circle at center,
+        #0f172a 0%,
+        #0b1530 35%,
+        #0a1738 58%,
+        #102c5c 82%,
+        #1d4ed8 100%)
+    `
+    : `
+      radial-gradient(circle at center,
+        #ffffff 0%,
+        #ffffff 34%,
+        #f8fbff 52%,
+        #eef6ff 68%,
+        #dbeafe 84%,
+        #bfdbfe 100%)
+    `;
 
   return (
     <div
@@ -49,61 +66,78 @@ export function FogBackground({
         background: baseBackground,
       }}
     >
-      {/* Fog layers */}
-      <div className="absolute inset-0" style={{ filter: "blur(80px)" }}>
-        {/* Back layer */}
+      {/* Edge fog layers only */}
+      <div className="absolute inset-0" style={{ filter: "blur(90px)" }}>
+        {/* Top edge fog */}
         <div
-          className="absolute h-[120%] w-[200%]"
+          className="absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 50% 40% at 25% 50%, ${fogColor}, transparent),
-                         radial-gradient(ellipse 40% 50% at 75% 60%, ${fogColor}, transparent)`,
-            opacity: opacity * 0.28,
+            background: `radial-gradient(ellipse 90% 20% at 50% 0%, ${fogColor}, transparent 72%)`,
+            opacity: opacity * 0.22,
             animation: `fogDrift1 ${duration3}s ease-in-out infinite`,
           }}
         />
 
-        {/* Middle layer */}
+        {/* Left edge fog */}
         <div
-          className="absolute h-[120%] w-[200%]"
+          className="absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 60% 35% at 30% 40%, ${fogColor}, transparent),
-                         radial-gradient(ellipse 45% 45% at 70% 70%, ${fogColor}, transparent)`,
-            opacity: opacity * 0.38,
+            background: `radial-gradient(ellipse 22% 85% at 0% 50%, ${fogColor}, transparent 72%)`,
+            opacity: opacity * 0.18,
             animation: `fogDrift2 ${duration2}s ease-in-out infinite`,
           }}
         />
 
-        {/* Front layer */}
+        {/* Right edge fog */}
         <div
-          className="absolute h-[120%] w-[200%]"
+          className="absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 55% 50% at 40% 55%, ${fogColor}, transparent),
-                         radial-gradient(ellipse 50% 35% at 60% 35%, ${fogColor}, transparent)`,
-            opacity: opacity * 0.32,
+            background: `radial-gradient(ellipse 22% 85% at 100% 50%, ${fogColor}, transparent 72%)`,
+            opacity: opacity * 0.18,
             animation: `fogDrift3 ${duration1}s ease-in-out infinite`,
+          }}
+        />
+
+        {/* Bottom edge fog */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse 90% 22% at 50% 100%, ${fogColor}, transparent 72%)`,
+            opacity: opacity * 0.2,
+            animation: `fogDrift2 ${duration2 + 10}s ease-in-out infinite`,
           }}
         />
       </div>
 
-      {/* Ambient glow */}
+      {/* Very soft corner bloom */}
       <div
         className="absolute inset-0"
         style={{
           filter: "blur(120px)",
           background: isDark
-            ? "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(37,99,235,0.18), transparent)"
-            : "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(96,165,250,0.18), transparent 70%)",
+            ? `
+              radial-gradient(circle at 0% 0%, rgba(37,99,235,0.10), transparent 26%),
+              radial-gradient(circle at 100% 0%, rgba(37,99,235,0.10), transparent 26%),
+              radial-gradient(circle at 0% 100%, rgba(37,99,235,0.10), transparent 26%),
+              radial-gradient(circle at 100% 100%, rgba(37,99,235,0.10), transparent 26%)
+            `
+            : `
+              radial-gradient(circle at 0% 0%, rgba(96,165,250,0.08), transparent 24%),
+              radial-gradient(circle at 100% 0%, rgba(96,165,250,0.08), transparent 24%),
+              radial-gradient(circle at 0% 100%, rgba(96,165,250,0.08), transparent 24%),
+              radial-gradient(circle at 100% 100%, rgba(96,165,250,0.08), transparent 24%)
+            `,
           opacity: 1,
         }}
       />
 
-      {/* Surface wash */}
+      {/* Soft center wash to preserve white center */}
       <div
         className="absolute inset-0"
         style={{
           background: isDark
-            ? "radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 35%, rgba(255,255,255,0) 75%)"
-            : "radial-gradient(ellipse at center, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.22) 35%, rgba(255,255,255,0) 75%)",
+            ? "radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 32%, rgba(255,255,255,0) 62%)"
+            : "radial-gradient(circle at center, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.38) 30%, rgba(255,255,255,0) 58%)",
         }}
       />
 
@@ -119,30 +153,30 @@ export function FogBackground({
         @keyframes fogDrift1 {
           0%,
           100% {
-            transform: translateX(-10%) translateY(0%);
+            transform: translateY(-1.5%) scale(1);
           }
           50% {
-            transform: translateX(5%) translateY(-3%);
+            transform: translateY(1.5%) scale(1.02);
           }
         }
 
         @keyframes fogDrift2 {
           0%,
           100% {
-            transform: translateX(0%) translateY(-2%);
+            transform: translateX(-1.5%) scale(1);
           }
           50% {
-            transform: translateX(-15%) translateY(2%);
+            transform: translateX(1.5%) scale(1.02);
           }
         }
 
         @keyframes fogDrift3 {
           0%,
           100% {
-            transform: translateX(-5%) translateY(2%);
+            transform: translateX(1.5%) scale(1);
           }
           50% {
-            transform: translateX(10%) translateY(-2%);
+            transform: translateX(-1.5%) scale(1.02);
           }
         }
       `}</style>
