@@ -34,6 +34,9 @@ export function FogBackground({
   const duration2 = 80 / speed;
   const duration3 = 100 / speed;
 
+  // Softer fog opacity in dark mode
+  const fogOpacity = isDark ? opacity * 0.4 : opacity;
+
   const fogColor = isDark ? darkColor : color;
 
   // White in the middle, blue toward all edges/corners
@@ -73,7 +76,7 @@ export function FogBackground({
           className="absolute inset-0"
           style={{
             background: `radial-gradient(ellipse 90% 20% at 50% 0%, ${fogColor}, transparent 72%)`,
-            opacity: opacity * 0.22,
+            opacity: fogOpacity * 0.22,
             animation: `fogDrift1 ${duration3}s ease-in-out infinite`,
           }}
         />
@@ -83,7 +86,7 @@ export function FogBackground({
           className="absolute inset-0"
           style={{
             background: `radial-gradient(ellipse 22% 85% at 0% 50%, ${fogColor}, transparent 72%)`,
-            opacity: opacity * 0.18,
+            opacity: fogOpacity * 0.18,
             animation: `fogDrift2 ${duration2}s ease-in-out infinite`,
           }}
         />
@@ -93,7 +96,7 @@ export function FogBackground({
           className="absolute inset-0"
           style={{
             background: `radial-gradient(ellipse 22% 85% at 100% 50%, ${fogColor}, transparent 72%)`,
-            opacity: opacity * 0.18,
+            opacity: fogOpacity * 0.18,
             animation: `fogDrift3 ${duration1}s ease-in-out infinite`,
           }}
         />
@@ -103,7 +106,7 @@ export function FogBackground({
           className="absolute inset-0"
           style={{
             background: `radial-gradient(ellipse 90% 22% at 50% 100%, ${fogColor}, transparent 72%)`,
-            opacity: opacity * 0.2,
+            opacity: fogOpacity * 0.2,
             animation: `fogDrift2 ${duration2 + 10}s ease-in-out infinite`,
           }}
         />
@@ -116,10 +119,10 @@ export function FogBackground({
           filter: "blur(120px)",
           background: isDark
             ? `
-              radial-gradient(circle at 0% 0%, rgba(37,99,235,0.10), transparent 26%),
-              radial-gradient(circle at 100% 0%, rgba(37,99,235,0.10), transparent 26%),
-              radial-gradient(circle at 0% 100%, rgba(37,99,235,0.10), transparent 26%),
-              radial-gradient(circle at 100% 100%, rgba(37,99,235,0.10), transparent 26%)
+              radial-gradient(circle at 0% 0%, rgba(37,99,235,0.04), transparent 26%),
+              radial-gradient(circle at 100% 0%, rgba(37,99,235,0.04), transparent 26%),
+              radial-gradient(circle at 0% 100%, rgba(37,99,235,0.04), transparent 26%),
+              radial-gradient(circle at 100% 100%, rgba(37,99,235,0.04), transparent 26%)
             `
             : `
               radial-gradient(circle at 0% 0%, rgba(96,165,250,0.08), transparent 24%),
@@ -131,12 +134,12 @@ export function FogBackground({
         }}
       />
 
-      {/* Soft center wash to preserve white center */}
+      {/* Soft center wash to preserve center glow */}
       <div
         className="absolute inset-0"
         style={{
           background: isDark
-            ? "radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 32%, rgba(255,255,255,0) 62%)"
+            ? "radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.018) 32%, rgba(255,255,255,0) 62%)"
             : "radial-gradient(circle at center, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.38) 30%, rgba(255,255,255,0) 58%)",
         }}
       />

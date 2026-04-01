@@ -40,8 +40,9 @@ const outfit = Outfit({
 })
 
 // Theme classes
+// Content wrapper only; background should come from BusinessLayout
 const PAGE_WRAP =
-  `${inter.variable} ${outfit.variable} relative min-h-screen overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#081120] dark:text-white`
+  `${inter.variable} ${outfit.variable} relative min-h-screen text-slate-900 transition-colors duration-300 dark:text-white`
 
 const GLASS_BG =
   'bg-white/75 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 transition-colors duration-300'
@@ -55,73 +56,10 @@ const GLASS_MODAL =
 const GLASS_INPUT =
   'w-full px-4 py-3 bg-white dark:bg-[#111827] border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#162033] transition-all text-sm'
 
-// Animated page background
-function PageBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Base */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
-
-      {/* Main glow */}
-      <motion.div
-        animate={{
-          y: [0, -16, 0],
-          scale: [1, 1.05, 1],
-          opacity: [0.22, 0.4, 0.22],
-          transition: { duration: 8, repeat: Infinity, ease: 'easeInOut' },
-        }}
-        className="absolute left-1/2 top-[8%] h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/16"
-      />
-
-      {/* Left glow */}
-      <motion.div
-        animate={{
-          x: [0, 16, 0],
-          y: [0, 14, 0],
-          opacity: [0.15, 0.28, 0.15],
-          transition: { duration: 10, repeat: Infinity, ease: 'easeInOut' },
-        }}
-        className="absolute left-[-8%] top-[16%] h-[320px] w-[320px] rounded-full bg-blue-100/80 blur-[120px] dark:bg-blue-400/10"
-      />
-
-      {/* Right glow */}
-      <motion.div
-        animate={{
-          x: [0, -12, 0],
-          y: [0, -10, 0],
-          opacity: [0.12, 0.24, 0.12],
-          transition: { duration: 11, repeat: Infinity, ease: 'easeInOut' },
-        }}
-        className="absolute right-[-6%] top-[14%] h-[340px] w-[340px] rounded-full bg-cyan-100/70 blur-[120px] dark:bg-cyan-500/10"
-      />
-
-      {/* Grid */}
-      <motion.div
-        animate={{
-          backgroundPosition: ['0px 0px', '72px 72px'],
-          transition: { duration: 18, repeat: Infinity, ease: 'linear' },
-        }}
-        className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(59,130,246,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.22) 1px, transparent 1px)',
-          backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(circle at center, black 45%, transparent 100%)',
-        }}
-      />
-
-      {/* Bottom fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-[#081120]" />
-    </div>
-  )
-}
-
 // Loading spinner component
 function LoadingScreen() {
   return (
-    <div className="relative z-10 h-screen flex items-center justify-center">
+    <div className="relative z-10 flex min-h-[60vh] items-center justify-center">
       {/* Spinner */}
       <motion.div
         animate={{ rotate: 360 }}
@@ -663,7 +601,6 @@ export default function BusinessSettingsPage() {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-          <PageBackground />
           <LoadingScreen />
         </div>
       </BusinessLayout>
@@ -673,8 +610,6 @@ export default function BusinessSettingsPage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        <PageBackground />
-
         {/* Top header bar */}
         <div className="relative z-10 border-b border-blue-500/10 dark:border-white/10 bg-white/70 dark:bg-[#0b1322] backdrop-blur-xl transition-colors duration-300">
           {/* Header glow */}
@@ -724,7 +659,7 @@ export default function BusinessSettingsPage() {
         </AnimatePresence>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto relative z-10">
+        <main className="relative z-10">
           <div className="max-w-3xl mx-auto p-8 pb-20">
             {/* Top cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

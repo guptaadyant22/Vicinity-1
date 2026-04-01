@@ -14,7 +14,6 @@ import {
   FaSearch,
   FaChartLine,
   FaPencilAlt,
-  FaFire,
   FaQuoteLeft,
 } from 'react-icons/fa'
 import { useAuth } from '../../../context/AuthContext'
@@ -22,7 +21,6 @@ import { createClient } from '../../../lib/supabase'
 import UserNavbar from '../../../components/UserNavbar'
 
 // --- SHARED UI SYSTEM ---
-// Main page wrapper is now relative + isolate to avoid wrapper/stacking issues
 const UI = {
   page: 'relative isolate min-h-screen text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300',
   card: 'bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-colors duration-300',
@@ -36,7 +34,6 @@ const UI = {
 }
 
 // --- PAGE BACKGROUND ---
-// White in the middle, blue toward the edges, fixed behind content
 const Background = () => {
   return (
     <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none transition-colors duration-300 bg-white dark:bg-[#081120]">
@@ -135,7 +132,6 @@ const Background = () => {
 }
 
 // --- STAT CARD ---
-// Small top stats card
 const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
   const iconStyleMap = {
     blue: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300',
@@ -166,7 +162,6 @@ const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
 }
 
 // --- REVIEW MODAL ---
-// Full detail modal
 const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editedComment, setEditedComment] = useState(review?.comment || '')
@@ -402,7 +397,6 @@ const ReviewDetailModal = ({ review, isOpen, onClose, onDelete, onUpdate }) => {
 }
 
 // --- REVIEW CARD ---
-// Single review preview card
 const ReviewCard = React.forwardRef<HTMLDivElement, { review: any; index: number; onViewDetails: (review: any) => void }>(
   ({ review, index, onViewDetails }, ref) => {
     // Rating chip style helper
@@ -659,11 +653,10 @@ export default function ReviewsPage() {
     return matchesRating && matchesSearch
   })
 
-  // Dashboard stats
+  // Dashboard stats (Impact card removed)
   const stats = {
     total: reviews.length,
     avgRating: reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0',
-    impact: (reviews.length * 8).toLocaleString() + '+',
   }
 
   // Loading auth shell
@@ -691,25 +684,30 @@ export default function ReviewsPage() {
       {/* Main page content */}
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-10 pt-32">
         <section className="mb-16">
-          {/* Intro */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-            <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
-              Your Voice, <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-                Your Reviews
-              </span>
-            </h1>
 
-            <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl leading-relaxed">
-              Every review you write helps others discover amazing places.
-            </p>
-          </motion.div>
+          {/* Intro + stat cards side by side */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 mb-10">
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <StatCard label="Total Reviews" value={stats.total} icon={FaPencilAlt} color="blue" delay={0.1} />
-            <StatCard label="Avg Rating" value={stats.avgRating} icon={FaChartLine} color="indigo" delay={0.2} />
-            <StatCard label="Impact" value={stats.impact} icon={FaFire} color="cyan" delay={0.3} />
+            {/* Left: heading + subtitle */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
+              <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
+                Your Voice, <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+                  Your Reviews
+                </span>
+              </h1>
+
+              <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl leading-relaxed">
+                Every review you write helps others discover amazing places.
+              </p>
+            </motion.div>
+
+            {/* Right: 2 stat cards stacked vertically */}
+            <div className="flex flex-col gap-4 w-full lg:w-[280px] flex-shrink-0">
+              <StatCard label="Total Reviews" value={stats.total} icon={FaPencilAlt} color="blue" delay={0.1} />
+              <StatCard label="Avg Rating" value={stats.avgRating} icon={FaChartLine} color="indigo" delay={0.2} />
+            </div>
+
           </div>
 
           {/* Search */}

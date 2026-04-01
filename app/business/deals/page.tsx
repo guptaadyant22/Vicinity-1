@@ -38,8 +38,9 @@ const outfit = Outfit({
 })
 
 // Shared theme classes
+// NOTE: keep this as a content wrapper only so BusinessLayout owns the full page background
 const PAGE_WRAP =
-  `${inter.variable} ${outfit.variable} relative min-h-screen overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#081120] dark:text-white`
+  `${inter.variable} ${outfit.variable} relative text-slate-900 transition-colors duration-300 dark:text-white`
 
 const GLASS_BG =
   'bg-white/82 dark:bg-[#0e1628]/92 backdrop-blur-xl border border-blue-500/12 dark:border-white/10 transition-colors duration-300'
@@ -52,67 +53,6 @@ const MODAL_CARD =
 
 const GLASS_INPUT =
   'w-full px-4 py-3 bg-white dark:bg-[#111a2e] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#16233d] focus:outline-none transition-all'
-
-// Animated page background
-function PageBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Base background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
-
-      {/* Main center glow */}
-      <motion.div
-        animate={{
-          y: [0, -16, 0],
-          scale: [1, 1.05, 1],
-          opacity: [0.22, 0.4, 0.22],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute left-1/2 top-[8%] h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/16"
-      />
-
-      {/* Left glow */}
-      <motion.div
-        animate={{
-          x: [0, 16, 0],
-          y: [0, 14, 0],
-          opacity: [0.15, 0.28, 0.15],
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute left-[-8%] top-[16%] h-[320px] w-[320px] rounded-full bg-blue-100/80 blur-[120px] dark:bg-blue-400/10"
-      />
-
-      {/* Right glow */}
-      <motion.div
-        animate={{
-          x: [0, -12, 0],
-          y: [0, -10, 0],
-          opacity: [0.12, 0.24, 0.12],
-        }}
-        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute right-[-6%] top-[14%] h-[340px] w-[340px] rounded-full bg-blue-100/70 blur-[120px] dark:bg-blue-600/10"
-      />
-
-      {/* Grid pattern */}
-      <motion.div
-        animate={{ backgroundPosition: ['0px 0px', '72px 72px'] }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-        className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(59,130,246,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.22) 1px, transparent 1px)',
-          backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(circle at center, black 45%, transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(circle at center, black 45%, transparent 100%)',
-        }}
-      />
-
-      {/* Bottom fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-[#081120]" />
-    </div>
-  )
-}
 
 // Default built-in deal types
 const DEFAULT_DEAL_TYPES = [
@@ -500,9 +440,8 @@ export default function DealsPage() {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-          <PageBackground />
-          <div className="relative z-10 flex h-screen items-center justify-center transition-colors">
-            {/* Loading spinner */}
+          {/* Loading state */}
+          <div className="relative z-10 flex min-h-full items-center justify-center py-16 transition-colors">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -518,8 +457,8 @@ export default function DealsPage() {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-          <PageBackground />
-          <div className="relative z-10 flex h-screen items-center justify-center transition-colors">
+          {/* Empty business state */}
+          <div className="relative z-10 flex min-h-full items-center justify-center py-16 transition-colors">
             <div className="text-center">
               <p className="text-xl text-slate-500 dark:text-slate-400">No business found</p>
               <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
@@ -535,8 +474,6 @@ export default function DealsPage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        <PageBackground />
-
         {/* Header */}
         <div className="relative z-10 border-b border-blue-500/10 bg-white/75 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-[#0b1322]">
           {/* Header glow */}
@@ -615,7 +552,7 @@ export default function DealsPage() {
           )}
         </AnimatePresence>
 
-        <main className="relative z-10 flex-1 overflow-y-auto">
+        <main className="relative z-10">
           <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 pb-20 pt-8 lg:px-8">
             {/* Stats section */}
             <section>
@@ -836,7 +773,6 @@ export default function DealsPage() {
                             {type.label}
                           </option>
                         ))}
-
                         <option
                           value="__new__"
                           className="bg-white text-blue-600 dark:bg-[#0c1424] dark:text-blue-300"

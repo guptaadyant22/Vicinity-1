@@ -3,12 +3,11 @@
 // =============================================================================
 // USER MESSAGES PAGE — Vicinity
 // =============================================================================
-// Flow:
-// 1. User opens a business chat from the business page via ?businessId=...
-// 2. If a thread already exists, it opens that thread
-// 3. If no thread exists, shows the first-message composer
-// 4. First message is sent via the create_message_thread RPC (atomic)
-// 5. Once accepted by the business, normal active chat begins
+// Compact desktop-first chat layout
+// - Main page no longer scrolls vertically on desktop
+// - Left chat list scrolls internally
+// - Message thread scrolls internally
+// - Header + composer stay pinned inside the chat panel
 // =============================================================================
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
@@ -25,8 +24,6 @@ import {
   FaFilter,
   FaSync,
   FaArrowLeft,
-  FaFire,
-  FaBolt,
   FaTimes,
 } from 'react-icons/fa'
 import { createClient } from '../../../lib/supabase'
@@ -36,11 +33,11 @@ import { FogBackground } from '@/components/ui/fog'
 // -- Shared Vicinity glass UI -------------------------------------------------
 const UI = {
   // Main page wrapper
-  page: 'relative min-h-screen bg-transparent text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300',
+  page: 'relative min-h-screen bg-transparent text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-hidden transition-colors duration-300',
 
   // Main shell / panel style
   shell:
-    'bg-white/20 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/30 dark:border-white/10 rounded-[30px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition-colors duration-300',
+    'bg-white/20 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/30 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition-colors duration-300',
 
   // Soft card style
   cardSoft:
@@ -54,61 +51,6 @@ const UI = {
   primaryBtn: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]',
   secondaryBtn:
     'bg-white/14 dark:bg-white/[0.04] backdrop-blur-2xl hover:bg-white/22 dark:hover:bg-white/[0.07] text-slate-700 dark:text-white border border-white/25 dark:border-white/10',
-}
-
-// -- Color tokens for stat cards ----------------------------------------------
-const colorMap = {
-  blue: {
-    iconWrap:
-      'bg-blue-500/10 dark:bg-blue-500/10 border-blue-400/20 dark:border-blue-400/20 text-blue-700 dark:text-blue-300',
-    glow: 'rgba(59,130,246,0.18)',
-  },
-  cyan: {
-    iconWrap:
-      'bg-cyan-500/10 dark:bg-cyan-500/10 border-cyan-400/20 dark:border-cyan-400/20 text-cyan-700 dark:text-cyan-300',
-    glow: 'rgba(6,182,212,0.16)',
-  },
-  rose: {
-    iconWrap:
-      'bg-rose-500/10 dark:bg-rose-500/10 border-rose-400/20 dark:border-rose-400/20 text-rose-700 dark:text-rose-300',
-    glow: 'rgba(244,63,94,0.14)',
-  },
-}
-
-// -- Stat card ----------------------------------------------------------------
-const StatCard = ({ label, value, icon: Icon, color, delay }) => {
-  const t = colorMap[color] || colorMap.blue
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      whileHover={{ y: -4 }}
-      className={`${UI.cardSoft} group relative p-6 overflow-hidden`}
-    >
-      {/* Soft glow on hover */}
-      <div
-        className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[70px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ background: `radial-gradient(circle, ${t.glow}, transparent 65%)` }}
-      />
-
-      <div className="relative z-10 flex items-center gap-4">
-        <div className={`p-3.5 rounded-2xl border ${t.iconWrap}`}>
-          <Icon size={22} />
-        </div>
-
-        <div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight">
-            {value}
-          </p>
-          <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest mt-1.5">
-            {label}
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  )
 }
 
 // -- Status badge helpers -----------------------------------------------------
@@ -153,47 +95,43 @@ const RequestCard = ({ request, selected, onClick }) => {
 
   return (
     <motion.button
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -2 }}
       whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className={`w-full text-left rounded-[24px] border overflow-hidden transition-all backdrop-blur-2xl ${
+      className={`w-full text-left rounded-[22px] border overflow-hidden transition-all backdrop-blur-2xl ${
         selected
           ? 'border-blue-300/50 dark:border-blue-500/30 bg-white/30 dark:bg-white/[0.06] shadow-lg'
           : 'border-white/25 dark:border-white/10 bg-white/14 dark:bg-white/[0.03] hover:bg-white/20 dark:hover:bg-white/[0.06]'
       }`}
     >
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3 mb-2.5">
           <div className="min-w-0">
-            <h3 className="text-base font-black text-slate-900 dark:text-white truncate">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white truncate">
               {request.businesses?.name || 'Business'}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase mt-1 truncate">
               {request.businesses?.type || 'Business'}
             </p>
           </div>
 
-          <div className={`px-2.5 py-1.5 rounded-xl border text-[10px] font-bold uppercase flex items-center gap-1.5 ${statusStyles.wrap}`}>
-            <StatusIcon size={11} />
+          <div className={`shrink-0 px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1.5 ${statusStyles.wrap}`}>
+            <StatusIcon size={10} />
             {request.status}
           </div>
         </div>
 
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3 mb-4">
+        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2 mb-3">
           {request.summary || 'No summary yet'}
         </p>
 
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-slate-500 dark:text-slate-400 truncate pr-2">
             {request.businesses?.city || 'Unknown city'}
             {request.businesses?.state ? `, ${request.businesses.state}` : ''}
           </span>
-          <span className="font-bold text-blue-600 dark:text-blue-300">Open →</span>
+          <span className="font-bold text-blue-600 dark:text-blue-300 shrink-0">Open</span>
         </div>
-      </div>
-
-      <div className="px-5 py-3 border-t border-white/20 dark:border-white/10 bg-white/12 dark:bg-white/[0.03] text-xs text-slate-500 dark:text-slate-400">
-        Updated {formatTime(request.updated_at || request.created_at)}
       </div>
     </motion.button>
   )
@@ -611,17 +549,6 @@ export default function UserMessagesPage() {
     })
   }, [requests, searchQuery, statusFilter])
 
-  // -- Stats ------------------------------------------------------------------
-  const stats = useMemo(
-    () => ({
-      total: requests.length,
-      pending: requests.filter((r) => r.status === 'pending').length,
-      active: requests.filter((r) => r.status === 'active').length,
-      activity: `${messages.length}+`,
-    }),
-    [requests, messages.length]
-  )
-
   // -- Derived state ----------------------------------------------------------
   const canSendFirstMessage = !!selectedBusiness && !selectedRequest
   const isPending = selectedRequest?.status === 'pending'
@@ -636,7 +563,7 @@ export default function UserMessagesPage() {
   // -- Render -----------------------------------------------------------------
   return (
     <div className={UI.page}>
-      {/* Same fog background as saved page */}
+      {/* Fog background */}
       <FogBackground
         className="fixed inset-0 z-0"
         color="#60a5fa"
@@ -646,387 +573,380 @@ export default function UserMessagesPage() {
       />
 
       {/* Main content */}
-      <div className="relative z-10">
+      <div className="relative z-10 h-screen overflow-hidden">
         <UserNavbar activePage="messages" onLogout={handleLogout} />
 
-        <main className="max-w-7xl mx-auto px-6 py-10 pt-32">
-          {/* Heading */}
-          <section className="mb-14">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-              <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
-                Your Chats, <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-500 dark:from-blue-300 dark:to-cyan-300">
-                  Your Connections
-                </span>
-              </h1>
+        <main className="max-w-7xl mx-auto h-[calc(100vh-5.5rem)] px-4 md:px-6 pt-24 pb-4 overflow-hidden">
+          <div className="h-full flex flex-col gap-4">
+            {/* Compact toolbar */}
+            <section className={`${UI.cardSoft} p-3 md:p-4 shrink-0`}>
+              <div className="flex flex-col xl:flex-row gap-3 xl:items-center">
+                {/* Search input */}
+                <div className="relative flex-1 min-w-0">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FaSearch className="text-slate-500 dark:text-slate-400 text-sm" />
+                  </div>
 
-              <p className="text-slate-700 dark:text-slate-300 text-lg max-w-2xl leading-relaxed">
-                Start a request, wait for approval, and continue the conversation once the business accepts.
-              </p>
-            </motion.div>
+                  <input
+                    type="text"
+                    placeholder="Search chats..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`${UI.input} pl-11 pr-12 py-3`}
+                  />
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <StatCard label="Total Threads" value={stats.total} icon={FaComments} color="blue" delay={0.1} />
-              <StatCard label="Pending" value={stats.pending} icon={FaClock} color="cyan" delay={0.2} />
-              <StatCard label="Active" value={stats.active} icon={FaBolt} color="rose" delay={0.3} />
-              <StatCard label="Messages" value={stats.activity} icon={FaFire} color="blue" delay={0.4} />
-            </div>
-
-            {/* Search */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mb-6"
-            >
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <FaSearch className="text-slate-500 dark:text-slate-400 text-sm" />
+                  {searchQuery && (
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 transition-colors"
+                    >
+                      <FaTimes size={14} />
+                    </motion.button>
+                  )}
                 </div>
 
-                <input
-                  type="text"
-                  placeholder="Search by business name, type, or request summary..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`${UI.input} pl-11 pr-12 py-3.5`}
-                />
-
-                {searchQuery && (
-                  <motion.button
-                    whileHover={{ scale: 1.08 }}
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 transition-colors"
-                  >
-                    <FaTimes size={14} />
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Filter bar */}
-            <div className={`flex flex-wrap items-center gap-4 p-4 rounded-[24px] ${UI.cardSoft}`}>
-              <FaFilter className="text-slate-500 dark:text-slate-400" />
-              <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Filter by Status:</span>
-
-              {['all', 'pending', 'active', 'ignored'].map((status) => (
-                <motion.button
-                  key={status}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
-                    statusFilter === status
-                      ? 'bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/20'
-                      : 'bg-white/14 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 border-white/25 dark:border-white/10 hover:bg-white/22 dark:hover:bg-white/[0.07]'
-                  }`}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </motion.button>
-              ))}
-
-              <div className="ml-auto">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => loadRequests()}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 ${UI.secondaryBtn}`}
-                >
-                  <FaSync size={12} />
-                  Refresh
-                </motion.button>
-              </div>
-            </div>
-          </section>
-
-          {/* Main layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-[370px_minmax(0,1fr)] gap-6">
-            {/* Sidebar */}
-            <div className={UI.shell}>
-              <div className="p-4 space-y-4 max-h-[900px] overflow-y-auto">
-                {/* New conversation banner */}
-                {selectedBusiness && !selectedRequest && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/80 dark:bg-blue-500/10 p-4"
-                  >
-                    <p className="text-sm font-black text-blue-700 dark:text-blue-300 mb-1">Ready to start chat</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-200">
-                      {selectedBusiness.name} was opened from the business page. Send your first request below.
-                    </p>
-                  </motion.div>
-                )}
-
-                {/* Loading / list / empty states */}
-                {loading ? (
-                  <>
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className="h-36 rounded-2xl bg-white/10 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/20 dark:border-white/10 animate-pulse"
-                      />
-                    ))}
-                  </>
-                ) : filteredRequests.length > 0 ? (
-                  <AnimatePresence mode="popLayout">
-                    {filteredRequests.map((request) => (
-                      <RequestCard
-                        key={request.id}
-                        request={request}
-                        selected={selectedRequest?.id === request.id}
-                        onClick={async () => {
-                          setSelectedRequest(request)
-                          setSelectedBusiness(request.businesses || null)
-                          await loadMessages(request.id)
-                        }}
-                      />
-                    ))}
-                  </AnimatePresence>
-                ) : (
-                  <div className="text-center py-20 rounded-2xl border border-dashed border-white/25 dark:border-white/10 bg-white/12 dark:bg-white/[0.03]">
-                    <FaComments className="mx-auto mb-4 text-slate-400 dark:text-slate-500" size={32} />
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No matching chats</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xs mx-auto">
-                      Try a different search or open a business page and press chat.
-                    </p>
+                {/* Filters */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="hidden md:flex items-center gap-2 mr-1">
+                    <FaFilter className="text-slate-500 dark:text-slate-400 text-sm" />
+                    <span className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      Status
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* Chat panel */}
-            <div className={UI.shell}>
-              {selectedBusiness ? (
-                <>
-                  {/* Panel header */}
-                  <div className="px-6 py-5 border-b border-white/20 dark:border-white/10 bg-white/12 dark:bg-white/[0.03]">
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                  {['all', 'pending', 'active', 'ignored'].map((status) => (
+                    <motion.button
+                      key={status}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setStatusFilter(status)}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+                        statusFilter === status
+                          ? 'bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/20'
+                          : 'bg-white/14 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 border-white/25 dark:border-white/10 hover:bg-white/22 dark:hover:bg-white/[0.07]'
+                      }`}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </motion.button>
+                  ))}
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => loadRequests()}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${UI.secondaryBtn}`}
+                  >
+                    <FaSync size={11} />
+                    Refresh
+                  </motion.button>
+                </div>
+              </div>
+            </section>
+
+            {/* Main chat app shell */}
+            <section className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4 flex-1 min-h-0">
+              {/* Sidebar */}
+              <div className={`${UI.shell} min-h-0 overflow-hidden`}>
+                <div className="h-full flex flex-col">
+                  {/* Sidebar header */}
+                  <div className="px-4 py-3 border-b border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/[0.03] shrink-0">
+                    <div className="flex items-center justify-between gap-3">
                       <div>
-                        <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-1">
-                          {selectedBusiness.name}
-                        </h2>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          {selectedBusiness.type || 'Business'}
-                          {selectedBusiness.city ? ` • ${selectedBusiness.city}` : ''}
-                          {selectedBusiness.state ? `, ${selectedBusiness.state}` : ''}
+                        <h2 className="text-sm font-black text-slate-900 dark:text-white">Chats</h2>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {filteredRequests.length} visible
                         </p>
                       </div>
 
-                      <motion.button
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => router.back()}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 ${UI.secondaryBtn}`}
-                      >
-                        <FaArrowLeft size={12} />
-                        Back
-                      </motion.button>
+                      {selectedBusiness && !selectedRequest && (
+                        <span className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase bg-blue-100/80 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-500/20">
+                          New
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Alerts */}
-                  <AnimatePresence>
-                    {error && (
+                  {/* Sidebar list */}
+                  <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
+                    {/* New conversation banner */}
+                    {selectedBusiness && !selectedRequest && (
                       <motion.div
-                        initial={{ opacity: 0, y: -8 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        className="mx-6 mt-5 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50/85 dark:bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+                        className="rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/80 dark:bg-blue-500/10 p-3"
                       >
-                        {error}
+                        <p className="text-xs font-black text-blue-700 dark:text-blue-300 mb-1">Ready to start</p>
+                        <p className="text-[11px] text-blue-600 dark:text-blue-200 leading-relaxed">
+                          {selectedBusiness.name} was opened from the business page.
+                        </p>
                       </motion.div>
                     )}
 
-                    {success && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        className="mx-6 mt-5 rounded-xl border border-green-200 dark:border-green-500/30 bg-green-50/85 dark:bg-green-500/10 px-4 py-3 text-sm text-green-700 dark:text-green-300"
-                      >
-                        {success}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Status banners */}
-                  <div className="px-6 pt-6">
-                    {isPending && (
-                      <div className="mb-4 p-4 rounded-2xl bg-blue-50/85 dark:bg-blue-500/10 border border-blue-200/70 dark:border-blue-500/20">
-                        <p className="text-sm font-black text-blue-700 dark:text-blue-300 mb-1">Request pending</p>
-                        <p className="text-sm text-blue-700/80 dark:text-blue-200">
-                          You already sent your first message. Wait for the business to accept before sending more.
-                        </p>
-                      </div>
-                    )}
-
-                    {isIgnored && (
-                      <div className="mb-4 p-4 rounded-2xl bg-red-100/85 dark:bg-red-500/10 border border-red-200/70 dark:border-red-500/20">
-                        <p className="text-sm font-black text-red-700 dark:text-red-300 mb-1">Request ignored</p>
-                        <p className="text-sm text-red-700/80 dark:text-red-200">
-                          This business did not open the conversation.
-                        </p>
-                      </div>
-                    )}
-
-                    {isActive && (
-                      <div className="mb-4 p-4 rounded-2xl bg-green-100/85 dark:bg-green-500/10 border border-green-200/70 dark:border-green-500/20">
-                        <p className="text-sm font-black text-green-700 dark:text-green-300 mb-1">Chat is active</p>
-                        <p className="text-sm text-green-700/80 dark:text-green-200">
-                          The business accepted your request. You can now chat normally.
+                    {/* Loading / list / empty states */}
+                    {loading ? (
+                      <>
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div
+                            key={i}
+                            className="h-28 rounded-2xl bg-white/10 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/20 dark:border-white/10 animate-pulse"
+                          />
+                        ))}
+                      </>
+                    ) : filteredRequests.length > 0 ? (
+                      <AnimatePresence mode="popLayout">
+                        {filteredRequests.map((request) => (
+                          <RequestCard
+                            key={request.id}
+                            request={request}
+                            selected={selectedRequest?.id === request.id}
+                            onClick={async () => {
+                              setSelectedRequest(request)
+                              setSelectedBusiness(request.businesses || null)
+                              await loadMessages(request.id)
+                            }}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    ) : (
+                      <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-white/25 dark:border-white/10 bg-white/12 dark:bg-white/[0.03]">
+                        <FaComments className="mx-auto mb-3 text-slate-400 dark:text-slate-500" size={24} />
+                        <h3 className="text-base font-black text-slate-900 dark:text-white mb-2">No chats</h3>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 max-w-[18rem] mx-auto">
+                          Try another search or open a business page and tap chat.
                         </p>
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
 
-                  {/* Messages */}
-                  <div className="px-6 py-6 min-h-[420px] max-h-[520px] overflow-y-auto space-y-4">
-                    {messagesLoading ? (
-                      <div className="h-56 flex items-center justify-center">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                          className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full"
-                        />
+              {/* Chat panel */}
+              <div className={`${UI.shell} min-h-0 overflow-hidden`}>
+                {selectedBusiness ? (
+                  <div className="h-full flex flex-col min-h-0">
+                    {/* Chat header */}
+                    <div className="px-4 md:px-5 py-4 border-b border-white/20 dark:border-white/10 bg-white/12 dark:bg-white/[0.03] shrink-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white truncate">
+                            {selectedBusiness.name}
+                          </h2>
+                          <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 truncate">
+                            {selectedBusiness.type || 'Business'}
+                            {selectedBusiness.city ? ` • ${selectedBusiness.city}` : ''}
+                            {selectedBusiness.state ? `, ${selectedBusiness.state}` : ''}
+                          </p>
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.04 }}
+                          whileTap={{ scale: 0.96 }}
+                          onClick={() => router.back()}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 ${UI.secondaryBtn}`}
+                        >
+                          <FaArrowLeft size={11} />
+                          Back
+                        </motion.button>
                       </div>
-                    ) : messages.length > 0 ? (
-                      messages.map((msg, idx) => {
-                        const isUserMessage = msg.sender === 'user'
 
-                        return (
+                      {/* Compact inline status */}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {isPending && (
+                          <div className="px-3 py-1.5 rounded-xl bg-blue-50/85 dark:bg-blue-500/10 border border-blue-200/70 dark:border-blue-500/20 text-[11px] text-blue-700 dark:text-blue-200">
+                            Pending approval
+                          </div>
+                        )}
+
+                        {isIgnored && (
+                          <div className="px-3 py-1.5 rounded-xl bg-red-100/85 dark:bg-red-500/10 border border-red-200/70 dark:border-red-500/20 text-[11px] text-red-700 dark:text-red-200">
+                            Request ignored
+                          </div>
+                        )}
+
+                        {isActive && (
+                          <div className="px-3 py-1.5 rounded-xl bg-green-100/85 dark:bg-green-500/10 border border-green-200/70 dark:border-green-500/20 text-[11px] text-green-700 dark:text-green-200">
+                            Active chat
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Alerts */}
+                      <AnimatePresence>
+                        {error && (
                           <motion.div
-                            key={msg.id || idx}
-                            initial={{ opacity: 0, y: 12 }}
+                            initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}
+                            exit={{ opacity: 0, y: -8 }}
+                            className="mt-3 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50/85 dark:bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-300"
                           >
-                            <div
-                              className={`max-w-[78%] rounded-2xl px-4 py-3 shadow-sm ${
-                                isUserMessage
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-white/16 dark:bg-white/[0.05] border border-white/25 dark:border-white/10 text-slate-800 dark:text-slate-200 backdrop-blur-2xl'
-                              }`}
+                            {error}
+                          </motion.div>
+                        )}
+
+                        {success && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            className="mt-3 rounded-xl border border-green-200 dark:border-green-500/30 bg-green-50/85 dark:bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300"
+                          >
+                            {success}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Messages thread */}
+                    <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-5 py-4 space-y-3">
+                      {messagesLoading ? (
+                        <div className="h-full min-h-[240px] flex items-center justify-center">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full"
+                          />
+                        </div>
+                      ) : messages.length > 0 ? (
+                        messages.map((msg, idx) => {
+                          const isUserMessage = msg.sender === 'user'
+
+                          return (
+                            <motion.div
+                              key={msg.id || idx}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}
                             >
-                              <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
-                              <p
-                                className={`text-[11px] mt-2 ${
-                                  isUserMessage ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'
+                              <div
+                                className={`max-w-[82%] rounded-2xl px-4 py-3 shadow-sm ${
+                                  isUserMessage
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white/16 dark:bg-white/[0.05] border border-white/25 dark:border-white/10 text-slate-800 dark:text-slate-200 backdrop-blur-2xl'
                                 }`}
                               >
-                                {formatTime(msg.created_at)}
-                              </p>
+                                <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
+                                <p
+                                  className={`text-[10px] mt-2 ${
+                                    isUserMessage ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'
+                                  }`}
+                                >
+                                  {formatTime(msg.created_at)}
+                                </p>
+                              </div>
+                            </motion.div>
+                          )
+                        })
+                      ) : (
+                        <div className="h-full min-h-[260px] flex items-center justify-center">
+                          <div className="text-center py-10 px-6 rounded-3xl border border-dashed border-white/25 dark:border-white/10 bg-white/12 dark:bg-white/[0.03] max-w-md w-full">
+                            <div className="w-16 h-16 bg-white/20 dark:bg-white/[0.05] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 dark:border-white/10">
+                              <FaStore size={22} className="text-slate-400 dark:text-white/30" />
                             </div>
-                          </motion.div>
-                        )
-                      })
-                    ) : (
-                      <div className="text-center py-24 rounded-3xl border border-dashed border-white/25 dark:border-white/10 bg-white/12 dark:bg-white/[0.03]">
-                        <div className="w-20 h-20 bg-white/20 dark:bg-white/[0.05] rounded-full flex items-center justify-center mx-auto mb-6 border border-white/20 dark:border-white/10">
-                          <FaStore size={28} className="text-slate-400 dark:text-white/30" />
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2">No messages yet</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                              Start by sending your first request message to this business.
+                            </p>
+                          </div>
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">No messages yet</h3>
-                        <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-                          Start by sending your first request message to this business.
-                        </p>
-                      </div>
-                    )}
+                      )}
 
-                    <div ref={messagesEndRef} />
-                  </div>
+                      <div ref={messagesEndRef} />
+                    </div>
 
-                  {/* Composer */}
-                  <div className="p-6 border-t border-white/20 dark:border-white/10 bg-white/12 dark:bg-white/[0.03]">
-                    {/* First message composer */}
-                    {canSendFirstMessage && (
-                      <form onSubmit={handleSendFirstMessage} className="space-y-3">
-                        <textarea
-                          value={firstMessage}
-                          onChange={(e) => setFirstMessage(e.target.value)}
-                          placeholder="Write why you want to connect with this business..."
-                          rows={4}
-                          className={`${UI.input} p-4 resize-none`}
-                        />
+                    {/* Composer */}
+                    <div className="p-4 md:p-5 border-t border-white/20 dark:border-white/10 bg-white/12 dark:bg-white/[0.03] shrink-0">
+                      {/* First message composer */}
+                      {canSendFirstMessage && (
+                        <form onSubmit={handleSendFirstMessage} className="space-y-3">
+                          <textarea
+                            value={firstMessage}
+                            onChange={(e) => setFirstMessage(e.target.value)}
+                            placeholder="Write why you want to connect with this business..."
+                            rows={3}
+                            className={`${UI.input} p-4 resize-none`}
+                          />
 
-                        <div className="flex justify-end">
+                          <div className="flex justify-end">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="submit"
+                              disabled={sending || !firstMessage.trim()}
+                              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-shadow disabled:opacity-50 ${UI.primaryBtn}`}
+                            >
+                              <FaPaperPlane size={13} />
+                              {sending ? 'Sending...' : 'Send Request'}
+                            </motion.button>
+                          </div>
+                        </form>
+                      )}
+
+                      {/* Pending notice */}
+                      {isPending && (
+                        <div className="p-3 rounded-2xl bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-xs text-slate-600 dark:text-slate-400 backdrop-blur-2xl">
+                          Wait for the business to accept before sending more.
+                        </div>
+                      )}
+
+                      {/* Ignored notice */}
+                      {isIgnored && (
+                        <div className="p-3 rounded-2xl bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-xs text-slate-600 dark:text-slate-400 backdrop-blur-2xl">
+                          This request is closed and can no longer receive messages.
+                        </div>
+                      )}
+
+                      {/* Active composer */}
+                      {isActive && (
+                        <form onSubmit={handleSendChatMessage} className="flex gap-3 items-center">
+                          <input
+                            type="text"
+                            value={chatMessage}
+                            onChange={(e) => setChatMessage(e.target.value)}
+                            placeholder="Type your message..."
+                            className={`${UI.input} flex-1 py-3`}
+                          />
+
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             type="submit"
-                            disabled={sending || !firstMessage.trim()}
-                            className={`px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-shadow disabled:opacity-50 ${UI.primaryBtn}`}
+                            disabled={sending || !chatMessage.trim()}
+                            className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-shadow disabled:opacity-50 ${UI.primaryBtn}`}
                           >
-                            <FaPaperPlane size={14} />
-                            {sending ? 'Sending...' : 'Send Request'}
+                            <FaPaperPlane size={13} />
+                            {sending ? 'Sending...' : 'Send'}
                           </motion.button>
-                        </div>
-                      </form>
-                    )}
-
-                    {/* Pending notice */}
-                    {isPending && (
-                      <div className="p-4 rounded-2xl bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-sm text-slate-600 dark:text-slate-400 backdrop-blur-2xl">
-                        You already sent your first message. Wait for the business to accept before sending more.
-                      </div>
-                    )}
-
-                    {/* Ignored notice */}
-                    {isIgnored && (
-                      <div className="p-4 rounded-2xl bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-sm text-slate-600 dark:text-slate-400 backdrop-blur-2xl">
-                        This request is closed and can no longer receive messages.
-                      </div>
-                    )}
-
-                    {/* Active composer */}
-                    {isActive && (
-                      <form onSubmit={handleSendChatMessage} className="flex gap-3">
-                        <input
-                          type="text"
-                          value={chatMessage}
-                          onChange={(e) => setChatMessage(e.target.value)}
-                          placeholder="Type your message..."
-                          className={`${UI.input} flex-1`}
-                        />
-
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          type="submit"
-                          disabled={sending || !chatMessage.trim()}
-                          className={`px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-shadow disabled:opacity-50 ${UI.primaryBtn}`}
-                        >
-                          <FaPaperPlane size={14} />
-                          {sending ? 'Sending...' : 'Send'}
-                        </motion.button>
-                      </form>
-                    )}
+                        </form>
+                      )}
+                    </div>
                   </div>
-                </>
-              ) : (
-                // No conversation selected
-                <div className="text-center py-32 px-6">
-                  <div className="w-20 h-20 bg-white/20 dark:bg-white/[0.05] rounded-full flex items-center justify-center mx-auto mb-6 border border-white/20 dark:border-white/10">
-                    <FaComments size={30} className="text-slate-400 dark:text-white/30" />
+                ) : (
+                  <div className="h-full flex items-center justify-center p-6">
+                    <div className="text-center max-w-md">
+                      <div className="w-16 h-16 bg-white/20 dark:bg-white/[0.05] rounded-full flex items-center justify-center mx-auto mb-5 border border-white/20 dark:border-white/10">
+                        <FaComments size={24} className="text-slate-400 dark:text-white/30" />
+                      </div>
+
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+                        No conversation selected
+                      </h3>
+
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
+                        Open a business page and tap chat, or choose an existing request from the left.
+                      </p>
+
+                      <a
+                        href="/user/dashboard"
+                        className="inline-block px-7 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
+                      >
+                        Browse Businesses
+                      </a>
+                    </div>
                   </div>
-
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
-                    No conversation selected
-                  </h3>
-
-                  <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">
-                    Open a business page and tap chat, or choose an existing request from the left.
-                  </p>
-
-                  <a
-                    href="/user/dashboard"
-                    className="inline-block px-8 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
-                  >
-                    Browse Businesses
-                  </a>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </section>
           </div>
         </main>
       </div>

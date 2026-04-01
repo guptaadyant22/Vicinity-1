@@ -1,12 +1,3 @@
-// Business detail page with real-time reviews, deals, gallery, favorites, and review management
-// HELPER FUNCTIONS:
-// GET COVER IMAGE - Returns business image or placeholder
-// FORMAT FULL ADDRESS - Combines address fields into readable string
-// FORMAT REVIEW DATE - Converts timestamp to "X days ago" format
-// FORMAT BUSINESS HOURS - Converts time formats (9-5, 09:00, objects) to 12-hour format
-// GET DEAL LABEL - Returns formatted discount label (e.g., "25% OFF")
-// GET DEAL EMOJI - Returns emoji based on deal type
-// IS EXPIRED - Checks if deal expiry date has passed
 // HANDLERS:
 // TOGGLE FAVORITE - Add/remove business from user's favorites
 // HANDLE SUBMIT REVIEW - Posts new review with rating and text
@@ -37,8 +28,13 @@ const UI = {
   page: 'min-h-screen text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white pb-20 overflow-x-hidden transition-colors duration-300',
   card: 'bg-white/80 dark:bg-white/[0.04] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.24)]',
   cardSoft: 'bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl border border-blue-500/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none',
-  modal: 'bg-white/88 dark:bg-[#0d1424]/96 backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[30px] p-8 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)]',
-  input: 'w-full px-4 py-3 rounded-2xl bg-white dark:bg-white/[0.04] border border-blue-500/15 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-white/[0.06] transition-all text-sm',
+
+  // Modal surface fix
+  modal: 'bg-white dark:bg-[#0d1424]/96 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[30px] p-8 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)]',
+
+  // Input fix for both themes
+  input: 'w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-white/[0.06] transition-all text-sm',
+
   primaryButton: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]',
   secondaryButton: 'bg-white/80 dark:bg-white/[0.05] hover:bg-blue-50 dark:hover:bg-white/[0.08] text-slate-700 dark:text-white border border-blue-500/12 dark:border-white/10',
   softBlueButton: 'bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300',
@@ -151,7 +147,6 @@ const formatBusinessHours = (timeObj) => {
     // handle "9-5"
     if (str.includes('-') && !str.includes(':')) {
       const [openStr, closeStr] = str.split('-').map((s) => s.trim())
-
       const formatTimeFromNumber = (timeStr) => {
         const num = parseInt(timeStr, 10)
         if (!isNaN(num) && num >= 0 && num <= 23) {
@@ -295,7 +290,7 @@ const Modal = ({ children, onClose }) => (
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/55 dark:bg-black/80 backdrop-blur-md"
+    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/80 backdrop-blur-md"
     onClick={onClose}
   >
     <motion.div
@@ -305,9 +300,10 @@ const Modal = ({ children, onClose }) => (
       className={`${UI.modal} max-w-md w-full relative text-slate-900 dark:text-white`}
       onClick={(e) => e.stopPropagation()}
     >
+      {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-5 right-5 p-2 hover:bg-blue-50 dark:hover:bg-white/10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+        className="absolute top-5 right-5 p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
       >
         <FaTimes size={20} />
       </button>
@@ -339,7 +335,6 @@ const ErrorDisplay = ({ error }) => (
   </div>
 )
 
-// --- MAIN PAGE COMPONENT ---
 export default function BusinessDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -367,7 +362,6 @@ export default function BusinessDetailPage() {
 
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false)
-
   const [editingReviewId, setEditingReviewId] = useState(null)
   const [editReviewText, setEditReviewText] = useState('')
   const [editReviewRating, setEditReviewRating] = useState(5)
@@ -520,7 +514,6 @@ export default function BusinessDetailPage() {
                 })
                 setSuccess('✨ New review received!')
                 setTimeout(() => setSuccess(null), 3000)
-
               } else if (payload.eventType === 'UPDATE') {
                 setReviews((prev) =>
                   prev.map((r) => (r.id === payload.new.id ? payload.new : r))
