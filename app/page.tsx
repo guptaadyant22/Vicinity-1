@@ -24,6 +24,12 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useTheme } from "../context/ThemeContext";
 import { BackgroundBeamsWithCollision } from "@/components/ui/beams-collision";
+import dynamic from "next/dynamic";
+
+const DotLottieReact = dynamic(
+  () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
+  { ssr: false }
+);
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -120,7 +126,7 @@ function FeatureCard({ icon, title, text, badge, delay = 0 }) {
 }
 
 function HeroSection() {
-  const words = ["spas","cafes", "shops", "salons", "gyms"];
+  const words = ["spas", "cafes", "shops", "salons", "gyms"];
   const [currentWord, setCurrentWord] = useState(0);
 
   useEffect(() => {
@@ -146,7 +152,6 @@ function HeroSection() {
       <div className="relative z-10 mx-auto max-w-[72rem]">
         {/* Top text */}
         <div className="mx-auto max-w-3xl text-center">
-
           {/* Heading */}
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
@@ -155,7 +160,7 @@ function HeroSection() {
             className="mx-auto max-w-3xl font-[var(--font-outfit)] text-[clamp(2.6rem,5.2vw,4.5rem)] font-semibold leading-[1] tracking-[-0.07em] text-slate-900 dark:text-white"
           >
             Find the best local{" "}
-            <span className="relative inline-block min-w-[1.15em]">
+            <span className="relative in  line-block min-w-[1.15em]">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={words[currentWord]}
@@ -320,66 +325,24 @@ function HeroSection() {
 
               {/* Right side */}
               <div className="border-t border-blue-500/10 p-5 dark:border-white/10 lg:border-l lg:border-t-0 md:p-6">
-                <div className="rounded-[22px] border border-blue-500/10 bg-slate-50/90 p-4 dark:border-white/10 dark:bg-[#0d1728]">
-                  {/* Business header */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-[var(--font-outfit)] text-[15px] font-semibold text-slate-900 dark:text-white">
-                        Harbor Café
-                      </p>
-                      <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
-                        Open now • Cozy atmosphere
-                      </p>
-                    </div>
+                <div className="relative overflow-hidden rounded-[22px] border border-blue-500/10 bg-slate-50/90 p-4 dark:border-white/10 dark:bg-[#0d1728]">
+                  <motion.div
+                    animate={{
+                      x: ["-130%", "130%"],
+                      transition: { duration: 5, repeat: Infinity, ease: "linear" },
+                    }}
+                    className="absolute top-0 h-full w-20 bg-white/15 blur-md"
+                  />
 
-                    <div className="flex items-center gap-1.5 rounded-xl border border-blue-500/15 bg-blue-500/10 px-2.5 py-1">
-                      <FaStar className="text-[10px] text-yellow-400" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">
-                        4.9
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Image block */}
-                  <div className="mt-4 flex h-28 items-center justify-center rounded-xl border border-blue-500/10 bg-gradient-to-br from-blue-100 to-cyan-50 dark:border-white/10 dark:from-blue-900/20 dark:to-cyan-900/10">
-                    <span className="text-3xl">☕</span>
-                  </div>
-
-                  {/* Quick actions */}
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    {[
-                      { icon: <FaEnvelope />, label: "Message" },
-                      { icon: <FaTag />, label: "Deals" },
-                      { icon: <FaHeart />, label: "Save" },
-                    ].map((action) => (
-                      <div
-                        key={action.label}
-                        className="flex flex-col items-center gap-1.5 rounded-xl border border-blue-500/10 bg-white/70 p-2.5 text-center dark:border-white/10 dark:bg-white/[0.03]"
-                      >
-                        <span className="text-xs text-blue-500 dark:text-blue-400">
-                          {action.icon}
-                        </span>
-                        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                          {action.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Review */}
-                  <div className="mt-4 rounded-xl border border-blue-500/10 bg-white/70 p-3 dark:border-white/10 dark:bg-white/[0.03]">
-                    <div className="mb-2 flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-[9px] font-bold text-white">
-                        S
-                      </div>
-                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                        Sarah M.
-                      </span>
-                    </div>
-                    <p className="text-[11px] leading-5 text-slate-500 dark:text-slate-400">
-                      Best coffee in town. Cozy vibe, fast service, and super friendly staff.
-                    </p>
-                  </div>
+                  <div className="relative z-10 flex h-[360px] items-center justify-center overflow-hidden rounded-[18px] border border-blue-500/8 bg-white dark:border-white/8 dark:bg-[#0f1b2d]">
+  <div className="h-[300px] w-[300px] md:h-[340px] md:w-[340px]">
+    <DotLottieReact
+      src="https://lottie.host/33802768-1bbb-4a7b-a3cc-6c6151c8a4b5/tLoA9BEj41.lottie"
+      loop
+      autoplay
+    />
+  </div>
+</div>
                 </div>
               </div>
             </div>
@@ -389,8 +352,6 @@ function HeroSection() {
     </section>
   );
 }
-
-// Showcase panel
 function ShowcasePanel() {
   const { isDark } = useTheme();
 
@@ -400,6 +361,7 @@ function ShowcasePanel() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.7 }}
+      className="relative"
     >
       {/* Glow */}
       <motion.div
@@ -419,8 +381,8 @@ function ShowcasePanel() {
             <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
             <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
           </div>
-          <div className="ml-4 flex-1 rounded-xl bg-slate-100/80 dark:bg-white/[0.04] px-4 py-1.5 text-center">
-            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide">
+          <div className="ml-4 flex-1 rounded-xl bg-slate-100/80 px-4 py-1.5 text-center dark:bg-white/[0.04]">
+            <span className="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
               vicinity.app/browse
             </span>
           </div>
@@ -428,10 +390,10 @@ function ShowcasePanel() {
 
         <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
           {/* Left - Search + Results */}
-          <div className="p-6 md:p-8 space-y-5">
+          <div className="space-y-5 p-6 md:p-8">
             {/* Search bar */}
-            <div className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white dark:bg-white/[0.04] px-4 py-3 shadow-sm dark:border-white/8">
-              <FaSearch className="text-blue-500 dark:text-blue-400 text-sm" />
+            <div className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white px-4 py-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]">
+              <FaSearch className="text-sm text-blue-500 dark:text-blue-400" />
               <motion.div className="flex-1">
                 <motion.span
                   animate={{ opacity: [0.4, 0.8, 0.4] }}
@@ -459,30 +421,29 @@ function ShowcasePanel() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.15 + i * 0.1, duration: 0.5 }}
                 whileHover={{ x: 4, transition: { duration: 0.2 } }}
-                className="flex items-center gap-4 rounded-2xl border border-blue-500/8 bg-white/80 p-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] dark:border-white/8 dark:bg-white/[0.03] transition-all hover:border-blue-500/20 dark:hover:border-white/15"
+                className="flex items-center gap-4 rounded-2xl border border-blue-500/8 bg-white/80 p-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] transition-all hover:border-blue-500/20 dark:border-white/8 dark:bg-white/[0.03] dark:hover:border-white/15"
               >
-                {/* Avatar */}
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-600/10 text-blue-600 dark:text-blue-300 font-bold text-sm shrink-0">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-600/10 text-sm font-bold text-blue-600 dark:text-blue-300">
                   {item.name.charAt(0)}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-[var(--font-outfit)] text-sm font-semibold text-slate-900 dark:text-white truncate">
+                    <p className="truncate font-[var(--font-outfit)] text-sm font-semibold text-slate-900 dark:text-white">
                       {item.name}
                     </p>
                     {item.deal && (
-                      <span className="rounded-md bg-green-500/10 px-1.5 py-0.5 text-[10px] font-bold text-green-600 dark:text-green-300 border border-green-500/15 shrink-0">
+                      <span className="shrink-0 rounded-md border border-green-500/15 bg-green-500/10 px-1.5 py-0.5 text-[10px] font-bold text-green-600 dark:text-green-300">
                         {item.deal}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                  <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
                     {item.type} · ⭐ {item.rating} · {item.distance}
                   </p>
                 </div>
 
-                <FaHeart className="text-slate-300 dark:text-white/15 text-sm shrink-0 hover:text-red-400 transition-colors cursor-pointer" />
+                <FaHeart className="shrink-0 cursor-pointer text-sm text-slate-300 transition-colors hover:text-red-400 dark:text-white/15" />
               </motion.div>
             ))}
 
@@ -497,10 +458,10 @@ function ShowcasePanel() {
                   key={stat.label}
                   className="rounded-xl border border-blue-500/8 bg-blue-500/[0.03] px-3 py-3 text-center dark:border-white/8"
                 >
-                  <p className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white tracking-tight">
+                  <p className="font-[var(--font-outfit)] text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                     {stat.value}
                   </p>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                  <p className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
                     {stat.label}
                   </p>
                 </div>
@@ -512,10 +473,11 @@ function ShowcasePanel() {
           <div className="border-t border-blue-500/8 p-6 dark:border-white/8 lg:border-l lg:border-t-0 lg:p-8">
             <div
               className={`relative overflow-hidden rounded-[24px] p-5 ${
-                isDark ? "border border-white/8 bg-[#0a1628]" : "border border-blue-500/8 bg-slate-50/80"
+                isDark
+                  ? "border border-white/8 bg-[#0a1628]"
+                  : "border border-blue-500/8 bg-slate-50/80"
               }`}
             >
-              {/* Shimmer */}
               <motion.div
                 animate={{
                   x: ["-130%", "130%"],
@@ -524,62 +486,15 @@ function ShowcasePanel() {
                 className="absolute top-0 h-full w-20 bg-white/15 blur-md"
               />
 
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-[var(--font-outfit)] text-[15px] font-semibold text-slate-900 dark:text-white">
-                      Harbor Café
-                    </p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                      123 Main St · Open now
-                    </p>
+              <div className="relative z-10">
+                <div className="flex h-[340px] items-center justify-center overflow-hidden rounded-[18px] border border-blue-500/8 bg-white dark:border-white/8 dark:bg-[#0f1b2d]">
+                  <div className="h-[280px] w-[280px] md:h-[300px] md:w-[300px]">
+                    <DotLottieReact
+                      src="https://lottie.host/33802768-1bbb-4a7b-a3cc-6c6151c8a4b5/tLoA9BEj41.lottie"
+                      loop
+                      autoplay
+                    />
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-xl bg-blue-500/10 px-2.5 py-1 border border-blue-500/15">
-                    <FaStar className="text-yellow-400 text-[10px]" />
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">4.9</span>
-                  </div>
-                </div>
-
-                {/* Photo */}
-                <div className="h-32 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-blue-800/10 border border-blue-500/8 dark:border-white/8 flex items-center justify-center">
-                  <span className="text-3xl">☕</span>
-                </div>
-
-                {/* Quick actions */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { icon: <FaEnvelope />, label: "Message" },
-                    { icon: <FaTag />, label: "Deals" },
-                    { icon: <FaHeart />, label: "Save" },
-                  ].map((action) => (
-                    <div
-                      key={action.label}
-                      className="flex flex-col items-center gap-1.5 rounded-xl border border-blue-500/8 bg-white/60 dark:bg-white/[0.03] dark:border-white/8 p-2.5 text-center"
-                    >
-                      <span className="text-blue-500 dark:text-blue-400 text-xs">{action.icon}</span>
-                      <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                        {action.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Recent review */}
-                <div className="rounded-xl border border-blue-500/8 bg-white/60 dark:bg-white/[0.03] dark:border-white/8 p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-6 w-6 rounded-full bg-blue-600 flex items-center justify-center text-[9px] text-white font-bold">
-                      S
-                    </div>
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Sarah M.</span>
-                    <div className="flex gap-0.5 ml-auto">
-                      {[...Array(5)].map((_, i) => (
-                        <FaStar key={i} className="text-yellow-400 text-[8px]" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-[11px] leading-[1.6] text-slate-500 dark:text-slate-400">
-                    &quot;Best coffee in town! The atmosphere is cozy and the staff is incredible.&quot;
-                  </p>
                 </div>
               </div>
             </div>
@@ -706,7 +621,6 @@ function HowItWorksSection() {
   );
 }
 
-// Audience section
 function AudienceSection() {
   const cardClass =
     "group relative overflow-hidden rounded-[28px] border bg-white/80 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:bg-white/[0.03] transition-all duration-300";
@@ -733,16 +647,24 @@ function AudienceSection() {
           >
             <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-400/0 blur-[50px] transition-all duration-500 group-hover:bg-blue-400/15" />
 
-            <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-500/15 bg-gradient-to-br from-blue-500/10 to-blue-600/5 text-blue-600 dark:text-blue-300 shadow-[0_8px_24px_rgba(59,130,246,0.10)]">
-              <FaUsers size={20} />
-            </div>
-
             <h3 className="relative z-10 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
               For users
             </h3>
             <p className="relative z-10 mt-3 text-sm leading-[1.8] text-slate-500 dark:text-slate-400">
               Discover nearby restaurants, shops, and services. Read real reviews, find deals, and save your favorite spots.
             </p>
+
+            <div className="relative z-10 mt-6 h-[250px] overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-[220px] w-[220px] md:h-[250px] md:w-[250px]">
+                  <DotLottieReact
+                    src="https://lottie.host/0a569a01-8ee1-4d24-b8a7-a8506acc7c49/f4a3YwXYcM.lottie"
+                    loop
+                    autoplay
+                  />
+                </div>
+              </div>
+            </div>
 
             <div className="relative z-10 mt-6 space-y-2.5">
               {[
@@ -774,16 +696,24 @@ function AudienceSection() {
           >
             <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-400/0 blur-[50px] transition-all duration-500 group-hover:bg-blue-400/15" />
 
-            <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-500/15 bg-gradient-to-br from-blue-500/10 to-blue-600/5 text-blue-600 dark:text-blue-300 shadow-[0_8px_24px_rgba(59,130,246,0.10)]">
-              <FaChartLine size={20} />
-            </div>
-
             <h3 className="relative z-10 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
               For businesses
             </h3>
             <p className="relative z-10 mt-3 text-sm leading-[1.8] text-slate-500 dark:text-slate-400">
               Create a professional business profile, manage reviews, publish deals, and message customers — all from your dashboard.
             </p>
+
+            <div className="relative z-10 mt-6 h-[250px] overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-[220px] w-[220px] md:h-[250px] md:w-[250px] scale-[1.72] md:scale-[1.82] transform-gpu">
+                  <DotLottieReact
+                    src="https://lottie.host/a787e51b-7df0-41d2-8d23-a85c1c1a9576/nZxquDKzQ5.lottie"
+                    loop
+                    autoplay
+                  />
+                </div>
+              </div>
+            </div>
 
             <div className="relative z-10 mt-6 space-y-2.5">
               {[
@@ -807,7 +737,6 @@ function AudienceSection() {
     </section>
   );
 }
-
 // FAQ section
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);
