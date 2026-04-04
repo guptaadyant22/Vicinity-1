@@ -1,5 +1,5 @@
-// lib/userAccountUtils.ts
-// Utility functions for User Account page operations with your existing schema
+// Utility functions for user account operations including profile, reviews, favorites, and messaging.
+// All functions interact with Supabase and return standardized { success, data?, error? } responses.
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -7,19 +7,13 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ============= USER PROFILE OPERATIONS =============
-
-/**
- * Get current user profile from conversations table
- * Maps conversation data to user profile display
- */
+// Fetch the current user's profile from auth + conversations table
 export async function getCurrentUserProfile() {
   try {
     const { data: { user: authUser } } = await supabase.auth.getUser();
     
     if (!authUser) return null;
 
-    // Get user data from conversations table (auth_users reference)
     const { data: profileData, error } = await supabase
       .from('conversations')
       .select('*')
@@ -45,16 +39,13 @@ export async function getCurrentUserProfile() {
   }
 }
 
-/**
- * Update user profile in conversations table
- */
+// Update user profile fields in conversations table and auth metadata
 export async function updateUserProfile(userId: string, updates: {
   phone?: string;
   bio?: string;
   name?: string;
 }) {
   try {
-    // Update in conversations table
     const { data, error } = await supabase
       .from('conversations')
       .update({
@@ -68,7 +59,6 @@ export async function updateUserProfile(userId: string, updates: {
 
     if (error) throw error;
 
-    // Update auth user metadata for name and avatar
     if (updates.name) {
       await supabase.auth.updateUser({
         data: { name: updates.name }
@@ -82,24 +72,19 @@ export async function updateUserProfile(userId: string, updates: {
   }
 }
 
-/**
- * Get user statistics
- */
+// Get aggregate stats: favorites count, reviews count, conversations count
 export async function getUserStats(userId: string) {
   try {
-    // Count favorites
     const { count: favCount, error: favError } = await supabase
       .from('favorites')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    // Count reviews
     const { count: reviewCount, error: reviewError } = await supabase
       .from('reviews')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    // Count conversations
     const { count: convCount, error: convError } = await supabase
       .from('conversations')
       .select('*', { count: 'exact', head: true })
@@ -124,11 +109,7 @@ export async function getUserStats(userId: string) {
   }
 }
 
-// ============= USER REVIEWS =============
-
-/**
- * Get all user reviews
- */
+// Fetch a user's reviews, newest first
 export async function getUserReviews(userId: string, limit = 10) {
   try {
     const { data, error } = await supabase
@@ -146,9 +127,7 @@ export async function getUserReviews(userId: string, limit = 10) {
   }
 }
 
-/**
- * Create a new review
- */
+// Create a new review (rating must be 1–5)
 export async function createReview(
   userId: string,
   businessId: string,
@@ -183,9 +162,7 @@ export async function createReview(
   }
 }
 
-/**
- * Update an existing review
- */
+// Update an existing review's rating and comment
 export async function updateReview(
   reviewId: string,
   rating: number,
@@ -211,9 +188,7 @@ export async function updateReview(
   }
 }
 
-/**
- * Delete a review
- */
+// Delete a review by ID
 export async function deleteReview(reviewId: string) {
   try {
     const { error } = await supabase
@@ -229,11 +204,7 @@ export async function deleteReview(reviewId: string) {
   }
 }
 
-// ============= USER FAVORITES =============
-
-/**
- * Get all user favorites
- */
+// Fetch a user's saved favorites, newest first
 export async function getUserFavorites(userId: string, limit = 10) {
   try {
     const { data, error } = await supabase
@@ -251,9 +222,7 @@ export async function getUserFavorites(userId: string, limit = 10) {
   }
 }
 
-/**
- * Add to favorites
- */
+// Add a business to the user's favorites
 export async function addToFavorites(userId: string, businessId: string) {
   try {
     const { data, error } = await supabase
@@ -276,9 +245,7 @@ export async function addToFavorites(userId: string, businessId: string) {
   }
 }
 
-/**
- * Remove from favorites
- */
+// Remove a business from the user's favorites
 export async function removeFromFavorites(userId: string, businessId: string) {
   try {
     const { error } = await supabase
@@ -295,9 +262,7 @@ export async function removeFromFavorites(userId: string, businessId: string) {
   }
 }
 
-/**
- * Check if business is in favorites
- */
+// Check whether a business is in the user's favorites
 export async function isFavorite(userId: string, businessId: string) {
   try {
     const { data, error } = await supabase
@@ -315,11 +280,7 @@ export async function isFavorite(userId: string, businessId: string) {
   }
 }
 
-// ============= USER MESSAGES/CONVERSATIONS =============
-
-/**
- * Get user conversations
- */
+// Fetch the user's conversations, newest first
 export async function getUserConversations(userId: string, limit = 20) {
   try {
     const { data, error } = await supabase
@@ -337,9 +298,7 @@ export async function getUserConversations(userId: string, limit = 20) {
   }
 }
 
-/**
- * Get conversation messages
- */
+// Fetch messages within a conversation, oldest first
 export async function getConversationMessages(conversationId: string, limit = 50) {
   try {
     const { data, error } = await supabase
@@ -357,9 +316,7 @@ export async function getConversationMessages(conversationId: string, limit = 50
   }
 }
 
-/**
- * Send a message
- */
+// Send a message within a conversation
 export async function sendMessage(
   conversationId: string,
   senderId: string,
@@ -388,9 +345,7 @@ export async function sendMessage(
   }
 }
 
-/**
- * Mark message as read
- */
+// Mark a single message as read
 export async function markMessageAsRead(messageId: string) {
   try {
     const { error } = await supabase
@@ -406,11 +361,7 @@ export async function markMessageAsRead(messageId: string) {
   }
 }
 
-// ============= AUTHENTICATION =============
-
-/**
- * Sign out user
- */
+// Sign out the current user
 export async function signOutUser() {
   try {
     const { error } = await supabase.auth.signOut();
@@ -422,9 +373,7 @@ export async function signOutUser() {
   }
 }
 
-/**
- * Get current auth user
- */
+// Get the currently authenticated Supabase user
 export async function getCurrentAuthUser() {
   try {
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -436,11 +385,7 @@ export async function getCurrentAuthUser() {
   }
 }
 
-// ============= UTILITY FUNCTIONS =============
-
-/**
- * Format date for display
- */
+// Format a date string as "Jan 1, 2025"
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -450,9 +395,7 @@ export function formatDate(dateString: string): string {
   });
 }
 
-/**
- * Format date with time
- */
+// Format a date string with time as "Jan 1, 2025, 02:30 PM"
 export function formatDateTime(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -464,33 +407,25 @@ export function formatDateTime(dateString: string): string {
   });
 }
 
-/**
- * Validate email
- */
+// Validate email format
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-/**
- * Validate phone
- */
+// Validate phone number format
 export function isValidPhone(phone: string): boolean {
   const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
   return phoneRegex.test(phone);
 }
 
-/**
- * Truncate text
- */
+// Truncate text to a max length with ellipsis
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
 }
 
-/**
- * Get initials from name
- */
+// Extract up to 2 initials from a full name
 export function getInitials(name: string): string {
   return name
     .split(' ')
@@ -500,9 +435,7 @@ export function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-/**
- * Calculate days since date
- */
+// Calculate number of days since a given date
 export function daysSince(dateString: string): number {
   const date = new Date(dateString);
   const now = new Date();
@@ -511,9 +444,7 @@ export function daysSince(dateString: string): number {
   return diffDays;
 }
 
-/**
- * Get relative time (e.g., "2 days ago")
- */
+// Return a human-readable relative time string (e.g. "2 days ago")
 export function getRelativeTime(dateString: string): string {
   const days = daysSince(dateString);
   
@@ -525,18 +456,14 @@ export function getRelativeTime(dateString: string): string {
   return `${Math.floor(days / 365)} years ago`;
 }
 
-/**
- * Average rating calculation
- */
+// Calculate the average rating from an array of review objects
 export function calculateAverageRating(reviews: any[]): number {
   if (reviews.length === 0) return 0;
   const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
   return parseFloat((sum / reviews.length).toFixed(1));
 }
 
-/**
- * Get rating distribution
- */
+// Get a 1–5 star distribution count from review objects
 export function getRatingDistribution(reviews: any[]) {
   const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
   

@@ -1,14 +1,8 @@
 'use client'
 
-// Signup page with multi-step form flow for business and community accounts
-// COMPONENTS:
-// ACCOUNT TYPE SELECTION - Initial screen for choosing business or community account
-// ACCOUNT CARD - Interactive card for account type selection
-// STEP FORM CONTAINER - Wrapper with step indicator and themed glass card
-// BUSINESS STEP FORM - Multi-step form for business registration
-// COMMUNITY STEP FORM - Multi-step form for community registration
-// INPUT - Reusable themed input with optional icon
-// SELECT - Reusable themed dropdown
+
+// Signup page with multi-step registration for both community users and business owners.
+// Includes reCAPTCHA verification, Google OAuth, and account-type selection.
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -36,7 +30,7 @@ import { createClient } from '../../lib/supabase'
 import AuthNavbar from '../../components/AuthNavbar'
 import type { IconType } from 'react-icons'
 
-// Declare grecaptcha on window
+
 declare global {
   interface Window {
     grecaptcha: {
@@ -46,7 +40,7 @@ declare global {
   }
 }
 
-// Shared blue theme constants
+
 const GLASS_CARD =
   'bg-white/88 dark:bg-[#0d142496] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)] relative overflow-hidden transition-colors duration-300'
 
@@ -58,7 +52,7 @@ const LABEL_STYLE =
 const INPUT_STYLE =
   'w-full py-3 bg-white dark:bg-white/4 border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 focus:bg-blue-50/60 dark:focus:bg-white/6 focus:border-blue-500'
 
-// Data
+
 const BUSINESS_TYPES = [
   'Restaurant',
   'Cafe',
@@ -117,6 +111,7 @@ const COMMUNITY_STEPS = [
   { id: 4, label: 'Confirm', icon: FaCheck },
 ]
 
+// Multi-step signup with user type selection and reCAPTCHA
 export default function SignupPage() {
   const supabase = createClient()
   const router = useRouter()
@@ -159,7 +154,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  // Account type selection
+
   const handleAccountTypeSelect = (type: string) => {
     setAccountType(type)
     setCurrentStep(1)
@@ -168,7 +163,7 @@ export default function SignupPage() {
     setError(null)
   }
 
-  // Business input change
+
   const handleBusinessInputChange = (field: string, value: string | boolean) => {
     setBusinessForm((prev) => ({ ...prev, [field]: value }))
     if (businessErrors[field]) {
@@ -176,7 +171,7 @@ export default function SignupPage() {
     }
   }
 
-  // Community input change
+
   const handleCommunityInputChange = (field: string, value: string | boolean) => {
     setCommunityForm((prev) => ({ ...prev, [field]: value }))
     if (communityErrors[field]) {
@@ -184,7 +179,7 @@ export default function SignupPage() {
     }
   }
 
-  // Interest toggle
+
   const handleInterestToggle = (interest: string) => {
     setCommunityForm((prev) => ({
       ...prev,
@@ -194,10 +189,10 @@ export default function SignupPage() {
     }))
   }
 
-  // Email validation
+
   const isValidEmail = (emailVal: string) => /^\S+@\S+\.\S+$/.test(emailVal)
 
-  // Business step validation
+
   const validateBusinessStep = (step: number) => {
     const errors: Record<string, string> = {}
 
@@ -235,7 +230,7 @@ export default function SignupPage() {
     return errors
   }
 
-  // Community step validation
+
   const validateCommunityStep = (step: number) => {
     const errors: Record<string, string> = {}
 
@@ -261,7 +256,7 @@ export default function SignupPage() {
     return errors
   }
 
-  // Next step handler
+
   const handleNextStep = () => {
     const isBusiness = accountType === 'business'
     const maxSteps = isBusiness ? 5 : 4
@@ -280,12 +275,12 @@ export default function SignupPage() {
     }
   }
 
-  // Previous step handler
+
   const handlePrevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
-  // Business submit
+
   const handleBusinessSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -299,7 +294,7 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      // reCAPTCHA token
+
       const token = await window.grecaptcha.getResponse()
 
       if (!token) {
@@ -389,7 +384,7 @@ export default function SignupPage() {
     }
   }
 
-  // Community submit
+
   const handleCommunitySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -403,7 +398,7 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      // reCAPTCHA token
+
       const token = await window.grecaptcha.getResponse()
 
       if (!token) {
@@ -456,7 +451,7 @@ export default function SignupPage() {
     }
   }
 
-  // Password strength helper
+
   const getPasswordStrength = (password: string) => {
     if (!password) return { level: 0, percentage: 0, color: '#334155' }
     if (password.length < 6) return { level: 1, percentage: 33, color: '#ef4444' }
@@ -522,7 +517,6 @@ export default function SignupPage() {
         </AnimatePresence>
       </div>
 
-      {/* reCAPTCHA script */}
       <Script
         src="https://www.google.com/recaptcha/api.js"
         strategy="lazyOnload"
@@ -531,7 +525,7 @@ export default function SignupPage() {
   )
 }
 
-// Account type selection screen
+
 const AccountTypeSelection = ({ onSelect }: { onSelect: (type: string) => void }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -567,7 +561,7 @@ const AccountTypeSelection = ({ onSelect }: { onSelect: (type: string) => void }
   </motion.div>
 )
 
-// Account card
+
 interface AccountCardProps {
   icon: IconType;
   title: string;
@@ -583,7 +577,6 @@ const AccountCard = ({ icon: Icon, title, subtitle, features, onClick }: Account
     onClick={onClick}
     className="group text-left w-full bg-white/88 dark:bg-[#0d142496] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[30px] p-12 relative overflow-hidden hover:border-blue-500/25 dark:hover:border-white/20 transition-all shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
   >
-    {/* Card glow */}
     <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-blue-500 to-cyan-400 opacity-0 group-hover:opacity-10 dark:group-hover:opacity-15 blur-3xl transition-opacity duration-500 rounded-full" />
 
     <div className="relative z-10">
@@ -614,7 +607,7 @@ const AccountCard = ({ icon: Icon, title, subtitle, features, onClick }: Account
   </motion.button>
 )
 
-// Step form shell
+
 interface StepFormContainerProps {
   accountType: string;
   currentStep: number;
@@ -641,7 +634,6 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
         Back to selection
       </button>
 
-      {/* Step indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-between gap-2 mb-4">
           {steps.map((step, idx) => {
@@ -697,14 +689,11 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
       </div>
 
       <div className={GLASS_CARD}>
-        {/* Accent bar */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-500" />
 
-        {/* Ambient glows */}
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 dark:bg-blue-500/15 opacity-30 dark:opacity-20 blur-3xl rounded-full animate-pulse pointer-events-none" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500/10 dark:bg-cyan-500/10 opacity-30 dark:opacity-20 blur-3xl rounded-full animate-pulse pointer-events-none" />
 
-        {/* Error box */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-red-600 dark:text-red-300 text-sm flex items-center gap-3 relative z-10">
             <FaExclamationCircle className="flex-shrink-0" />
@@ -718,7 +707,7 @@ const StepFormContainer = ({ accountType, currentStep, onBack, error, children }
   )
 }
 
-// Business multi-step form
+
 interface BusinessFormData {
   name: string;
   businessName: string;
@@ -953,7 +942,6 @@ const BusinessStepForm = ({
               <p className="text-xs text-red-500 dark:text-red-400">{errors.isRealBusiness}</p>
             )}
 
-            {/* Visible reCAPTCHA */}
             <div className="flex justify-center py-4">
               <div ref={recaptchaRef}></div>
             </div>
@@ -961,7 +949,6 @@ const BusinessStepForm = ({
         )}
       </motion.div>
 
-      {/* Navigation buttons */}
       <div className="flex gap-4 mt-8 pt-6">
         {step > 1 && (
           <button
@@ -995,7 +982,7 @@ const BusinessStepForm = ({
   )
 }
 
-// Community multi-step form
+
 interface CommunityStepFormProps {
   step: number;
   form: CommunityFormData;
@@ -1206,7 +1193,6 @@ const CommunityStepForm = ({
               <p className="text-xs text-red-500 dark:text-red-400">{errors.agreeToGuidelines}</p>
             )}
 
-            {/* Visible reCAPTCHA */}
             <div className="flex justify-center py-4">
               <div ref={recaptchaRef}></div>
             </div>
@@ -1214,7 +1200,6 @@ const CommunityStepForm = ({
         )}
       </motion.div>
 
-      {/* Navigation buttons */}
       <div className="flex gap-4 mt-8 pt-6">
         {step > 1 && (
           <button
@@ -1248,7 +1233,7 @@ const CommunityStepForm = ({
   )
 }
 
-// Reusable input
+
 interface SignupInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   required?: boolean;
@@ -1285,7 +1270,7 @@ const Input = ({ label, required, error, icon: Icon, ...props }: SignupInputProp
   )
 }
 
-// Reusable select
+
 interface SignupSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   required?: boolean;

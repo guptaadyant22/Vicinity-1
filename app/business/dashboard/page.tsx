@@ -1,5 +1,9 @@
 'use client'
 
+
+// Business owner dashboard displaying key metrics, recent reviews, and performance analytics.
+// Wraps content in the BusinessLayout sidebar and fetches data from Supabase.
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -63,6 +67,7 @@ const staggerWrap = {
   },
 }
 
+// Animated blurred gradient background for the dashboard hero
 function HeroBackground() {
   const { isDark } = useTheme()
 
@@ -146,6 +151,7 @@ function HeroBackground() {
   )
 }
 
+// Soft drifting glow accent for section backgrounds
 function SectionGlow({ position = 'left' }) {
   const { isDark } = useTheme()
 
@@ -166,6 +172,7 @@ function SectionGlow({ position = 'left' }) {
   )
 }
 
+// Frosted-glass card wrapper used across the dashboard
 function GlassCard({ children, className = '' }) {
   return (
     <div
@@ -176,6 +183,7 @@ function GlassCard({ children, className = '' }) {
   )
 }
 
+// Business dashboard with metrics, latest review, and activity chart
 export default function BusinessDashboardPage() {
   const { user, loading: authLoading } = useAuth()
   const { isDark } = useTheme()
@@ -304,6 +312,7 @@ export default function BusinessDashboardPage() {
     dashboardSummary = 'Your page has activity, and a few updates could make it feel even stronger.'
   }
 
+  // Return a time-of-day greeting (morning/afternoon/evening)
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return 'Good morning'
@@ -701,6 +710,7 @@ export default function BusinessDashboardPage() {
   )
 }
 
+// Truncate text to a max length with ellipsis
 function truncateText(text, maxLength) {
   if (!text) return ''
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text

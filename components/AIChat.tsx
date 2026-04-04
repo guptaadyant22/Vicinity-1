@@ -1,5 +1,8 @@
-// components/AIChat.tsx - USES WEBSITE DARK/LIGHT MODE
 'use client'
+
+
+// Floating AI chat widget that provides context-aware assistance to users and business owners.
+// Adapts greeting and responses based on user type (guest, community, business) using the chat API.
 
 import { useState, useRef, useEffect } from 'react'
 import { FaRobot, FaTimes, FaPaperPlane, FaSpinner } from 'react-icons/fa'
@@ -13,6 +16,7 @@ interface Message {
   timestamp: Date
 }
 
+// Floating chat bubble with expandable conversation panel
 export default function AIChat() {
   const { session, loading, userType } = useAuth()
   const { isDark } = useTheme()
@@ -136,7 +140,7 @@ export default function AIChat() {
 
   const isDisabled = loading || chatLoading
 
-  // Website theme blue palette
+
   const brand = {
     primary: '#2563eb',
     secondary: '#1d4ed8',
@@ -144,7 +148,7 @@ export default function AIChat() {
     soft: '#93c5fd',
   }
 
-  // Theme colors for dark/light mode
+
   const colors = {
     dark: {
       bg: '#0f172a',
@@ -234,7 +238,6 @@ export default function AIChat() {
             animation: 'slideUp 0.3s ease',
           }}
         >
-          {/* Header */}
           <div
             style={{
               background: `linear-gradient(135deg, ${brand.primary} 0%, ${brand.accent} 100%)`,
@@ -253,7 +256,6 @@ export default function AIChat() {
             </div>
           </div>
 
-          {/* Messages */}
           <div
             style={{
               flex: 1,
@@ -317,7 +319,6 @@ export default function AIChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
           <form
             onSubmit={handleSendMessage}
             style={{
@@ -426,9 +427,9 @@ export default function AIChat() {
   )
 }
 
-// Formatted assistant message renderer
+
 function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: boolean }) {
-  // Blue text accents for assistant formatting
+
   const accentPrimary = isDarkMode ? '#60a5fa' : '#2563eb'
   const accentSecondary = isDarkMode ? '#93c5fd' : '#1d4ed8'
 
@@ -437,7 +438,7 @@ function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: b
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {sections.map((section, idx) => {
-        // Bold label section
+
         if (section.match(/\*\*[^*]+\*\*:/)) {
           const match = section.match(/\*\*([^*]+)\*\*:(.*)/)
           return (
@@ -452,7 +453,7 @@ function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: b
           )
         }
 
-        // Markdown-style heading
+
         if (section.trim().startsWith('###')) {
           return (
             <div key={idx} style={{ color: accentSecondary, fontWeight: '600', marginTop: '4px' }}>
@@ -461,7 +462,7 @@ function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: b
           )
         }
 
-        // Bullet list item
+
         if (section.trim().startsWith('-')) {
           return (
             <div key={idx} style={{ display: 'flex', gap: '6px', marginLeft: '4px' }}>
@@ -471,7 +472,7 @@ function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: b
           )
         }
 
-        // Default paragraph text
+
         return section.trim() ? (
           <div key={idx} style={{ lineHeight: '1.4' }}>
             {section.trim()}

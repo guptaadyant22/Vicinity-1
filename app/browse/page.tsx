@@ -1,7 +1,8 @@
 "use client";
 
-// Browse page for discovering and filtering local businesses
-// Displays businesses in grid/list view with AI search, category filters, and pagination
+
+// Browse page where users discover, search, filter, and save local businesses.
+// Features AI-powered search, category filtering, view modes, and real-time favorites toggling.
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -25,7 +26,7 @@ import { createClient } from "../../lib/supabase";
 import BusinessCard from "../../components/BusinessCard";
 import ThemeToggle from "../../components/ThemeToggle";
 
-// Font setup
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -36,7 +37,7 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-// Helper for category names
+
 const CATEGORY_MAP = {
   restaurant: { short: "Restaurants" },
   cafe: { short: "Cafes" },
@@ -60,6 +61,7 @@ const CATEGORY_MAP = {
   japanese: { short: "Japanese" },
 };
 
+// Map raw business type strings to short display labels
 const formatBusinessType = (type) => {
   if (!type) return "Other";
   const lowercase = type.toLowerCase().trim();
@@ -70,13 +72,12 @@ const formatBusinessType = (type) => {
   return type.length > 12 ? type.substring(0, 10) + ".." : type;
 };
 
-// Shared page background
+
+// Animated gradient background for the browse page
 const AnimatedBg = () => (
   <div className="fixed inset-0 -z-10 overflow-hidden bg-white dark:bg-[#081120] transition-colors duration-300">
-    {/* Base wash */}
     <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:from-[#081120] dark:via-[#081120] dark:to-[#0b1528]" />
 
-    {/* Main glow */}
     <motion.div
       animate={{
         y: [0, -16, 0],
@@ -87,7 +88,6 @@ const AnimatedBg = () => (
       className="absolute left-1/2 top-[-8%] h-[620px] w-[620px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[150px] dark:bg-blue-500/15"
     />
 
-    {/* Side glows */}
     <motion.div
       animate={{
         x: [0, 18, 0],
@@ -105,7 +105,6 @@ const AnimatedBg = () => (
       className="absolute right-[-8%] top-[16%] h-[320px] w-[320px] rounded-full bg-blue-100/70 blur-[120px] dark:bg-blue-600/10"
     />
 
-    {/* Grid */}
     <motion.div
       animate={{
         backgroundPosition: ["0px 0px", "72px 72px"],
@@ -123,12 +122,12 @@ const AnimatedBg = () => (
       }}
     />
 
-    {/* Top radial */}
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_45%)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_42%)]" />
   </div>
 );
 
-// Shared skeleton state
+
+// Loading placeholder card matching the business card layout
 const SkeletonCard = ({ viewMode }: { viewMode: string }) => (
   <div
     className={`overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/80 shadow-[0_14px_40px_rgba(15,23,42,0.05)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0f172a] ${
@@ -153,7 +152,8 @@ const SkeletonCard = ({ viewMode }: { viewMode: string }) => (
   </div>
 );
 
-// Shared filter section
+
+// Collapsible filter group used in the sidebar
 const FilterSection = ({ title, icon: Icon, children }: { title: string; icon?: React.ComponentType<{ size?: number; className?: string }>; children: React.ReactNode }) => {
   const [expanded, setExpanded] = useState(true);
 
@@ -191,6 +191,7 @@ const FilterSection = ({ title, icon: Icon, children }: { title: string; icon?: 
   );
 };
 
+// Public browse page with search, filters, and paginated business cards
 export default function BrowsePage() {
   const router = useRouter();
   const supabase = createClient();
@@ -201,7 +202,7 @@ export default function BrowsePage() {
   const [filterOpen, setFilterOpen] = useState(true);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // Search states
+
   const [searchQuery, setSearchQuery] = useState("");
   const [aiSearchLoading, setAiSearchLoading] = useState(false);
   const [aiSearchResults, setAiSearchResults] = useState(null);
@@ -258,6 +259,7 @@ export default function BrowsePage() {
     fetchData();
   }, [supabase]);
 
+  // Update search query and clear AI results when empty
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
     if (!e.target.value.trim()) {
@@ -265,6 +267,7 @@ export default function BrowsePage() {
     }
   };
 
+  // Submit the search query to the AI search API
   const handleAiSearch = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
@@ -294,7 +297,7 @@ export default function BrowsePage() {
     }
   };
 
-  // Unified filtering and sorting logic
+
   const filteredAndSortedBusinesses = useMemo(() => {
     let result = aiSearchResults !== null ? [...aiSearchResults] : [...businesses];
 
@@ -355,6 +358,7 @@ export default function BrowsePage() {
     filteredAndSortedBusinesses.length
   );
 
+  // Reset all filters, search, and pagination to defaults
   const clearAllFilters = () => {
     setCategoryFilter(null);
     setSortOption("default");
@@ -376,14 +380,12 @@ export default function BrowsePage() {
     >
       <AnimatedBg />
 
-      {/* Browse navbar */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         className="pointer-events-none fixed inset-x-0 top-6 z-50 flex justify-center px-4"
       >
         <div className="pointer-events-auto flex w-full max-w-6xl items-center justify-between rounded-2xl border border-blue-500/15 bg-white/75 p-2 pl-4 pr-2 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-2xl transition-all duration-300 hover:bg-white/85 dark:border-white/10 dark:bg-[#0f172a]">
-          {/* Logo */}
           <div className="flex items-center gap-2.5">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -409,7 +411,6 @@ export default function BrowsePage() {
             </span>
           </div>
 
-          {/* Right actions */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <a
@@ -429,7 +430,6 @@ export default function BrowsePage() {
       </motion.nav>
 
       <main className="relative z-10 mx-auto max-w-7xl px-6 pb-12 pt-32">
-        {/* Hero */}
         <section className="mb-14">
           <div className="max-w-4xl">
             <motion.h1
@@ -453,7 +453,6 @@ export default function BrowsePage() {
         </section>
 
         <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Mobile filters trigger */}
           <div className="lg:hidden">
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -475,7 +474,6 @@ export default function BrowsePage() {
             </motion.button>
           </div>
 
-          {/* Sidebar */}
           <AnimatePresence>
             {(filterOpen || mobileFilterOpen) && (
               <motion.aside
@@ -486,7 +484,6 @@ export default function BrowsePage() {
                 className="flex-shrink-0 lg:w-72"
               >
                 <div className="sticky top-28 space-y-6 rounded-[28px] border border-blue-500/10 bg-white/80 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.06)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0f172a]">
-                  {/* Filter top */}
                   <div className="flex items-center justify-between lg:block">
                     <h3 className="flex items-center gap-2 font-[var(--font-outfit)] text-sm font-semibold uppercase tracking-[0.18em] text-slate-900 dark:text-white">
                       <FaFilter size={12} className="text-blue-600 dark:text-blue-300" />
@@ -511,7 +508,6 @@ export default function BrowsePage() {
                     </button>
                   </div>
 
-                  {/* Active filter count */}
                   {activeFilterCount > 0 && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
@@ -523,7 +519,6 @@ export default function BrowsePage() {
                     </motion.div>
                   )}
 
-                  {/* Categories */}
                   {availableCategories.length > 0 && (
                     <FilterSection title="Business Types" icon={FaStore}>
                       <div className="grid grid-cols-2 gap-2">
@@ -546,7 +541,6 @@ export default function BrowsePage() {
                     </FilterSection>
                   )}
 
-                  {/* Sorting */}
                   <FilterSection title="Sort By">
                     <div className="space-y-2">
                       {[
@@ -574,10 +568,8 @@ export default function BrowsePage() {
             )}
           </AnimatePresence>
 
-          {/* Main content */}
           <div className="flex-1">
             <div className="space-y-6">
-              {/* Top controls */}
               <div className="flex items-center justify-between gap-4">
                 <motion.button
                   whileHover={{ scale: 1.04 }}
@@ -621,7 +613,6 @@ export default function BrowsePage() {
                 </div>
               </div>
 
-              {/* Search */}
               <form onSubmit={handleAiSearch} className="relative">
                 <div className="relative overflow-hidden rounded-[24px] border border-blue-500/10 bg-white/85 shadow-[0_12px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0f172a]">
                   <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
@@ -675,7 +666,6 @@ export default function BrowsePage() {
                 )}
               </form>
 
-              {/* Result count */}
               <div className="flex items-center justify-between px-1">
                 <div className="text-sm text-slate-500 dark:text-slate-300">
                   Showing{" "}
@@ -689,7 +679,6 @@ export default function BrowsePage() {
                 </div>
               </div>
 
-              {/* Loading */}
               {loading ? (
                 <div
                   className={`grid gap-6 ${
@@ -704,7 +693,6 @@ export default function BrowsePage() {
                 </div>
               ) : filteredAndSortedBusinesses.length > 0 ? (
                 <>
-                  {/* Results */}
                   <div
                     className={`grid gap-6 ${
                       viewMode === "grid"
@@ -714,13 +702,11 @@ export default function BrowsePage() {
                   >
                     {paginatedBusinesses.map((business) => (
                       <div key={business.id} className="group relative cursor-pointer">
-                        {/* Restricted overlay click */}
                         <div
                           onClick={handleRestrictedAction}
                           className="absolute inset-0 z-10"
                         />
 
-                        {/* Existing card kept intact */}
                         <BusinessCard
                           business={business}
                           isSaved={false}
@@ -728,7 +714,6 @@ export default function BrowsePage() {
                           viewMode={viewMode}
                         />
 
-                        {/* Lock badge */}
                         <div className="pointer-events-none absolute right-3 top-3 z-20 flex items-center gap-1 rounded-full border border-white/20 bg-slate-950/60 px-2.5 py-1 text-xs text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100">
                           <FaLock size={10} /> Sign in to view
                         </div>
@@ -736,7 +721,6 @@ export default function BrowsePage() {
                     ))}
                   </div>
 
-                  {/* Pagination */}
                   {totalPages > 1 && (
                     <div className="mt-12 flex items-center justify-between px-2">
                       <button
@@ -807,7 +791,7 @@ export default function BrowsePage() {
                   )}
                 </>
               ) : (
-                /* Empty state */
+
                 <motion.div
                   initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}

@@ -1,13 +1,8 @@
 'use client'
 
-// Business layout for Vicinity dashboard pages
-// COMPONENTS:
-// VICINITY LOGO - Brand mark used in sidebar and mobile header
-// PAGE BACKGROUND - Animated blue dashboard background
-// SIDEBAR NAV - Desktop and mobile sidebar navigation
-// DEALS MODAL - Create and edit deal entries
-// DEALS SECTION - Business deal management area
 
+// Shared layout wrapper for all business dashboard pages with sidebar navigation and deals management.
+// Includes animated background, responsive sidebar, deal CRUD modal, and deals listing section.
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
@@ -35,7 +30,7 @@ import { useAuth } from '../context/AuthContext'
 import { createClient } from '../lib/supabase'
 import ThemeToggle from './ThemeToggle'
 
-// Font setup
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -46,7 +41,7 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-// Shared UI system
+
 const UI_SETTINGS = {
   pageWrap:
     `${inter.variable} ${outfit.variable} h-screen w-full flex overflow-hidden text-slate-900 dark:text-white bg-white dark:bg-[#081120] transition-colors duration-300`,
@@ -64,7 +59,8 @@ const UI_SETTINGS = {
     'bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20',
 }
 
-// Vicinity logo
+
+// Inline Vicinity logo for the sidebar header
 const VicinityLogo = ({ className = '', textClassName = '' }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
     <svg
@@ -94,12 +90,12 @@ const VicinityLogo = ({ className = '', textClassName = '' }) => (
   </div>
 )
 
-// Animated blue dashboard background
+
+// Animated blue glow background for dashboard pages
 const Background = () => (
   <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none transition-colors duration-300 bg-white dark:bg-[#081120]">
     <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:from-[#081120] dark:via-[#081120] dark:to-[#081120]" />
 
-    {/* Main glow */}
     <motion.div
       animate={{
         y: [0, -14, 0],
@@ -110,7 +106,6 @@ const Background = () => (
       className="absolute left-1/2 top-[8%] h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/16"
     />
 
-    {/* Left glow */}
     <motion.div
       animate={{
         x: [0, 14, 0],
@@ -121,7 +116,6 @@ const Background = () => (
       className="absolute left-[-8%] top-[18%] h-[320px] w-[320px] rounded-full bg-cyan-100/80 blur-[120px] dark:bg-cyan-500/10"
     />
 
-    {/* Right glow */}
     <motion.div
       animate={{
         x: [0, -16, 0],
@@ -132,7 +126,6 @@ const Background = () => (
       className="absolute right-[-8%] top-[10%] h-[340px] w-[340px] rounded-full bg-indigo-100/70 blur-[120px] dark:bg-indigo-500/10"
     />
 
-    {/* Grid */}
     <motion.div
       animate={{
         backgroundPosition: ['0px 0px', '72px 72px'],
@@ -152,7 +145,7 @@ const Background = () => (
   </div>
 )
 
-// Navigation items
+
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: FaHome, href: '/business/dashboard' },
   { label: 'Profile', icon: FaStore, href: '/business/profile' },
@@ -162,11 +155,11 @@ const NAV_ITEMS = [
   { label: 'Settings', icon: FaCog, href: '/business/settings' },
 ]
 
-// Sidebar navigation
+
+// Responsive sidebar navigation with nav items and logout
 function SidebarNav({ pathname, onLogout, isOpen, onClose }) {
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-950/50 dark:bg-black/75 backdrop-blur-sm lg:hidden"
@@ -174,20 +167,17 @@ function SidebarNav({ pathname, onLogout, isOpen, onClose }) {
         />
       )}
 
-      {/* Sidebar shell */}
       <aside
         className={`fixed lg:relative top-0 left-0 h-full w-64 ${UI_SETTINGS.glassSidebar} z-50 transform transition-all duration-300 lg:translate-x-0 flex flex-col shrink-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
 
-        {/* Sidebar glow */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute left-[-20%] top-10 h-40 w-40 rounded-full bg-blue-300/20 blur-3xl dark:bg-blue-500/10" />
           <div className="absolute right-[-15%] bottom-20 h-36 w-36 rounded-full bg-cyan-200/20 blur-3xl dark:bg-cyan-400/10" />
         </div>
 
-        {/* Brand */}
         <div className="relative h-24 border-b border-blue-500/10 dark:border-white/10 flex items-center px-6">
           <Link href="/business/dashboard" className="w-full">
             <div className="flex items-center justify-between">
@@ -203,7 +193,6 @@ function SidebarNav({ pathname, onLogout, isOpen, onClose }) {
           </Link>
         </div>
 
-        {/* Nav items */}
         <nav className="relative flex-1 px-4 py-5 space-y-2">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
@@ -233,7 +222,6 @@ function SidebarNav({ pathname, onLogout, isOpen, onClose }) {
           })}
         </nav>
 
-        {/* Theme toggle + Logout */}
         <div className="relative p-4 border-t border-blue-500/10 dark:border-white/10 space-y-2">
           <div className="flex items-center gap-3 px-4 py-2">
             <ThemeToggle />
@@ -254,7 +242,8 @@ function SidebarNav({ pathname, onLogout, isOpen, onClose }) {
   )
 }
 
-// Deal modal
+
+// Modal form for creating and editing business deals
 function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
   const [formData, setFormData] = useState({
     title: '',
@@ -293,7 +282,8 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
     setError(null)
   }, [editingDeal, isOpen])
 
-  // Submit form
+
+  // Validate and submit the deal form
   const handleSubmit = (e) => {
     e.preventDefault()
 
@@ -335,7 +325,6 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
             className={`${UI_SETTINGS.glassModal} max-w-md w-full max-h-[90vh] overflow-y-auto p-8`}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-[var(--font-outfit)] font-semibold tracking-[-0.04em] text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="flex items-center justify-center w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20">
@@ -353,16 +342,13 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
               </motion.button>
             </div>
 
-            {/* Error alert */}
             {error && (
               <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-300 text-sm">
                 {error}
               </div>
             )}
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Deal title */}
               <div>
                 <label className="text-[11px] font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em] block mb-2">
                   Deal Title <span className="text-red-500">*</span>
@@ -377,7 +363,6 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
                 />
               </div>
 
-              {/* Description */}
               <div>
                 <label className="text-[11px] font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em] block mb-2">
                   Description
@@ -390,7 +375,6 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
                 />
               </div>
 
-              {/* Discount type */}
               <div>
                 <label className="text-[11px] font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em] block mb-2">
                   Discount Type <span className="text-red-500">*</span>
@@ -407,7 +391,6 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
                 </select>
               </div>
 
-              {/* Discount value */}
               <div>
                 <label className="text-[11px] font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em] block mb-2">
                   Discount Value <span className="text-red-500">*</span>
@@ -429,7 +412,6 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
                 </p>
               </div>
 
-              {/* Promo code */}
               <div>
                 <label className="text-[11px] font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em] block mb-2">
                   Promo Code
@@ -445,7 +427,6 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
                 />
               </div>
 
-              {/* Expiry date */}
               <div>
                 <label className="text-[11px] font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.16em] block mb-2">
                   Expires On <span className="text-red-500">*</span>
@@ -460,7 +441,6 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
                 />
               </div>
 
-              {/* Submit button */}
               <motion.button
                 type="submit"
                 whileHover={{ scale: 1.02 }}
@@ -477,7 +457,8 @@ function DealsModal({ isOpen, onClose, onSubmit, editingDeal }) {
   )
 }
 
-// Deals section
+
+// Deals listing with create, edit, toggle, and delete actions
 function DealsSection({ business }) {
   const supabase = createClient()
 
@@ -494,7 +475,8 @@ function DealsSection({ business }) {
     }
   }, [business?.id])
 
-  // Load deals
+
+  // Load deals from Supabase for the current business
   const fetchDeals = async () => {
     if (!business?.id) return
 
@@ -516,7 +498,8 @@ function DealsSection({ business }) {
     }
   }
 
-  // Create or update deal
+
+  // Validate and submit the deal form
   const handleSubmit = async (formData) => {
     try {
       if (editingDeal) {
@@ -563,7 +546,8 @@ function DealsSection({ business }) {
     }
   }
 
-  // Toggle active state
+
+  // Toggle a deal between active and hidden states
   const toggleDealActive = async (deal) => {
     try {
       const { error } = await supabase
@@ -583,7 +567,8 @@ function DealsSection({ business }) {
     }
   }
 
-  // Delete deal
+
+  // Delete a deal after user confirmation
   const handleDelete = async (dealId) => {
     if (!confirm('Delete this deal?')) return
 
@@ -602,7 +587,8 @@ function DealsSection({ business }) {
     }
   }
 
-  // Deal badge text
+
+  // Return a formatted label for the deal discount badge
   const getDealBadgeLabel = (type, value) => {
     const badges = {
       percentage: `${value}% OFF`,
@@ -616,7 +602,6 @@ function DealsSection({ business }) {
 
   return (
     <div className="space-y-6">
-      {/* Header row */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]">
@@ -633,7 +618,6 @@ function DealsSection({ business }) {
           </div>
         </div>
 
-        {/* New deal button */}
         <motion.button
           onClick={() => {
             setEditingDeal(null)
@@ -648,7 +632,6 @@ function DealsSection({ business }) {
         </motion.button>
       </div>
 
-      {/* Alerts */}
       <AnimatePresence>
         {success && (
           <motion.div
@@ -673,7 +656,6 @@ function DealsSection({ business }) {
         )}
       </AnimatePresence>
 
-      {/* Loading state */}
       {loading ? (
         <div className={`${UI_SETTINGS.glassCard} p-10 text-center`}>
           <motion.div
@@ -727,7 +709,6 @@ function DealsSection({ business }) {
                     : 'opacity-70 border-slate-200/70 dark:border-white/8'
                 }`}
               >
-                {/* Status badge */}
                 <div className="absolute top-4 right-4">
                   {deal.is_active ? (
                     <motion.div
@@ -744,7 +725,6 @@ function DealsSection({ business }) {
                   )}
                 </div>
 
-                {/* Deal badge */}
                 <div className="inline-block mb-3">
                   <div
                     className={`px-3 py-1 rounded-full text-white text-xs font-[var(--font-outfit)] font-semibold shadow-md ${
@@ -755,19 +735,16 @@ function DealsSection({ business }) {
                   </div>
                 </div>
 
-                {/* Title */}
                 <h3 className="text-base font-[var(--font-outfit)] font-semibold text-slate-900 dark:text-white mb-1 pr-20">
                   {deal.title}
                 </h3>
 
-                {/* Description */}
                 {deal.description && (
                   <p className="text-xs text-slate-600 dark:text-slate-300 mb-3 line-clamp-2">
                     {deal.description}
                   </p>
                 )}
 
-                {/* Promo code */}
                 {deal.code && (
                   <div className="mb-3 p-3 rounded-2xl bg-white dark:bg-[#111827] border border-blue-500/12 dark:border-white/10">
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-[0.14em] font-[var(--font-outfit)] font-semibold">
@@ -790,7 +767,6 @@ function DealsSection({ business }) {
                   </div>
                 )}
 
-                {/* Expiry info */}
                 <div className="text-xs font-[var(--font-outfit)] font-semibold mb-3">
                   {isExpired ? (
                     <span className="text-red-500 dark:text-red-300">Expired</span>
@@ -807,7 +783,6 @@ function DealsSection({ business }) {
                   )}
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-2 pt-3 border-t border-blue-500/10 dark:border-white/10">
                   <motion.button
                     onClick={() => toggleDealActive(deal)}
@@ -846,7 +821,6 @@ function DealsSection({ business }) {
         </div>
       )}
 
-      {/* Deal modal */}
       <DealsModal
         isOpen={isModalOpen}
         onClose={() => {
@@ -860,7 +834,8 @@ function DealsSection({ business }) {
   )
 }
 
-// Main business layout
+
+// Main dashboard layout with sidebar, background, and content area
 export default function BusinessLayout({
   children,
   showDealsSection = false,
@@ -873,20 +848,20 @@ export default function BusinessLayout({
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  // Redirect if signed out
+
   useEffect(() => {
     if (!authLoading && user === null) {
       router.push('/login')
     }
   }, [authLoading, user, router])
 
-  // Logout action
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  // Loading state
+
   if (authLoading) {
     return (
       <div className={`${UI_SETTINGS.pageWrap} items-center justify-center`}>
@@ -904,7 +879,6 @@ export default function BusinessLayout({
     <div className={UI_SETTINGS.pageWrap} style={{ fontFamily: 'var(--font-inter)' }}>
       <Background />
 
-      {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-white dark:bg-[#0b1322] border-b border-blue-500/10 dark:border-white/10 flex items-center justify-between px-4 transition-colors duration-300">
         <VicinityLogo />
 
@@ -917,7 +891,6 @@ export default function BusinessLayout({
         </button>
       </div>
 
-      {/* Sidebar */}
       <SidebarNav
         pathname={pathname}
         onLogout={handleLogout}
@@ -925,21 +898,18 @@ export default function BusinessLayout({
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {/* Main content area */}
       <div className="flex-1 flex flex-col h-full pt-16 lg:pt-0 overflow-hidden relative z-10">
-        {/* Optional deals section */}
         {showDealsSection && business && (
           <div className="border-b border-blue-500/10 dark:border-white/10 bg-white/55 dark:bg-[#0b1220] backdrop-blur-xl p-6 transition-colors duration-300">
             <DealsSection business={business} />
           </div>
         )}
 
-        {/* Child page content */}
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   )
 }
 
-// Exports
+
 export { NAV_ITEMS, DealsSection }

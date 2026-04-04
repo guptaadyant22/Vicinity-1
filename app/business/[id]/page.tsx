@@ -1,10 +1,8 @@
-// HANDLERS:
-// TOGGLE FAVORITE - Add/remove business from user's favorites
-// HANDLE SUBMIT REVIEW - Posts new review with rating and text
-// HANDLE EDIT REVIEW - Updates existing review
-// HANDLE DELETE REVIEW - Removes review with confirmation
-
 'use client'
+
+
+// Public business detail page showing profile info, reviews, deals, and a messaging CTA.
+// Fetches business data and reviews from Supabase and renders an interactive profile layout.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
@@ -19,20 +17,20 @@ import { createClient } from '../../../lib/supabase'
 import VicinityLogo from '../../../components/VicinityLogo'
 import ThemeToggle from '../../../components/ThemeToggle'
 
-// --- CONSTANTS ---
+
 const DAYS_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&h=800&fit=crop'
 
-// Shared UI system
+
 const UI = {
   page: 'min-h-screen text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white pb-20 overflow-x-hidden transition-colors duration-300',
   card: 'bg-white/80 dark:bg-white/[0.04] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.24)]',
   cardSoft: 'bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl border border-blue-500/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none',
 
-  // Modal surface fix
+
   modal: 'bg-white dark:bg-[#0d1424]/96 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[30px] p-8 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)]',
 
-  // Input fix for both themes
+
   input: 'w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-white/[0.06] transition-all text-sm',
 
   primaryButton: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]',
@@ -41,12 +39,12 @@ const UI = {
   softRedButton: 'bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-300',
 }
 
-// Animated background
+
+// Animated gradient backdrop for the business detail page
 const Background = () => (
   <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none transition-colors duration-300 bg-white dark:bg-[#081120]">
     <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
 
-    {/* Main glow */}
     <motion.div
       animate={{
         y: [0, -14, 0],
@@ -57,7 +55,6 @@ const Background = () => (
       className="absolute left-1/2 top-[8%] h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/16"
     />
 
-    {/* Left glow */}
     <motion.div
       animate={{
         x: [0, 14, 0],
@@ -68,7 +65,6 @@ const Background = () => (
       className="absolute left-[-8%] top-[18%] h-[320px] w-[320px] rounded-full bg-cyan-100/80 blur-[120px] dark:bg-cyan-500/10"
     />
 
-    {/* Right glow */}
     <motion.div
       animate={{
         x: [0, -16, 0],
@@ -79,7 +75,6 @@ const Background = () => (
       className="absolute right-[-8%] top-[10%] h-[340px] w-[340px] rounded-full bg-indigo-100/70 blur-[120px] dark:bg-indigo-500/10"
     />
 
-    {/* Grid */}
     <motion.div
       animate={{
         backgroundPosition: ['0px 0px', '72px 72px'],
@@ -99,7 +94,8 @@ const Background = () => (
   </div>
 )
 
-// --- HELPER FUNCTIONS ---
+
+// Return the business cover image URL or a placeholder fallback
 const getCoverImage = (business) => {
   if (business?.image_url && business.image_url.trim().length > 0) {
     return business.image_url
@@ -107,6 +103,7 @@ const getCoverImage = (business) => {
   return PLACEHOLDER_IMAGE
 }
 
+// Build a comma-separated address from business fields
 const formatFullAddress = (business) => {
   if (!business) return 'Address not available'
   const parts = [business.address, business.city, business.state, business.zip].filter(
@@ -115,6 +112,7 @@ const formatFullAddress = (business) => {
   return parts.length > 0 ? parts.join(', ') : 'Address not available'
 }
 
+// Convert a review timestamp into a human-readable relative string
 const formatReviewDate = (timestamp) => {
   if (!timestamp) return 'Recently'
   try {
@@ -136,15 +134,16 @@ const formatReviewDate = (timestamp) => {
   }
 }
 
+// Normalize various hour formats into a readable "X AM - Y PM" string
 const formatBusinessHours = (timeObj) => {
   if (!timeObj) return 'Closed'
 
-  // handle string inputs
+
   if (typeof timeObj === 'string') {
     const str = timeObj.toString().trim()
     if (str.toLowerCase().includes('closed')) return 'Closed'
 
-    // handle "9-5"
+
     if (str.includes('-') && !str.includes(':')) {
       const [openStr, closeStr] = str.split('-').map((s) => s.trim())
       const formatTimeFromNumber = (timeStr) => {
@@ -160,7 +159,7 @@ const formatBusinessHours = (timeObj) => {
       return `${formatTimeFromNumber(openStr)} - ${formatTimeFromNumber(closeStr)}`
     }
 
-    // handle "HH:MM"
+
     if (str.includes(':')) {
       const [h, m] = str.split(':')
       const hour = parseInt(h, 10)
@@ -169,7 +168,7 @@ const formatBusinessHours = (timeObj) => {
       return `${hour12}:${m} ${ampm}`
     }
 
-    // handle plain numbers
+
     const timeNum = parseInt(str, 10)
     if (!isNaN(timeNum) && timeNum >= 0 && timeNum <= 23) {
       const ampm = timeNum >= 12 ? 'PM' : 'AM'
@@ -180,7 +179,7 @@ const formatBusinessHours = (timeObj) => {
     return str
   }
 
-  // handle pure number inputs
+
   const num = Number(timeObj)
   if (!isNaN(num) && Number.isInteger(num) && (typeof timeObj === 'number' || /^\d+$/.test(String(timeObj)))) {
     const hour = num
@@ -189,7 +188,7 @@ const formatBusinessHours = (timeObj) => {
     return `${hour12}:00 ${ampm}`
   }
 
-  // handle object inputs
+
   if (typeof timeObj === 'object' && timeObj !== null) {
     if (timeObj.closed === true) return 'Closed'
 
@@ -234,6 +233,7 @@ const formatBusinessHours = (timeObj) => {
   return 'Closed'
 }
 
+// Return a formatted discount label for a deal
 const getDealLabel = (deal) => {
   if (!deal) return ''
 
@@ -247,6 +247,7 @@ const getDealLabel = (deal) => {
   return typeLabels[deal.discount_type] || 'SPECIAL DEAL'
 }
 
+// Return a category emoji for a deal type
 const getDealEmoji = (deal) => {
   if (!deal) return '✨'
 
@@ -260,7 +261,8 @@ const getDealEmoji = (deal) => {
   return emojis[deal.discount_type] || '✨'
 }
 
-// check if deal is expired
+
+// Check if a deal has passed its expiry date
 const isExpired = (expiryDate) => {
   if (!expiryDate) return false
   try {
@@ -272,7 +274,8 @@ const isExpired = (expiryDate) => {
   }
 }
 
-// --- SUB-COMPONENTS ---
+
+// Small icon button used in the business profile header
 const ActionButton = ({ icon: Icon, onClick, color = 'text-slate-700 dark:text-white', label = '' }) => (
   <motion.button
     onClick={onClick}
@@ -285,6 +288,7 @@ const ActionButton = ({ icon: Icon, onClick, color = 'text-slate-700 dark:text-w
   </motion.button>
 )
 
+// Centered overlay modal with backdrop blur
 const Modal = ({ children, onClose }) => (
   <motion.div
     initial={{ opacity: 0 }}
@@ -300,7 +304,6 @@ const Modal = ({ children, onClose }) => (
       className={`${UI.modal} max-w-md w-full relative text-slate-900 dark:text-white`}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Close button */}
       <button
         onClick={onClose}
         className="absolute top-5 right-5 p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
@@ -312,6 +315,7 @@ const Modal = ({ children, onClose }) => (
   </motion.div>
 )
 
+// Full-screen loading spinner placeholder
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-white dark:bg-[#081120] flex items-center justify-center">
     <div className="flex flex-col items-center gap-4">
@@ -325,6 +329,7 @@ const LoadingSpinner = () => (
   </div>
 )
 
+// Full-screen error message display
 const ErrorDisplay = ({ error }) => (
   <div className="min-h-screen bg-white dark:bg-[#081120] flex items-center justify-center px-4">
     <div className="text-center max-w-md">
@@ -335,6 +340,7 @@ const ErrorDisplay = ({ error }) => (
   </div>
 )
 
+// Main business detail page with reviews, deals, and messaging
 export default function BusinessDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -370,7 +376,7 @@ export default function BusinessDetailPage() {
   const [deals, setDeals] = useState([])
   const [copiedCode, setCopiedCode] = useState(null)
 
-  // scroll handler
+
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
@@ -381,7 +387,7 @@ export default function BusinessDetailPage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // auth
+
   useEffect(() => {
     const getUser = async () => {
       try {
@@ -399,7 +405,7 @@ export default function BusinessDetailPage() {
     getUser()
   }, [supabase])
 
-  // fetch business data
+
   useEffect(() => {
     if (!businessId) {
       setError('No business ID provided')
@@ -421,7 +427,7 @@ export default function BusinessDetailPage() {
         if (busError) throw new Error(busError.message || 'Business not found')
         if (!busData) throw new Error('Business data is empty')
 
-        // parse hours
+
         let parsedHours = null
         if (busData.hours) {
           if (typeof busData.hours === 'string') {
@@ -435,7 +441,7 @@ export default function BusinessDetailPage() {
           }
         }
 
-        // parse tags
+
         let parsedTags = []
         if (busData.tags) {
           if (typeof busData.tags === 'string') {
@@ -449,7 +455,8 @@ export default function BusinessDetailPage() {
           }
         }
 
-        // parse gallery
+
+        // Filter valid gallery image URLs
         let galleryImages = []
         if (busData.gallery) {
           if (typeof busData.gallery === 'string') {
@@ -481,7 +488,7 @@ export default function BusinessDetailPage() {
     })()
   }, [businessId, supabase])
 
-  // realtime reviews
+
   useEffect(() => {
     if (!businessId) return
 
@@ -536,7 +543,7 @@ export default function BusinessDetailPage() {
     })()
   }, [businessId, supabase])
 
-  // fetch deals
+
   useEffect(() => {
     if (!businessId) return
 
@@ -588,7 +595,7 @@ export default function BusinessDetailPage() {
     })()
   }, [businessId, supabase])
 
-  // favorite status
+
   useEffect(() => {
     if (!user || !businessId) return
 
@@ -609,7 +616,7 @@ export default function BusinessDetailPage() {
     checkFavorite()
   }, [user, businessId, supabase])
 
-  // favorites realtime
+
   useEffect(() => {
     if (!user) return
 
@@ -633,7 +640,8 @@ export default function BusinessDetailPage() {
     return () => { supabase.removeChannel(favChannel) }
   }, [user, businessId, supabase])
 
-  // computed values
+
+  // Compute live average rating and count from reviews
   const liveStats = useMemo(() => {
     if (reviews.length === 0) return { rating: 0, count: 0 }
     const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0)
@@ -643,17 +651,20 @@ export default function BusinessDetailPage() {
     }
   }, [reviews])
 
+  // Filter valid gallery image URLs
   const galleryImages = useMemo(() => {
     return photoUrls.filter((url) => url && typeof url === 'string' && url.trim().length > 5)
   }, [photoUrls])
 
+  // Filter out expired deals
   const activeDeals = useMemo(() => {
     return deals.filter(deal => !isExpired(deal.expiry_date))
   }, [deals])
 
   const coverImage = business ? getCoverImage(business) : PLACEHOLDER_IMAGE
 
-  // handlers
+
+  // Toggle the favorite status for this business
   const toggleFavorite = async () => {
     if (!user) return router.push('/login')
 
@@ -680,7 +691,8 @@ export default function BusinessDetailPage() {
     }
   }
 
-  // chat button handler
+
+  // Navigate to the messaging page for this business
   const handleOpenChat = () => {
     if (!user) {
       router.push('/login')
@@ -690,6 +702,7 @@ export default function BusinessDetailPage() {
     router.push(`/user/messages?businessId=${businessId}`)
   }
 
+  // Submit a new review to Supabase
   const handleSubmitReview = async () => {
     if (!user) return router.push('/login')
     if (!reviewText.trim()) {
@@ -727,12 +740,14 @@ export default function BusinessDetailPage() {
     }
   }
 
+  // Populate the edit form with an existing review
   const handleEditReview = (review) => {
     setEditingReviewId(review.id)
     setEditReviewText(review.comment || review.text || '')
     setEditReviewRating(review.rating || 5)
   }
 
+  // Save the edited review to Supabase
   const handleSaveEditedReview = async () => {
     if (!editReviewText.trim()) {
       alert('Please write a review')
@@ -763,6 +778,7 @@ export default function BusinessDetailPage() {
     }
   }
 
+  // Delete a review after user confirmation
   const handleDeleteReview = async (reviewId) => {
     if (!window.confirm('Are you sure you want to delete this review?')) return
 
@@ -785,7 +801,6 @@ export default function BusinessDetailPage() {
     <div className={UI.page}>
       <Background />
 
-      {/* success alerts */}
       <AnimatePresence>
         {success && (
           <motion.div
@@ -799,7 +814,6 @@ export default function BusinessDetailPage() {
         )}
       </AnimatePresence>
 
-      {/* navbar */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: showNav ? 0 : -120 }}
@@ -824,7 +838,6 @@ export default function BusinessDetailPage() {
         </div>
       </motion.nav>
 
-      {/* hero */}
       <div className="relative h-[65vh] min-h-[500px] overflow-hidden pt-20">
         <div className="absolute inset-0 top-0">
           <img
@@ -855,7 +868,6 @@ export default function BusinessDetailPage() {
               </h1>
 
               <div className="flex flex-wrap items-center gap-5">
-                {/* rating */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -876,7 +888,6 @@ export default function BusinessDetailPage() {
                   </div>
                 </motion.div>
 
-                {/* location */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -887,7 +898,6 @@ export default function BusinessDetailPage() {
                   <span className="text-sm text-slate-800 dark:text-slate-100">{business.fullAddress}</span>
                 </motion.div>
 
-                {/* actions */}
                 <div className="flex items-center gap-3 ml-auto">
                   <ActionButton
                     icon={FaComments}
@@ -917,11 +927,9 @@ export default function BusinessDetailPage() {
         </div>
       </div>
 
-      {/* content */}
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* about */}
             {business.description && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -961,7 +969,6 @@ export default function BusinessDetailPage() {
               </motion.div>
             )}
 
-            {/* deals */}
             {activeDeals.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1045,7 +1052,6 @@ export default function BusinessDetailPage() {
               </motion.div>
             )}
 
-            {/* gallery */}
             {galleryImages.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1092,7 +1098,6 @@ export default function BusinessDetailPage() {
               </motion.div>
             )}
 
-            {/* reviews */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -1224,7 +1229,6 @@ export default function BusinessDetailPage() {
             </motion.div>
           </div>
 
-          {/* sidebar */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -1328,7 +1332,6 @@ export default function BusinessDetailPage() {
         </div>
       </div>
 
-      {/* review modal */}
       <AnimatePresence>
         {isReviewModalOpen && (
           <Modal onClose={() => setIsReviewModalOpen(false)}>
@@ -1369,7 +1372,6 @@ export default function BusinessDetailPage() {
         )}
       </AnimatePresence>
 
-      {/* gallery modal */}
       <AnimatePresence>
         {isGalleryModalOpen && (
           <motion.div

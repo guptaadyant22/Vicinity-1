@@ -1,16 +1,8 @@
 'use client'
 
-// User profile page with editable profile information, statistics, and account management
-// COMPONENTS:
-// VICINITY LOGO - Branded logo component with optional text display
-// NAVBAR - Navigation bar with dashboard link
-// ANIMATED BG - Soft blue background with grid pattern for visual appeal
-// CONFIRMATION MODAL - Reusable modal for confirming destructive actions
-// HELPER FUNCTIONS:
-// SAVE FIELD - Updates single user profile field in Supabase auth metadata
-// SAVE INTERESTS - Updates user interests array in auth metadata
-// HANDLE DELETE ALL REVIEWS - Deletes all reviews created by user from database
-// HANDLE DELETE ACCOUNT - Permanently deletes user account, reviews, and all related data
+
+// User profile page displaying account info, review stats, and recent activity.
+// Allows users to update their display name, email, and view contribution history.
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -35,7 +27,7 @@ import { createClient } from '../../../lib/supabase'
 import VicinityLogo from '../../../components/VicinityLogo'
 import UserNavbar from '../../../components/UserNavbar'
 
-// --- SHARED UI TOKENS ---
+
 const UI = {
   page: 'min-h-screen bg-white dark:bg-[#081120] text-slate-900 dark:text-white transition-colors duration-300 font-sans',
   shell:
@@ -52,11 +44,10 @@ const UI = {
     'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all',
 }
 
-// --- ANIMATED BACKGROUND ---
+
 const AnimatedBg = () => {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-white dark:bg-[#081120] transition-colors duration-300">
-      {/* Grid */}
       <div
         className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]"
         style={{
@@ -66,7 +57,6 @@ const AnimatedBg = () => {
         }}
       />
 
-      {/* Top orb */}
       <div
         className="absolute -top-24 left-0 w-[620px] h-[620px] rounded-full blur-[160px] opacity-40 dark:opacity-50 -translate-x-1/3"
         style={{
@@ -74,7 +64,6 @@ const AnimatedBg = () => {
         }}
       />
 
-      {/* Bottom orb */}
       <div
         className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[160px] opacity-40 dark:opacity-50 -translate-x-1/3 translate-y-1/3"
         style={{
@@ -85,7 +74,7 @@ const AnimatedBg = () => {
   )
 }
 
-// --- CONFIRMATION MODAL ---
+
 const ConfirmationModal = ({
   title,
   message,
@@ -129,7 +118,8 @@ const ConfirmationModal = ({
   </motion.div>
 )
 
-// --- MAIN PROFILE PAGE ---
+
+// User profile page with stats and account info
 export default function UserProfilePage() {
   const router = useRouter()
   const { user, loading: authLoading, logout } = useAuth()
@@ -155,7 +145,7 @@ export default function UserProfilePage() {
     'Professional Services',
   ]
 
-  // Fetch user data
+
   useEffect(() => {
     if (!user || authLoading) return
 
@@ -231,7 +221,7 @@ export default function UserProfilePage() {
     fetchUserData()
   }, [user, authLoading, supabase, router])
 
-  // Save field function
+
   const saveField = async (field, value) => {
     if (!value.trim()) {
       setError(`${field} cannot be empty`)
@@ -277,7 +267,7 @@ export default function UserProfilePage() {
     }
   }
 
-  // Save interests
+
   const saveInterests = async (interests) => {
     try {
       setIsSaving(true)
@@ -305,7 +295,7 @@ export default function UserProfilePage() {
     }
   }
 
-  // Delete all reviews
+
   const handleDeleteAllReviews = async () => {
     try {
       setIsSaving(true)
@@ -325,7 +315,7 @@ export default function UserProfilePage() {
     }
   }
 
-  // Delete account
+
   const handleDeleteAccount = async () => {
     try {
       setIsSaving(true)
@@ -390,7 +380,6 @@ export default function UserProfilePage() {
 
       <main className="w-full pt-32 pb-16 px-4 md:px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
-          {/* Messages */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -419,21 +408,17 @@ export default function UserProfilePage() {
             )}
           </AnimatePresence>
 
-          {/* Profile card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className={`${UI.shell} rounded-3xl p-8 md:p-12 mb-12`}
           >
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-              {/* Avatar */}
               <div className="w-28 h-28 rounded-3xl bg-blue-600 flex items-center justify-center text-white text-5xl font-bold shadow-lg flex-shrink-0">
                 {userData.fullname.charAt(0).toUpperCase()}
               </div>
 
-              {/* Info */}
               <div className="flex-1 text-center md:text-left space-y-6 w-full">
-                {/* Name */}
                 {editingField === 'fullname' ? (
                   <div className="flex items-center gap-2 justify-center md:justify-start">
                     <input
@@ -465,7 +450,6 @@ export default function UserProfilePage() {
                   </div>
                 )}
 
-                {/* Meta */}
                 <div className="flex items-center gap-4 flex-wrap justify-center md:justify-start">
                   <span className={UI.pill}>
                     {userData.userType === 'business' ? '🏢 Business' : '👤 Community'}
@@ -476,9 +460,7 @@ export default function UserProfilePage() {
                   </div>
                 </div>
 
-                {/* Location */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
-                  {/* City */}
                   <div className="space-y-2">
                     {editingField === 'city' ? (
                       <>
@@ -526,7 +508,6 @@ export default function UserProfilePage() {
                     )}
                   </div>
 
-                  {/* ZIP */}
                   <div className="space-y-2">
                     {editingField === 'zip' ? (
                       <>
@@ -578,16 +559,13 @@ export default function UserProfilePage() {
             </div>
           </motion.div>
 
-          {/* Bento grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-max">
-            {/* Email & interests */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className={`md:col-span-2 ${UI.card} rounded-2xl p-6 space-y-6`}
             >
-              {/* Email */}
               <div>
                 <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                   Email
@@ -600,7 +578,6 @@ export default function UserProfilePage() {
                 </div>
               </div>
 
-              {/* Interests */}
               {userData.userType === 'community' && (
                 <div className="pt-4 border-t border-blue-500/10 dark:border-white/10">
                   <div className="flex items-center justify-between mb-3">
@@ -673,7 +650,6 @@ export default function UserProfilePage() {
                 </div>
               )}
 
-              {/* Business info */}
               {userData.userType === 'business' && businessData && (
                 <div className="pt-4 border-t border-blue-500/10 dark:border-white/10">
                   <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
@@ -693,7 +669,6 @@ export default function UserProfilePage() {
               )}
             </motion.div>
 
-            {/* Reviews card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -711,7 +686,6 @@ export default function UserProfilePage() {
               </div>
             </motion.div>
 
-            {/* Saved places card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -729,7 +703,6 @@ export default function UserProfilePage() {
               </div>
             </motion.div>
 
-            {/* Danger zone */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -741,7 +714,6 @@ export default function UserProfilePage() {
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Delete reviews */}
                 {reviewCount > 0 && (
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -754,7 +726,6 @@ export default function UserProfilePage() {
                   </motion.button>
                 )}
 
-                {/* Delete account */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -770,7 +741,6 @@ export default function UserProfilePage() {
         </div>
       </main>
 
-      {/* Modals */}
       <AnimatePresence>
         {showDeleteReviewsModal && (
           <ConfirmationModal

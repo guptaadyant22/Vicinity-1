@@ -1,15 +1,8 @@
 'use client'
 
-// Business settings page for account management, data export, and security
-// COMPONENTS:
-// SETTINGS MODALS - Export, password update, and delete confirmation
-// HELPER FUNCTIONS:
-// HANDLE DELETE ACCOUNT - Removes business profile and user data permanently
-// HANDLE UPDATE PASSWORD - Updates user password with validation
-// HANDLE EXPORT DATA - Fetches business data and generates PDF report
-// GENERATE ADVANCED PDF REPORT - Creates formatted PDF with business info, reviews, deals, and favorites
-// GET DATE RANGE - Calculates date range based on export option selection
-// TOGGLE EXPORT OPTION - Toggles checkboxes for data export selections
+
+// Business account settings page for managing email, password, and account deletion.
+// Provides forms for credential updates and a danger-zone section for account removal.
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -28,7 +21,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-// Font setup
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -39,8 +32,7 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-// Theme classes
-// Content wrapper only; background should come from BusinessLayout
+
 const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative min-h-screen text-slate-900 transition-colors duration-300 dark:text-white`
 
@@ -56,11 +48,10 @@ const GLASS_MODAL =
 const GLASS_INPUT =
   'w-full px-4 py-3 bg-white dark:bg-[#111827] border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#162033] transition-all text-sm'
 
-// Loading spinner component
+
 function LoadingScreen() {
   return (
     <div className="relative z-10 flex min-h-[60vh] items-center justify-center">
-      {/* Spinner */}
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity }}
@@ -70,6 +61,7 @@ function LoadingScreen() {
   )
 }
 
+// Business account settings for credentials and account deletion
 export default function BusinessSettingsPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
@@ -86,7 +78,7 @@ export default function BusinessSettingsPage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
-  // Export selections
+
   const [exportOptions, setExportOptions] = useState({
     businessInfo: true,
     reviews: true,
@@ -100,14 +92,14 @@ export default function BusinessSettingsPage() {
     endDate: '',
   })
 
-  // Redirect if not authenticated
+
   useEffect(() => {
     if (!authLoading && user === null) {
       router.push('/login')
     }
   }, [authLoading, user, router])
 
-  // Delete account handler
+
   const handleDeleteAccount = async () => {
     if (!user) return
 
@@ -133,7 +125,7 @@ export default function BusinessSettingsPage() {
     }
   }
 
-  // Password update handler
+
   const handleUpdatePassword = async () => {
     if (!newPassword || !confirmPassword) {
       setError('Please fill in all password fields')
@@ -173,7 +165,7 @@ export default function BusinessSettingsPage() {
     }
   }
 
-  // Date range helper
+
   const getDateRange = () => {
     const today = new Date()
     const startDate = new Date()
@@ -209,7 +201,7 @@ export default function BusinessSettingsPage() {
     }
   }
 
-  // Export handler
+
   const handleExportData = async () => {
     if (!user) return
 
@@ -219,7 +211,7 @@ export default function BusinessSettingsPage() {
     try {
       const dateRange = getDateRange()
 
-      // Fetch business records
+
       const { data: allBusinesses, error: businessError } = await supabase
         .from('businesses')
         .select('*')
@@ -230,7 +222,7 @@ export default function BusinessSettingsPage() {
         throw new Error('No business found. Please create a business first.')
       }
 
-      // Use first business
+
       const businessData = allBusinesses[0]
       const businessId = businessData.id
 
@@ -238,7 +230,7 @@ export default function BusinessSettingsPage() {
       let dealsData = []
       let favoritesData = []
 
-      // Reviews
+
       if (exportOptions.reviews) {
         const { data, error } = await supabase
           .from('reviews')
@@ -255,7 +247,7 @@ export default function BusinessSettingsPage() {
         }
       }
 
-      // Deals
+
       if (exportOptions.deals) {
         const { data, error } = await supabase
           .from('deals')
@@ -272,7 +264,7 @@ export default function BusinessSettingsPage() {
         }
       }
 
-      // Favorites
+
       if (exportOptions.favorites) {
         const { data, error } = await supabase
           .from('favorites')
@@ -288,7 +280,7 @@ export default function BusinessSettingsPage() {
         }
       }
 
-      // Report payload
+
       const reportData = {
         business: exportOptions.businessInfo ? businessData : null,
         reviews: reviewsData,
@@ -302,7 +294,7 @@ export default function BusinessSettingsPage() {
         generatedAt: new Date().toISOString(),
       }
 
-      // Generate PDF
+
       await generateAdvancedPDFReport(reportData, businessData.name || 'Business')
 
       setSuccess('Data exported successfully!')
@@ -316,7 +308,7 @@ export default function BusinessSettingsPage() {
     }
   }
 
-  // PDF report generator
+
   const generateAdvancedPDFReport = async (reportData, businessName) => {
     try {
       const { jsPDF } = await import('jspdf')
@@ -328,7 +320,7 @@ export default function BusinessSettingsPage() {
 
       let yPosition = margin
 
-      // Page overflow helper
+
       const addPageIfNeeded = (spaceNeeded = 20) => {
         if (yPosition + spaceNeeded > pageHeight - 20) {
           doc.addPage()
@@ -338,7 +330,7 @@ export default function BusinessSettingsPage() {
         return false
       }
 
-      // Section heading helper
+
       const addHeading = (title) => {
         addPageIfNeeded(15)
         doc.setFontSize(14)
@@ -347,7 +339,7 @@ export default function BusinessSettingsPage() {
         yPosition += 10
       }
 
-      // Title page
+
       doc.setFontSize(24)
       doc.setTextColor(37, 99, 235)
       doc.text('BUSINESS DATA EXPORT', pageWidth / 2, yPosition, { align: 'center' })
@@ -370,7 +362,7 @@ export default function BusinessSettingsPage() {
       doc.text(`Business: ${businessName}`, margin, yPosition)
       yPosition += 20
 
-      // Business information
+
       if (reportData.business) {
         addHeading('BUSINESS INFORMATION')
 
@@ -409,7 +401,7 @@ export default function BusinessSettingsPage() {
         })
       }
 
-      // Reviews section
+
       if (reportData.reviews && reportData.reviews.length > 0) {
         addHeading('CUSTOMER REVIEWS')
 
@@ -458,7 +450,7 @@ export default function BusinessSettingsPage() {
         })
       }
 
-      // Deals section
+
       if (reportData.deals && reportData.deals.length > 0) {
         addHeading('ACTIVE DEALS & PROMOTIONS')
 
@@ -514,7 +506,7 @@ export default function BusinessSettingsPage() {
         })
       }
 
-      // Favorites section
+
       if (reportData.favorites && reportData.favorites.length > 0) {
         addHeading('FAVORITES')
         doc.setFontSize(10)
@@ -546,7 +538,7 @@ export default function BusinessSettingsPage() {
         }
       }
 
-      // Summary
+
       addPageIfNeeded(80)
       doc.setFontSize(14)
       doc.setTextColor(37, 99, 235)
@@ -589,7 +581,7 @@ export default function BusinessSettingsPage() {
     }
   }
 
-  // Checkbox toggle helper
+
   const toggleExportOption = (option) => {
     setExportOptions((prev) => ({
       ...prev,
@@ -610,9 +602,7 @@ export default function BusinessSettingsPage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        {/* Top header bar */}
         <div className="relative z-10 border-b border-blue-500/10 dark:border-white/10 bg-white/70 dark:bg-[#0b1322] backdrop-blur-xl transition-colors duration-300">
-          {/* Header glow */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
             <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-cyan-100/50 blur-3xl dark:bg-cyan-400/10" />
@@ -620,12 +610,10 @@ export default function BusinessSettingsPage() {
 
           <div className="relative flex min-h-[88px] items-center px-8">
             <div>
-              {/* Title */}
               <h1 className="font-[var(--font-outfit)] text-[30px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
                 Settings
               </h1>
 
-              {/* Subtitle */}
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Manage your account
               </p>
@@ -633,7 +621,6 @@ export default function BusinessSettingsPage() {
           </div>
         </div>
 
-        {/* Alerts */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -658,12 +645,9 @@ export default function BusinessSettingsPage() {
           )}
         </AnimatePresence>
 
-        {/* Main content */}
         <main className="relative z-10">
           <div className="max-w-3xl mx-auto p-8 pb-20">
-            {/* Top cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* Export data card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -686,7 +670,6 @@ export default function BusinessSettingsPage() {
                   Download your business data with custom filters and comprehensive reports
                 </p>
 
-                {/* Export button */}
                 <motion.button
                   onClick={() => setShowExportModal(true)}
                   whileHover={{ scale: 1.05 }}
@@ -698,7 +681,6 @@ export default function BusinessSettingsPage() {
                 </motion.button>
               </motion.div>
 
-              {/* Password card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -722,7 +704,6 @@ export default function BusinessSettingsPage() {
                   Update your password
                 </p>
 
-                {/* Password button */}
                 <motion.button
                   onClick={() => setShowPasswordModal(true)}
                   whileHover={{ scale: 1.05 }}
@@ -734,7 +715,6 @@ export default function BusinessSettingsPage() {
               </motion.div>
             </div>
 
-            {/* Danger zone */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -767,7 +747,6 @@ export default function BusinessSettingsPage() {
                   </p>
                 </div>
 
-                {/* Delete button */}
                 <motion.button
                   onClick={() => setShowDeleteModal(true)}
                   whileHover={{ scale: 1.05 }}
@@ -781,7 +760,6 @@ export default function BusinessSettingsPage() {
           </div>
         </main>
 
-        {/* Export modal */}
         <AnimatePresence>
           {showExportModal && (
             <motion.div
@@ -798,22 +776,18 @@ export default function BusinessSettingsPage() {
                 className={`${GLASS_MODAL} max-h-[90vh] overflow-y-auto`}
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Icon */}
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 mx-auto mb-4">
                   <FaDownload size={20} />
                 </div>
 
-                {/* Title */}
                 <h3 className="text-2xl font-[var(--font-outfit)] font-semibold tracking-[-0.04em] text-slate-900 dark:text-white mb-2 text-center">
                   Configure Data Export
                 </h3>
 
-                {/* Subtitle */}
                 <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed text-center">
                   Choose what data to include and the date range for your export
                 </p>
 
-                {/* Date range */}
                 <div className="mb-8">
                   <h4 className="text-sm font-[var(--font-outfit)] font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                     <FaCalendar size={14} /> Date Range
@@ -841,7 +815,6 @@ export default function BusinessSettingsPage() {
 
                   {exportOptions.dateRange === 'custom' && (
                     <div className="mt-4 space-y-3">
-                      {/* Start date */}
                       <input
                         type="date"
                         value={customDateRange.startDate}
@@ -854,7 +827,6 @@ export default function BusinessSettingsPage() {
                         className={GLASS_INPUT}
                       />
 
-                      {/* End date */}
                       <input
                         type="date"
                         value={customDateRange.endDate}
@@ -870,7 +842,6 @@ export default function BusinessSettingsPage() {
                   )}
                 </div>
 
-                {/* Data selections */}
                 <div className="mb-8">
                   <h4 className="text-sm font-[var(--font-outfit)] font-semibold text-slate-900 dark:text-white mb-4">
                     Data to Include
@@ -914,7 +885,6 @@ export default function BusinessSettingsPage() {
                             </p>
                           </div>
 
-                          {/* Toggle indicator */}
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 ml-3 border ${
                               exportOptions[item.key]
@@ -932,9 +902,7 @@ export default function BusinessSettingsPage() {
                   </div>
                 </div>
 
-                {/* Modal actions */}
                 <div className="flex gap-3">
-                  {/* Cancel button */}
                   <motion.button
                     onClick={() => setShowExportModal(false)}
                     disabled={isExporting}
@@ -945,7 +913,6 @@ export default function BusinessSettingsPage() {
                     Cancel
                   </motion.button>
 
-                  {/* Export button */}
                   <motion.button
                     onClick={handleExportData}
                     disabled={isExporting}
@@ -975,7 +942,6 @@ export default function BusinessSettingsPage() {
           )}
         </AnimatePresence>
 
-        {/* Password modal */}
         <AnimatePresence>
           {showPasswordModal && (
             <motion.div
@@ -992,22 +958,18 @@ export default function BusinessSettingsPage() {
                 className={GLASS_MODAL}
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Icon */}
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 mx-auto mb-4">
                   <FaKey size={20} />
                 </div>
 
-                {/* Title */}
                 <h3 className="text-xl font-[var(--font-outfit)] font-semibold tracking-[-0.03em] text-slate-900 dark:text-white mb-2 text-center">
                   Update Password
                 </h3>
 
-                {/* Subtitle */}
                 <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm leading-relaxed text-center">
                   Enter your new password to update your account security.
                 </p>
 
-                {/* Inputs */}
                 <div className="space-y-3 mb-6">
                   <input
                     type="password"
@@ -1025,7 +987,6 @@ export default function BusinessSettingsPage() {
                   />
                 </div>
 
-                {/* Modal actions */}
                 <div className="flex gap-3">
                   <motion.button
                     onClick={() => setShowPasswordModal(false)}
@@ -1066,7 +1027,6 @@ export default function BusinessSettingsPage() {
           )}
         </AnimatePresence>
 
-        {/* Delete modal */}
         <AnimatePresence>
           {showDeleteModal && (
             <motion.div
@@ -1083,22 +1043,18 @@ export default function BusinessSettingsPage() {
                 className="bg-white/90 dark:bg-[#140f16]/95 backdrop-blur-2xl border border-red-200 dark:border-red-500/20 rounded-[30px] p-8 max-w-sm w-full shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Icon */}
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-500/20 mx-auto mb-4">
                   <FaExclamationTriangle size={20} />
                 </div>
 
-                {/* Title */}
                 <h3 className="text-xl font-[var(--font-outfit)] font-semibold tracking-[-0.03em] text-slate-900 dark:text-white mb-2 text-center">
                   Delete Account?
                 </h3>
 
-                {/* Subtitle */}
                 <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm leading-relaxed text-center">
                   This will permanently delete your business profile, reviews, and all associated data. This action cannot be undone.
                 </p>
 
-                {/* Modal actions */}
                 <div className="flex gap-3">
                   <motion.button
                     onClick={() => setShowDeleteModal(false)}

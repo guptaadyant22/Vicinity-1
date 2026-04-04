@@ -1,19 +1,8 @@
 'use client'
 
-// Login page with email/password and Google OAuth authentication
-// COMPONENTS:
-// GRID BACKGROUND - Adaptive blue glass gradient background for light/dark modes
-// NAVBAR - Shared auth navbar
-// INPUT - Reusable form input with label, error state, and validation
-// CHECKBOX - Custom checkbox component for "Remember me" functionality
-// HELPER FUNCTIONS:
-// IS VALID EMAIL - Validates email format using regex
-// VALIDATE FORM - Validates email and password fields
-// CLEAR ERROR - Clears error message after 5 seconds
-// HANDLE EMAIL CHANGE - Updates email state and clears field error
-// HANDLE PASSWORD CHANGE - Updates password state and clears field error
-// HANDLE SUBMIT - Authenticates user and routes to appropriate dashboard
-// HANDLE GOOGLE SIGN IN - Authenticates user via Google OAuth provider
+
+// Login page with email/password authentication and Google OAuth support.
+// Redirects authenticated users to their appropriate dashboard based on account type.
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -24,7 +13,7 @@ import { createClient } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import AuthNavbar from '../../components/AuthNavbar'
 
-// Shared themed constants
+
 const GLASS_CARD =
   'bg-white/88 dark:bg-[#0d142496] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)] relative overflow-hidden transition-colors duration-300'
 
@@ -45,34 +34,30 @@ const TEXT_MUTED = 'text-slate-600 dark:text-slate-400'
 const LABEL_STYLE =
   'block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider'
 
-// Background shell
+
+// Animated gradient background for the login page
 const GridBackground = () => (
   <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none bg-white dark:bg-[#081120] transition-colors duration-300">
-    {/* Base gradient */}
     <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
 
-    {/* Main glow */}
     <motion.div
       animate={{ y: [0, -14, 0], scale: [1, 1.05, 1], opacity: [0.2, 0.38, 0.2] }}
       transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       className="absolute left-1/2 top-8 h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-blue-200/70 blur-[140px] dark:bg-blue-500/15"
     />
 
-    {/* Left glow */}
     <motion.div
       animate={{ x: [0, 14, 0], y: [0, 10, 0], opacity: [0.12, 0.24, 0.12] }}
       transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       className="absolute left-[-2rem] top-[18%] h-[320px] w-[320px] rounded-full bg-cyan-100/80 blur-[120px] dark:bg-cyan-500/10"
     />
 
-    {/* Right glow */}
     <motion.div
       animate={{ x: [0, -16, 0], y: [0, -8, 0], opacity: [0.12, 0.24, 0.12] }}
       transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
       className="absolute right-[-2rem] top-[10%] h-[340px] w-[340px] rounded-full bg-indigo-100/70 blur-[120px] dark:bg-indigo-500/10"
     />
 
-    {/* Grid */}
     <motion.div
       animate={{ backgroundPosition: ['0px 0px', '72px 72px'] }}
       transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
@@ -86,7 +71,6 @@ const GridBackground = () => (
       }}
     />
 
-    {/* Bottom fade */}
     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-[#081120]" />
   </div>
 )
@@ -99,6 +83,7 @@ const ERROR_MESSAGES = {
   GENERIC_ERROR: 'Something went wrong. Please try again.',
 }
 
+// Login page with email/password and Google OAuth authentication
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -113,12 +98,14 @@ export default function LoginPage() {
   const supabase = createClient()
   const { signInWithGoogle } = useAuth()
 
-  // Validate email format
+
+  // Check if a string is a valid email format
   const isValidEmail = (emailVal: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)
   }
 
-  // Validate form fields
+
+  // Validate email and password fields before submission
   const validateForm = () => {
     const errors: Record<string, string> = {}
 
@@ -135,14 +122,16 @@ export default function LoginPage() {
     return errors
   }
 
-  // Auto-clear top-level error
+
+  // Auto-dismiss the global error banner after 5 seconds
   const clearError = () => {
     setTimeout(() => {
       setError('')
     }, 5000)
   }
 
-  // Handle email field updates
+
+  // Update email state and clear related errors
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
 
@@ -155,7 +144,8 @@ export default function LoginPage() {
     }
   }
 
-  // Handle password field updates
+
+  // Update password state and clear related errors
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
 
@@ -168,7 +158,8 @@ export default function LoginPage() {
     }
   }
 
-  // Handle email/password sign in
+
+  // Validate form and authenticate via Supabase
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -224,7 +215,8 @@ export default function LoginPage() {
     }
   }
 
-  // Handle Google sign in
+
+  // Initiate Google OAuth sign-in flow
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true)
 
@@ -250,16 +242,12 @@ export default function LoginPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-md"
         >
-          {/* Glass card */}
           <div className={GLASS_CARD}>
-            {/* Accent bar */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-500" />
 
-            {/* Ambient glows */}
             <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 dark:bg-blue-500/15 opacity-30 dark:opacity-20 blur-3xl rounded-full animate-pulse pointer-events-none" />
             <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500/10 dark:bg-cyan-500/10 opacity-30 dark:opacity-20 blur-3xl rounded-full animate-pulse pointer-events-none" />
 
-            {/* Header */}
             <div className="text-center mb-10 relative z-10">
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
@@ -280,7 +268,6 @@ export default function LoginPage() {
               </motion.p>
             </div>
 
-            {/* Error message */}
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -295,7 +282,6 @@ export default function LoginPage() {
               )}
             </AnimatePresence>
 
-            {/* Google button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -318,14 +304,12 @@ export default function LoginPage() {
               )}
             </motion.button>
 
-            {/* Divider */}
             <div className="flex items-center gap-4 mb-6 relative z-10">
               <div className="flex-1 h-px bg-blue-500/10 dark:bg-white/10" />
               <span className={`text-xs font-medium ${TEXT_MUTED}`}>OR</span>
               <div className="flex-1 h-px bg-blue-500/10 dark:bg-white/10" />
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
               <Input
                 label="Email Address"
@@ -368,7 +352,6 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Actions row */}
               <div className="flex items-center justify-between text-sm">
                 <Checkbox
                   label="Remember me"
@@ -385,7 +368,6 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              {/* Submit button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -401,7 +383,6 @@ export default function LoginPage() {
               </motion.button>
             </form>
 
-            {/* Footer */}
             <div className="mt-8 text-center pt-6 border-t border-blue-500/10 dark:border-white/10 relative z-10">
               <p className={`text-sm ${TEXT_MUTED}`}>
                 Don&apos;t have an account?{' '}
@@ -420,7 +401,7 @@ export default function LoginPage() {
   )
 }
 
-// Reusable input
+
 interface LoginInputProps {
   label: string;
   type?: string;
@@ -431,6 +412,7 @@ interface LoginInputProps {
   disabled?: boolean;
 }
 
+// Reusable form input with label and error display
 const Input = ({ label, type, value, onChange, placeholder, error, disabled }: LoginInputProps) => (
   <div className="space-y-1.5">
     <label className={LABEL_STYLE}>{label}</label>
@@ -448,7 +430,7 @@ const Input = ({ label, type, value, onChange, placeholder, error, disabled }: L
   </div>
 )
 
-// Reusable checkbox
+
 interface CheckboxProps {
   label: string;
   checked: boolean;
@@ -456,6 +438,7 @@ interface CheckboxProps {
   disabled?: boolean;
 }
 
+// Styled checkbox toggle button
 const Checkbox = ({ label, checked, onChange, disabled }: CheckboxProps) => (
   <button
     type="button"

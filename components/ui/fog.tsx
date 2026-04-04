@@ -1,9 +1,13 @@
 "use client";
 
+
+// Animated fog background effect with edge gradients and subtle drifting motion.
+// Adapts colors and opacity for dark and light themes to create depth on page backgrounds.
+
 import * as React from "react";
 import { useTheme } from "@/context/ThemeContext";
 
-// Props for the fog background
+
 export interface FogBackgroundProps {
   className?: string;
   children?: React.ReactNode;
@@ -13,12 +17,14 @@ export interface FogBackgroundProps {
   speed?: number;
 }
 
-// Small helper for joining classes
+
+// Helper to join class names, filtering out falsy values
 function joinClasses(...classes: Array<string | undefined | null | false>) {
   return classes.filter(Boolean).join(" ");
 }
 
-// Main fog background
+
+// Animated fog effect with edge gradients and theme-aware colors
 export function FogBackground({
   className,
   children,
@@ -29,17 +35,17 @@ export function FogBackground({
 }: FogBackgroundProps) {
   const { isDark } = useTheme();
 
-  // Animation timings
+
   const duration1 = 60 / speed;
   const duration2 = 80 / speed;
   const duration3 = 100 / speed;
 
-  // Softer fog opacity in dark mode
+
   const fogOpacity = isDark ? opacity * 0.4 : opacity;
 
   const fogColor = isDark ? darkColor : color;
 
-  // White in the middle, blue toward all edges/corners
+
   const baseBackground = isDark
     ? `
       radial-gradient(circle at center,
@@ -69,9 +75,7 @@ export function FogBackground({
         background: baseBackground,
       }}
     >
-      {/* Edge fog layers only */}
       <div className="absolute inset-0" style={{ filter: "blur(90px)" }}>
-        {/* Top edge fog */}
         <div
           className="absolute inset-0"
           style={{
@@ -81,7 +85,6 @@ export function FogBackground({
           }}
         />
 
-        {/* Left edge fog */}
         <div
           className="absolute inset-0"
           style={{
@@ -91,7 +94,6 @@ export function FogBackground({
           }}
         />
 
-        {/* Right edge fog */}
         <div
           className="absolute inset-0"
           style={{
@@ -101,7 +103,6 @@ export function FogBackground({
           }}
         />
 
-        {/* Bottom edge fog */}
         <div
           className="absolute inset-0"
           style={{
@@ -112,7 +113,6 @@ export function FogBackground({
         />
       </div>
 
-      {/* Very soft corner bloom */}
       <div
         className="absolute inset-0"
         style={{
@@ -134,7 +134,6 @@ export function FogBackground({
         }}
       />
 
-      {/* Soft center wash to preserve center glow */}
       <div
         className="absolute inset-0"
         style={{
@@ -144,14 +143,12 @@ export function FogBackground({
         }}
       />
 
-      {/* Optional child content */}
       {children ? (
         <div className="relative z-10 h-full w-full pointer-events-auto">
           {children}
         </div>
       ) : null}
 
-      {/* Local keyframes */}
       <style jsx>{`
         @keyframes fogDrift1 {
           0%,

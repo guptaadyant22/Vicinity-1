@@ -1,13 +1,12 @@
+// Authentication helper functions wrapping Supabase auth operations.
+// Provides sign-up, sign-in, sign-out, session retrieval, and password management utilities.
+
 import { createClient } from './supabase'
 import type { User, Session } from '@supabase/supabase-js'
 
 const supabase = createClient()
 
-// ==========================================
-// AUTH HELPERS - Authentication Utility Functions
-// ==========================================
-
-// === SIGN UP ===
+// Register a new user with email and password
 export const signUp = async (email: string, password: string): Promise<{ user: User | null; session: Session | null }> => {
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -22,7 +21,7 @@ export const signUp = async (email: string, password: string): Promise<{ user: U
   }
 }
 
-// === SIGN IN ===
+// Authenticate an existing user with email and password
 export const signIn = async (email: string, password: string): Promise<{ user: User | null; session: Session | null }> => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -37,7 +36,7 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
   }
 }
 
-// === SIGN OUT ===
+// Sign out the current user
 export const signOut = async (): Promise<void> => {
   try {
     const { error } = await supabase.auth.signOut()
@@ -48,7 +47,7 @@ export const signOut = async (): Promise<void> => {
   }
 }
 
-// === GET CURRENT USER ===
+// Retrieve the currently authenticated user
 export const getCurrentUser = async (): Promise<User | null> => {
   try {
     const { data, error } = await supabase.auth.getUser()
@@ -60,7 +59,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
   }
 }
 
-// === GET SESSION ===
+// Retrieve the active session
 export const getSession = async (): Promise<Session | null> => {
   try {
     const { data, error } = await supabase.auth.getSession()
@@ -72,7 +71,7 @@ export const getSession = async (): Promise<Session | null> => {
   }
 }
 
-// === RESET PASSWORD ===
+// Send a password-reset email to the given address
 export const resetPassword = async (email: string): Promise<void> => {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -85,7 +84,7 @@ export const resetPassword = async (email: string): Promise<void> => {
   }
 }
 
-// === UPDATE PASSWORD ===
+// Update the current user's password
 export const updatePassword = async (newPassword: string): Promise<void> => {
   try {
     const { error } = await supabase.auth.updateUser({

@@ -1,6 +1,7 @@
-// Verifies reCAPTCHA tokens from Google to prevent bot signup
-// Returns success status and score to validate user authenticity
+// API route that verifies Google reCAPTCHA tokens to prevent bot signups.
+// Returns success status and score from the Google verification API.
 
+// Verify a reCAPTCHA token against the Google API
 export async function POST(request: Request) {
   const { token } = await request.json()
 

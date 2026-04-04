@@ -1,18 +1,8 @@
-// Forgot password and password reset page with multi-step form flow
-// COMPONENTS:
-// GRID BACKGROUND - Adaptive grid pattern background for light/dark modes
-// VICINITY LOGO - Themed logo component with SVG icon
-// NAVBAR - Navigation bar with logo and auth links
-// EMAIL RESET FORM - Step 1: Email submission form for password reset
-// CONFIRMATION MESSAGE - Step 2: Email confirmation message with resend option
-// PASSWORD RESET FORM - Step 3: New password creation with strength indicator
-// HELPER FUNCTIONS:
-// IS VALID EMAIL - Validates email format using regex
-// GET PASSWORD STRENGTH - Returns password strength level, percentage, and color
-// HANDLE EMAIL SUBMIT - Sends password reset link to user email
-// HANDLE PASSWORD RESET - Updates user password after token validation
-
 'use client'
+
+
+// Forgot password page that sends a reset email via Supabase and handles token-based password updates.
+// Supports both the initial reset request and the new-password submission flow.
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -25,7 +15,7 @@ import {
 import { createClient } from '../../lib/supabase'
 import ThemeToggle from '../../components/ThemeToggle'
 
-// --- THEMED CONSTANTS (blue theme) ---
+
 const GLASS_NAV = "bg-white/82 dark:bg-[#0d142488] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)] transition-colors duration-300"
 const GLASS_CARD = "bg-white/88 dark:bg-[#0d1424]/96 backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)] relative overflow-hidden transition-colors duration-300"
 const GLASS_INPUT = "w-full pl-11 py-3 bg-white dark:bg-white/[0.04] border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 focus:bg-blue-50/60 dark:focus:bg-white/[0.06] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
@@ -33,7 +23,7 @@ const TEXT_MAIN = "text-slate-900 dark:text-white"
 const TEXT_MUTED = "text-slate-500 dark:text-slate-400"
 const LABEL_STYLE = "block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]"
 
-// --- ADAPTIVE GRID BACKGROUND ---
+
 const GridBackground = () => (
   <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none bg-white dark:bg-[#081120] transition-colors duration-300">
     <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-blue-50 dark:bg-[#081120]" />
@@ -43,7 +33,7 @@ const GridBackground = () => (
   </div>
 )
 
-// --- VICINITY LOGO (BLUE THEMED) ---
+
 const VicinityLogo = ({ className = "", textClassName = "" }: { className?: string; textClassName?: string }) => (
   <div className={`flex items-center gap-2 ${className}`}>
     <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0,0,256,256" className="w-8 h-8 shrink-0">
@@ -62,7 +52,7 @@ const VicinityLogo = ({ className = "", textClassName = "" }: { className?: stri
   </div>
 )
 
-// --- NAVBAR (LOCAL & BLUE THEMED) ---
+
 const Navbar = () => (
   <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">
     <div className={`w-full max-w-5xl ${GLASS_NAV} rounded-[24px] p-2 pointer-events-auto flex items-center justify-between pl-4 pr-2`}>
@@ -76,6 +66,7 @@ const Navbar = () => (
   </motion.nav>
 )
 
+// Password reset flow with email request and new-password form
 export default function ForgotPasswordPage() {
   const supabase = createClient()
   const router = useRouter()
@@ -234,7 +225,6 @@ const EmailResetForm = ({ email, setEmail, isLoading, error, onSubmit }: EmailRe
     </Link>
 
     <div className={GLASS_CARD}>
-      {/* Blue accent bar */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400" />
 
       <div className="relative z-10 space-y-8">
@@ -321,7 +311,6 @@ const ConfirmationMessage = ({ email, onResend, isLoading }: ConfirmationMessage
     </Link>
 
     <div className={GLASS_CARD}>
-      {/* Blue accent bar */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400" />
 
       <div className="relative z-10 space-y-8 text-center">
@@ -418,7 +407,6 @@ const PasswordResetForm = ({
     </Link>
 
     <div className={GLASS_CARD}>
-      {/* Blue accent bar */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400" />
 
       <div className="relative z-10 space-y-8">
@@ -454,7 +442,6 @@ const PasswordResetForm = ({
         )}
 
         <form onSubmit={onSubmit} className="space-y-6">
-          {/* New Password */}
           <div className="space-y-1.5">
             <label className={LABEL_STYLE}>
               New Password <span className="text-blue-500">*</span>
@@ -490,7 +477,6 @@ const PasswordResetForm = ({
             {errors.newPassword && <p className="text-xs text-red-500 dark:text-red-400">{errors.newPassword}</p>}
           </div>
 
-          {/* Confirm Password */}
           <div className="space-y-1.5">
             <label className={LABEL_STYLE}>
               Confirm Password <span className="text-blue-500">*</span>

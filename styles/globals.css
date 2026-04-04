@@ -3,26 +3,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
 }
 
-/* Consistent box-sizing */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* Custom transition durations */
 :root {
   --transition-fast: 300ms;
   --transition-normal: 500ms;
   --easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hover effects */
 .hover-lift {
   transition:
     transform var(--transition-fast) var(--easing-smooth),
@@ -34,13 +30,11 @@ html {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-/* Focus states */
 *:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 
-/* Fade animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -50,7 +44,6 @@ html {
   }
 }
 
-/* Slide up animation */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -62,7 +55,6 @@ html {
   }
 }
 
-/* Pulse animation */
 @keyframes pulse {
   0%,
   100% {
@@ -73,7 +65,6 @@ html {
   }
 }
 
-/* Animation utility classes */
 .animate-fade-in {
   animation: fadeIn var(--transition-normal) var(--easing-smooth);
 }
@@ -86,7 +77,6 @@ html {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Infinite scroll animation */
 @keyframes scroll {
   0% {
     transform: translateX(0);
@@ -102,7 +92,6 @@ html {
   display: flex;
 }
 
-/* Hide scrollbar */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -112,7 +101,6 @@ html {
   display: none;
 }
 
-/* Shake animation */
 @keyframes shake {
   0%,
   100% {
@@ -138,13 +126,11 @@ html {
 }
 
 @layer base {
-  /* Theme font variables */
   .theme {
     --font-heading: var(--font-sans);
     --font-sans: var(--font-sans);
   }
 
-  /* Light theme tokens */
   :root {
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
@@ -180,7 +166,6 @@ html {
     --sidebar-ring: oklch(0.708 0 0);
   }
 
-  /* Dark theme tokens */
   .dark {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
@@ -215,7 +200,6 @@ html {
     --sidebar-ring: oklch(0.556 0 0);
   }
 
-  /* Base page styling */
   body {
     background-color: var(--background);
     color: var(--foreground);

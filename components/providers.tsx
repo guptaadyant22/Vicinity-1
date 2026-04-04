@@ -1,12 +1,12 @@
-'use client'
+// Wraps all client-side providers so the root layout can remain a server component.
+// Currently provides AuthProvider; additional providers can be added here.
 
-// This component wraps all client-side providers
-// It's used in the root layout to provide client-side functionality
-// while keeping the layout as a server component
+'use client'
 
 import { ReactNode } from 'react'
 import { AuthProvider } from '@/context/AuthContext'
 
+// Wraps children with all required client-side context providers
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>

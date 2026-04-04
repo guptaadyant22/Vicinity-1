@@ -1,8 +1,8 @@
 'use client'
 
-// BUSINESS MESSAGES PAGE
-// Vicinity
-// Same backend logic, compact UI only
+
+// Business messaging page for real-time conversations between owners and customers.
+// Supports thread selection, message sending, and status updates via Supabase subscriptions.
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,12 +24,11 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-// Font setup
+
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 
-// Shared UI styles
-// NOTE: keep this page wrapper content-only so BusinessLayout controls the full page background
+
 const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative text-slate-900 transition-colors duration-300 dark:text-white`
 
@@ -42,7 +41,7 @@ const SOFT_BUTTON =
 const FILTER_BUTTON =
   'inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 font-[var(--font-outfit)] text-xs font-semibold transition-all'
 
-// Helpers
+
 const formatTime = (dateValue) => {
   if (!dateValue) return 'Recently'
 
@@ -67,17 +66,18 @@ const getStatusBadgeClasses = (status) => {
   return 'bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-300'
 }
 
+// Real-time messaging page for business-customer conversations
 export default function BusinessMessagesPage() {
   const { user, loading: authLoading } = useAuth()
   const [supabase] = useState(() => createClient())
 
-  // Data state
+
   const [business, setBusiness] = useState(null)
   const [requests, setRequests] = useState([])
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [currentMessages, setCurrentMessages] = useState([])
 
-  // UI state
+
   const [loading, setLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [success, setSuccess] = useState(null)
@@ -86,21 +86,21 @@ export default function BusinessMessagesPage() {
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
 
-  // Refs
+
   const selectedRequestIdRef = useRef(null)
   const messagesEndRef = useRef(null)
 
-  // Keep selected ref synced
+
   useEffect(() => {
     selectedRequestIdRef.current = selectedRequest?.id || null
   }, [selectedRequest?.id])
 
-  // Auto scroll messages
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [currentMessages])
 
-  // Load conversation
+
   const loadConversation = useCallback(
     async (requestId, showLoader = true) => {
       if (!requestId) {
@@ -121,7 +121,7 @@ export default function BusinessMessagesPage() {
 
         setCurrentMessages(data || [])
 
-        // Refresh selected request
+
         const { data: freshReq } = await supabase
           .from('message_requests')
           .select('*, businesses(id, name, image_url, city, state, type)')
@@ -139,7 +139,7 @@ export default function BusinessMessagesPage() {
     [supabase]
   )
 
-  // Load all requests
+
   const loadRequests = useCallback(
     async (showLoader = true) => {
       if (!user?.id) return
@@ -150,7 +150,7 @@ export default function BusinessMessagesPage() {
 
         let bizData = business
 
-        // Load business
+
         if (!bizData) {
           const { data, error: bizErr } = await supabase
             .from('businesses')
@@ -172,7 +172,7 @@ export default function BusinessMessagesPage() {
           setBusiness(data)
         }
 
-        // Load message request threads
+
         const { data: rows, error: reqErr } = await supabase
           .from('message_requests')
           .select('*, businesses(id, name, image_url, city, state, type)')
@@ -190,7 +190,7 @@ export default function BusinessMessagesPage() {
           return
         }
 
-        // Preserve selection across refreshes
+
         const currentId = selectedRequestIdRef.current
         const stillExists = currentId ? list.find((r) => r.id === currentId) : null
         const next = stillExists || list[0]
@@ -210,13 +210,13 @@ export default function BusinessMessagesPage() {
     [user?.id, business, supabase, loadConversation, currentMessages.length]
   )
 
-  // Initial load
+
   useEffect(() => {
     if (!user?.id) return
     loadRequests()
   }, [user?.id])
 
-  // Realtime requests
+
   useEffect(() => {
     if (!business?.id) return
 
@@ -239,7 +239,7 @@ export default function BusinessMessagesPage() {
     }
   }, [business?.id, supabase, loadRequests])
 
-  // Realtime selected thread
+
   useEffect(() => {
     if (!selectedRequest?.id) return
 
@@ -262,7 +262,7 @@ export default function BusinessMessagesPage() {
     }
   }, [selectedRequest?.id, supabase, loadConversation])
 
-  // Accept request
+
   const handleAcceptRequest = async (requestId) => {
     try {
       setError(null)
@@ -299,7 +299,7 @@ export default function BusinessMessagesPage() {
     }
   }
 
-  // Ignore request
+
   const handleIgnoreRequest = async (requestId) => {
     try {
       setError(null)
@@ -336,7 +336,7 @@ export default function BusinessMessagesPage() {
     }
   }
 
-  // Send reply
+
   const handleReply = async (e) => {
     e.preventDefault()
 
@@ -391,7 +391,7 @@ export default function BusinessMessagesPage() {
     }
   }
 
-  // Filtered requests
+
   const filteredRequests = useMemo(() => {
     if (filterType === 'pending') return requests.filter((r) => r.status === 'pending')
     if (filterType === 'active') return requests.filter((r) => r.status === 'active')
@@ -399,17 +399,16 @@ export default function BusinessMessagesPage() {
     return requests
   }, [requests, filterType])
 
-  // Derived state
+
   const isPending = selectedRequest?.status === 'pending'
   const isActive = selectedRequest?.status === 'active'
   const isIgnored = selectedRequest?.status === 'ignored'
 
-  // Loading
+
   if (loading || authLoading) {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-          {/* Loading state */}
           <div className="relative z-10 flex min-h-full items-center justify-center py-16">
             <motion.div
               animate={{ rotate: 360 }}
@@ -425,7 +424,6 @@ export default function BusinessMessagesPage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        {/* Header */}
         <div className="relative z-10 border-b border-blue-500/10 bg-white/70 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-[#0b1322]">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-10 top-12 h-24 w-24 -translate-y-12 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
@@ -467,7 +465,6 @@ export default function BusinessMessagesPage() {
               })}
 
               <button onClick={() => loadRequests()} className={SOFT_BUTTON}>
-                {/* Refresh */}
                 <FaSync size={12} />
                 Refresh
               </button>
@@ -475,7 +472,6 @@ export default function BusinessMessagesPage() {
           </div>
         </div>
 
-        {/* Alerts */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -508,9 +504,7 @@ export default function BusinessMessagesPage() {
 
         <main className="relative z-10 mx-auto max-w-7xl px-5 pb-5 pt-4 lg:px-6">
           <div className="grid gap-4 xl:grid-cols-[310px_minmax(0,1fr)]">
-            {/* Inbox rail */}
             <section className={`${PANEL} flex h-[calc(100vh-170px)] min-h-[560px] flex-col overflow-hidden`}>
-              {/* Inbox top */}
               <div className="border-b border-blue-500/10 px-4 py-3 dark:border-white/10">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -528,7 +522,6 @@ export default function BusinessMessagesPage() {
                 </div>
               </div>
 
-              {/* Request list */}
               <div className="flex-1 overflow-y-auto p-2.5">
                 {filteredRequests.length > 0 ? (
                   <div className="space-y-2.5">
@@ -565,15 +558,12 @@ export default function BusinessMessagesPage() {
               </div>
             </section>
 
-            {/* Conversation workspace */}
             <section className={`${PANEL} flex h-[calc(100vh-170px)] min-h-[560px] flex-col overflow-hidden`}>
               {selectedRequest ? (
                 <>
-                  {/* Chat top bar */}
                   <div className="border-b border-blue-500/10 px-4 py-3 dark:border-white/10">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                       <div className="flex items-center gap-3">
-                        {/* Avatar */}
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]">
                           <FaUser size={14} />
                         </div>
@@ -604,12 +594,9 @@ export default function BusinessMessagesPage() {
                     </div>
                   </div>
 
-                  {/* Workspace body */}
                   <div className="grid min-h-0 flex-1 lg:grid-cols-[220px_minmax(0,1fr)]">
-                    {/* Side info */}
                     <aside className="border-b border-blue-500/10 bg-white/35 p-3 dark:border-white/10 dark:bg-white/[0.02] lg:border-b-0 lg:border-r">
                       <div className="space-y-3">
-                        {/* Summary */}
                         <div className="rounded-[20px] border border-blue-500/12 bg-white/80 p-3 dark:border-white/10 dark:bg-[#111827]">
                           <p className="text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                             First request
@@ -619,7 +606,6 @@ export default function BusinessMessagesPage() {
                           </p>
                         </div>
 
-                        {/* Status box */}
                         {isPending && (
                           <div className="rounded-[20px] border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
                             <div className="flex items-start gap-2.5">
@@ -658,7 +644,6 @@ export default function BusinessMessagesPage() {
                           </div>
                         )}
 
-                        {/* Pending actions */}
                         {isPending && (
                           <div className="space-y-2.5 rounded-[20px] border border-blue-500/12 bg-white/80 p-3 dark:border-white/10 dark:bg-[#111827]">
                             <p className="text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
@@ -687,9 +672,7 @@ export default function BusinessMessagesPage() {
                       </div>
                     </aside>
 
-                    {/* Chat area */}
                     <div className="flex min-h-0 flex-col">
-                      {/* Messages */}
                       <div className="flex-1 overflow-y-auto px-3 py-3 md:px-4">
                         {messagesLoading ? (
                           <div className="flex h-full items-center justify-center">
@@ -766,12 +749,10 @@ export default function BusinessMessagesPage() {
                         )}
                       </div>
 
-                      {/* Composer */}
                       <div className="border-t border-blue-500/10 bg-white/70 p-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#0f172a]/96 md:p-4">
                         {isActive && (
                           <form onSubmit={handleReply} className="space-y-2.5">
                             <div className="rounded-[22px] border border-blue-500/15 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-[#111827]">
-                              {/* Reply input */}
                               <input
                                 type="text"
                                 value={replyText}
@@ -836,7 +817,7 @@ export default function BusinessMessagesPage() {
   )
 }
 
-// Inbox row
+
 function InboxRow({ request, idx, selected, onSelect }) {
   const isPending = request.status === 'pending'
   const isActive = request.status === 'active'
@@ -854,7 +835,6 @@ function InboxRow({ request, idx, selected, onSelect }) {
       }`}
     >
       <div className="flex items-start gap-3">
-        {/* Status icon */}
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-[0_8px_20px_rgba(59,130,246,0.20)] ${
             isPending ? 'bg-blue-600' : isActive ? 'bg-blue-600' : 'bg-slate-500'

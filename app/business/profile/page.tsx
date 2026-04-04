@@ -1,17 +1,8 @@
 'use client'
 
-// Business profile management with sections for branding, details, gallery, and hours
-// COMPONENTS:
-// FORM INPUT - Reusable input field with label styling
-// TIP CARD - Informational tip with icon and description
-// BRANDING TIPS - Tips for brand identity section
-// DETAILS TIPS - Tips for contact and address section
-// GALLERY TIPS - Tips for photo gallery section
-// HOURS TIPS - Tips for operating hours section
-// HELPER FUNCTIONS:
-// GENERATE AI - Creates business description using AI based on business info
-// UPLOAD IMAGE - Handles image uploads to Supabase storage (cover or gallery)
-// HANDLE SAVE - Saves/updates business profile to database
+
+// Business profile editor for updating name, description, hours, photos, and contact info.
+// Includes an AI description generator and handles image uploads to Supabase storage.
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -40,7 +31,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-// Font setup
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -51,7 +42,7 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-// Sections
+
 const SECTIONS = [
   { id: 'overview', label: 'Overview', icon: FaEye },
   { id: 'branding', label: 'Branding', icon: FaEye },
@@ -76,8 +67,7 @@ const DEFAULT_HOURS = Object.fromEntries(
   DAYS.map((d) => [d, { open: '09:00', close: '17:00', closed: d === 'Sunday' }])
 )
 
-// Main theme classes
-// Content wrapper only; background should be owned by BusinessLayout
+
 const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative min-h-screen text-slate-900 transition-colors duration-300 dark:text-white`
 
@@ -93,15 +83,13 @@ const GLASS_HOVER =
 const GLASS_INPUT =
   'w-full bg-white dark:bg-[#111827] backdrop-blur-sm border border-blue-500/15 dark:border-white/10 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#162033] transition-all'
 
-// Form input component
+
 const FormInput = ({ label, value, onChange, placeholder }) => (
   <div>
-    {/* Field label */}
     <label className="block text-xs font-[var(--font-outfit)] font-semibold tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1">
       {label}
     </label>
 
-    {/* Text input */}
     <input
       type="text"
       value={value}
@@ -112,7 +100,7 @@ const FormInput = ({ label, value, onChange, placeholder }) => (
   </div>
 )
 
-// Tip card component
+
 const TipCard = ({ icon: Icon, title, desc }) => (
   <motion.div
     initial={{ opacity: 0, y: 5 }}
@@ -134,10 +122,9 @@ const TipCard = ({ icon: Icon, title, desc }) => (
   </motion.div>
 )
 
-// Tips sections
+
 const BrandingTips = () => (
   <div className="space-y-3">
-    {/* Tips header */}
     <h4 className="text-xs font-[var(--font-outfit)] font-semibold tracking-[0.16em] text-slate-400 dark:text-slate-500 uppercase px-4">
       Tips
     </h4>
@@ -149,7 +136,6 @@ const BrandingTips = () => (
 
 const DetailsTips = () => (
   <div className="space-y-3">
-    {/* Tips header */}
     <h4 className="text-xs font-[var(--font-outfit)] font-semibold tracking-[0.16em] text-slate-400 dark:text-slate-500 uppercase px-4">
       Tips
     </h4>
@@ -161,7 +147,6 @@ const DetailsTips = () => (
 
 const GalleryTips = () => (
   <div className="space-y-3">
-    {/* Tips header */}
     <h4 className="text-xs font-[var(--font-outfit)] font-semibold tracking-[0.16em] text-slate-400 dark:text-slate-500 uppercase px-4">
       Tips
     </h4>
@@ -173,7 +158,6 @@ const GalleryTips = () => (
 
 const HoursTips = () => (
   <div className="space-y-3">
-    {/* Tips header */}
     <h4 className="text-xs font-[var(--font-outfit)] font-semibold tracking-[0.16em] text-slate-400 dark:text-slate-500 uppercase px-4">
       Tips
     </h4>
@@ -183,7 +167,7 @@ const HoursTips = () => (
   </div>
 )
 
-// Main component
+
 export default function BusinessProfilePage() {
   const { user, loading: authLoading } = useAuth()
   const supabase = createClient()
@@ -219,7 +203,7 @@ export default function BusinessProfilePage() {
 
   const [completion, setCompletion] = useState(0)
 
-  // Load business data
+
   useEffect(() => {
     if (!user?.id) return
 
@@ -253,7 +237,7 @@ export default function BusinessProfilePage() {
     })()
   }, [user?.id, supabase])
 
-  // Completion meter
+
   useEffect(() => {
     const fields = [
       data.name,
@@ -273,7 +257,7 @@ export default function BusinessProfilePage() {
     setCompletion(score)
   }, [data])
 
-  // AI description generator
+
   const generateAI = async () => {
     if (!data.name || !data.type) {
       setState((s) => ({ ...s, error: 'Fill Business Name & Category first' }))
@@ -310,7 +294,7 @@ export default function BusinessProfilePage() {
     }
   }
 
-  // Upload image helper
+
   const uploadImage = async (file, isGallery = false) => {
     if (!file) return
 
@@ -345,7 +329,7 @@ export default function BusinessProfilePage() {
     }
   }
 
-  // Save handler
+
   const handleSave = async () => {
     if (!data.name.trim()) {
       setState((s) => ({ ...s, error: 'Business Name required' }))
@@ -382,13 +366,12 @@ export default function BusinessProfilePage() {
     }
   }
 
-  // Loading state
+
   if (state.loading || authLoading) {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
           <div className="relative z-10 flex min-h-[60vh] items-center justify-center">
-            {/* Loading spinner */}
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -403,9 +386,7 @@ export default function BusinessProfilePage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        {/* Top header bar */}
         <div className="relative z-10 border-b border-blue-500/10 dark:border-white/10 bg-white/70 dark:bg-[#0b1322] backdrop-blur-xl transition-colors duration-300">
-          {/* Header glow */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
             <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-cyan-100/50 blur-3xl dark:bg-cyan-400/10" />
@@ -413,12 +394,10 @@ export default function BusinessProfilePage() {
 
           <div className="relative flex min-h-[88px] items-center px-8">
             <div>
-              {/* Page title */}
               <h1 className="font-[var(--font-outfit)] text-[30px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
                 Profile
               </h1>
 
-              {/* Subtitle */}
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Manage your business profile
               </p>
@@ -426,11 +405,9 @@ export default function BusinessProfilePage() {
           </div>
         </div>
 
-        {/* Section tabs + action bar */}
         <div className="relative z-10 px-8 pt-6">
           <div className={`${GLASS_BG} rounded-[28px] px-5 py-4`}>
             <div className="flex items-center justify-between gap-8 min-h-16">
-              {/* Left tabs */}
               <div className="flex gap-2 overflow-x-auto flex-1 no-scrollbar">
                 {SECTIONS.map((section) => {
                   const Icon = section.icon
@@ -455,9 +432,7 @@ export default function BusinessProfilePage() {
                 })}
               </div>
 
-              {/* Right actions */}
               <div className="flex items-center gap-3 flex-shrink-0">
-                {/* Completion pill */}
                 <motion.div
                   className={`text-xs px-3 py-1.5 rounded-full border flex items-center gap-2 transition-all ${
                     completion === 100
@@ -473,7 +448,6 @@ export default function BusinessProfilePage() {
                   {completion}%
                 </motion.div>
 
-                {/* Save button */}
                 <motion.button
                   onClick={handleSave}
                   disabled={state.saving}
@@ -493,7 +467,6 @@ export default function BusinessProfilePage() {
           </div>
         </div>
 
-        {/* Alerts */}
         <AnimatePresence>
           {state.error && (
             <motion.div
@@ -520,11 +493,9 @@ export default function BusinessProfilePage() {
           )}
         </AnimatePresence>
 
-        {/* Main content */}
         <main className="relative z-10">
           <div className="max-w-6xl mx-auto p-8 pb-20">
             <AnimatePresence mode="wait">
-              {/* Overview section */}
               {activeSection === 'overview' && (
                 <motion.div
                   key="overview"
@@ -535,13 +506,11 @@ export default function BusinessProfilePage() {
                 >
                   <div className="grid lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
-                      {/* Cover preview */}
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`relative group rounded-[28px] overflow-hidden ${GLASS_CARD} aspect-[3/1] !p-0`}
                       >
-                        {/* Cover badge */}
                         <div className="absolute top-4 left-4 z-10 bg-blue-600 px-3 py-1 rounded-full text-xs font-[var(--font-outfit)] font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]">
                           Business Card
                         </div>
@@ -554,7 +523,6 @@ export default function BusinessProfilePage() {
                               alt="Business Card Cover"
                             />
 
-                            {/* Cover actions */}
                             <motion.div
                               initial={{ opacity: 0 }}
                               whileHover={{ opacity: 1 }}
@@ -607,7 +575,6 @@ export default function BusinessProfilePage() {
                         )}
                       </motion.div>
 
-                      {/* Basic info */}
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -633,7 +600,6 @@ export default function BusinessProfilePage() {
                         </div>
                       </motion.div>
 
-                      {/* Description */}
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -645,7 +611,6 @@ export default function BusinessProfilePage() {
                             Description
                           </h3>
 
-                          {/* AI generate button */}
                           <motion.button
                             onClick={generateAI}
                             disabled={state.generatingAI || !data.name || !data.type}
@@ -657,7 +622,6 @@ export default function BusinessProfilePage() {
                           </motion.button>
                         </div>
 
-                        {/* Description field */}
                         <textarea
                           value={data.description}
                           onChange={(e) => setData({ ...data, description: e.target.value })}
@@ -665,12 +629,10 @@ export default function BusinessProfilePage() {
                           placeholder="Describe your business..."
                         />
 
-                        {/* Character count */}
                         <p className="text-xs text-slate-400 mt-2">{data.description.length}/500</p>
                       </motion.div>
                     </div>
 
-                    {/* Right side stats */}
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -703,7 +665,6 @@ export default function BusinessProfilePage() {
                               strokeLinecap="round"
                             />
                             <defs>
-                              {/* Progress gradient */}
                               <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <stop offset="0%" style={{ stopColor: '#3b82f6' }} />
                                 <stop offset="100%" style={{ stopColor: '#06b6d4' }} />
@@ -751,7 +712,6 @@ export default function BusinessProfilePage() {
                 </motion.div>
               )}
 
-              {/* Branding section */}
               {activeSection === 'branding' && (
                 <motion.div
                   key="branding"
@@ -827,7 +787,6 @@ export default function BusinessProfilePage() {
                 </motion.div>
               )}
 
-              {/* Details section */}
               {activeSection === 'details' && (
                 <motion.div
                   key="details"
@@ -916,7 +875,6 @@ export default function BusinessProfilePage() {
                 </motion.div>
               )}
 
-              {/* Gallery section */}
               {activeSection === 'gallery' && (
                 <motion.div
                   key="gallery"
@@ -953,7 +911,6 @@ export default function BusinessProfilePage() {
                           </span>
                         </div>
 
-                        {/* Upload zone */}
                         <label className="block border-2 border-dashed border-blue-200 dark:border-white/15 rounded-[28px] p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/60 dark:hover:bg-[#162033] transition-all mb-8">
                           <div className="flex flex-col items-center gap-2">
                             <FaCloudUploadAlt size={40} className="text-slate-400 dark:text-slate-500" />
@@ -977,7 +934,6 @@ export default function BusinessProfilePage() {
                           />
                         </label>
 
-                        {/* Gallery grid */}
                         {data.gallery && data.gallery.length > 0 ? (
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                             {data.gallery.map((img, i) => (
@@ -990,7 +946,6 @@ export default function BusinessProfilePage() {
                               >
                                 <img src={img} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
 
-                                {/* Delete overlay */}
                                 <motion.div
                                   initial={{ opacity: 0 }}
                                   whileHover={{ opacity: 1 }}
@@ -1029,7 +984,6 @@ export default function BusinessProfilePage() {
                 </motion.div>
               )}
 
-              {/* Hours section */}
               {activeSection === 'hours' && (
                 <motion.div
                   key="hours"
@@ -1065,12 +1019,10 @@ export default function BusinessProfilePage() {
                                 transition={{ delay: idx * 0.02 }}
                                 className="flex items-center gap-4 p-4 rounded-2xl hover:bg-blue-50/60 dark:hover:bg-[#162033] transition-all"
                               >
-                                {/* Day label */}
                                 <span className="w-24 text-sm font-[var(--font-outfit)] font-semibold text-slate-600 dark:text-slate-300">
                                   {day}
                                 </span>
 
-                                {/* Open/closed toggle */}
                                 <motion.button
                                   onClick={() =>
                                     setData((d) => ({
@@ -1092,7 +1044,6 @@ export default function BusinessProfilePage() {
 
                                 {!dayHours.closed && (
                                   <div className="flex items-center gap-2 ml-auto">
-                                    {/* Open select */}
                                     <div className="relative">
                                       <select
                                         value={dayHours.open}
@@ -1121,7 +1072,6 @@ export default function BusinessProfilePage() {
 
                                     <span className="text-xs text-slate-400">→</span>
 
-                                    {/* Close select */}
                                     <div className="relative">
                                       <select
                                         value={dayHours.close}

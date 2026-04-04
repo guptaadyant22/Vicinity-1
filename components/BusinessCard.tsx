@@ -1,5 +1,9 @@
 'use client'
 
+
+// Reusable business listing card with image, rating, status, deals badge, and action buttons.
+// Fetches live review data and active deals from Supabase with automatic expiration checks.
+
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -16,6 +20,7 @@ import {
 } from 'react-icons/fa'
 import { createClient } from '../lib/supabase'
 
+// Generate a shimmer SVG placeholder for lazy-loaded images
 const shimmer = (w: number, h: number): string => `
 <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
@@ -128,7 +133,7 @@ const getBusinessStatus = (hours: string | null | undefined) => {
   }
 }
 
-// HELPER FUNCTION TO CHECK IF DEAL IS EXPIRED
+
 const isDealExpired = (expiryDate: string | null | undefined): boolean => {
   if (!expiryDate) return false
   const now = new Date()
@@ -145,6 +150,7 @@ interface BusinessCardProps {
   index?: number
 }
 
+// Renders a business listing card with image, rating, and actions
 export default function BusinessCard({ business, isSaved, onSave, isTrending, viewMode = 'grid' }: BusinessCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [rating, setRating] = useState(parseFloat(business.rating || 0))
@@ -157,7 +163,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
 
   const reviewText = reviewCount === 1 ? 'review' : 'reviews'
 
-  // FETCH REAL REVIEWS FROM SUPABASE
+
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -182,7 +188,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
     fetchReviews()
   }, [business.id, supabase])
 
-  // FETCH DEALS FROM SUPABASE WITH EXPIRATION CHECK
+
   useEffect(() => {
     const fetchDeals = async () => {
       try {
@@ -204,18 +210,18 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
         if (deals && deals.length > 0) {
           const deal = deals[0]
 
-          // CHECK IF DEAL HAS EXPIRED - USING EXPIRY_DATE
+
           if (isDealExpired(deal.expiry_date)) {
             setHasDeal(false)
             setDealInfo(null)
             return
           }
 
-          // DEAL IS VALID, NOT EXPIRED, AND IS_ACTIVE = TRUE
+
           setHasDeal(true)
           setDealInfo(deal)
         } else {
-          // NO ACTIVE DEALS FOUND
+
           setHasDeal(false)
           setDealInfo(null)
         }
@@ -228,17 +234,17 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
 
     fetchDeals()
 
-    // REFRESH DEALS EVERY MINUTE TO CHECK FOR EXPIRATION OR HIDDEN STATUS
+
     const interval = setInterval(fetchDeals, 60 * 1000)
     return () => clearInterval(interval)
   }, [business.id, supabase])
 
-  // CHECK BUSINESS STATUS BASED ON HOURS
+
   useEffect(() => {
     const status = getBusinessStatus(business.hours)
     setBusinessStatus(status)
 
-    // UPDATE STATUS EVERY MINUTE
+
     const interval = setInterval(() => {
       setBusinessStatus(getBusinessStatus(business.hours))
     }, 60000)
@@ -258,13 +264,13 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
     }
   }
 
-  // NAVIGATE TO BUSINESS PAGE
+
   const handleViewClick = (e: React.MouseEvent) => {
     e.preventDefault()
     router.push(`/business/${business.id}`)
   }
 
-  // OPEN CHAT - SAME BEHAVIOR AS BUSINESS DETAIL PAGE
+
   const handleOpenChat = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -329,7 +335,6 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
         ${viewMode === 'list' ? 'flex h-auto min-h-[320px]' : 'flex flex-col h-[400px]'}
       `}
     >
-      {/* IMAGE CONTAINER */}
       <div className={`relative ${viewMode === 'list' ? 'w-80 h-80 flex-shrink-0' : 'h-56 w-full'} bg-slate-100 dark:bg-[#0a1020] overflow-hidden`}>
         <Image
           src={business.image_url || placeholderImage}
@@ -341,17 +346,14 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
           sizes={viewMode === 'list' ? '320px' : '100%'}
         />
 
-        {/* IMAGE OVERLAY */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/5 via-transparent to-transparent dark:from-[#081120] dark:via-[#081120]/20" />
 
-        {/* BUSINESS TYPE BADGE - TOP LEFT */}
         <div className="absolute top-3 left-3 z-10">
           <span className="px-2.5 py-1 rounded-lg bg-blue-600/90 text-white text-[10px] font-semibold border border-blue-500/50 flex items-center gap-1.5 shadow-lg shadow-blue-500/20 w-fit backdrop-blur-sm">
             📍 {business.type}
           </span>
         </div>
 
-        {/* SAVE BUTTON - TOP RIGHT */}
         <div className="absolute top-3 right-3 z-10">
           <motion.button
             whileHover={{ scale: 1.12 }}
@@ -374,9 +376,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
         </div>
       </div>
 
-      {/* CONTENT SECTION */}
       <div className={`${viewMode === 'list' ? 'flex-1 p-6' : 'p-5 flex-1'} flex flex-col justify-between`}>
-        {/* HEADER WITH RATING */}
         <div>
           <div className="flex justify-between items-start gap-3 mb-2">
             <div className="min-w-0 flex-1">
@@ -385,7 +385,6 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
               </h3>
             </div>
 
-            {/* RATING DISPLAY */}
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border flex-shrink-0
               bg-blue-50 border-blue-100
               dark:bg-blue-500/10 dark:border-blue-500/20">
@@ -394,13 +393,11 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
             </div>
           </div>
 
-          {/* LOCATION */}
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3">
             <FaMapMarkerAlt size={10} className="text-blue-500 dark:text-blue-400 flex-shrink-0" />
             <span className="truncate leading-tight">{business.address}</span>
           </div>
 
-          {/* OPEN/CLOSED STATUS WITH TIME */}
           <div className="text-xs text-slate-500 dark:text-slate-300 mb-3 flex items-center gap-1.5">
             <FaClock
               size={10}
@@ -411,14 +408,12 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
             </span>
           </div>
 
-          {/* DESCRIPTION - LINE CLAMPED */}
           {business.description && (
             <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 line-clamp-2 leading-tight">
               {business.description}
             </p>
           )}
 
-          {/* REVIEWS INFO */}
           <div className="mb-4 pb-4 border-b border-slate-100 dark:border-white/10">
             <p className="text-xs text-slate-500 dark:text-slate-300 font-medium">
               <span className="text-emerald-600 dark:text-green-400 font-bold">{reviewCount}</span> {reviewText}
@@ -426,7 +421,6 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
           </div>
         </div>
 
-        {/* DEAL TAG - BLUE COLOR & SMALLER SIZE */}
         {hasDeal && dealInfo && !isDealExpired(dealInfo.expiry_date) && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 10 }}
@@ -443,7 +437,6 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
           </motion.div>
         )}
 
-        {/* ACTION BUTTONS */}
         <div className={`grid gap-2 ${viewMode === 'list' ? 'grid-cols-3' : 'grid-cols-2'}`}>
           {business.phone && (
             <motion.button

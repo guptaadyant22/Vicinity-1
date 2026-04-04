@@ -1,5 +1,9 @@
 "use client";
 
+
+// Landing page for Vicinity featuring hero, features, how-it-works, audience, FAQ, and CTA sections.
+// Combines animated UI components with Framer Motion to create an engaging marketing experience.
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Inter, Outfit } from "next/font/google";
@@ -34,6 +38,7 @@ const DotLottieReact = dynamic(
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
+// Shared fade-up animation variant for motion sections
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
   show: (delay = 0) => ({
@@ -43,7 +48,7 @@ const fadeUp = {
   }),
 };
 
-// Section glow
+
 function SectionGlow({ position = "left" }) {
   const { isDark } = useTheme();
 
@@ -64,7 +69,7 @@ function SectionGlow({ position = "left" }) {
   );
 }
 
-// Section header
+
 function SectionHeader({
   title,
   text,
@@ -96,7 +101,7 @@ function SectionHeader({
   );
 }
 
-// Feature card
+
 function FeatureCard({ icon, title, text, badge, delay = 0 }) {
   return (
     <motion.div
@@ -108,10 +113,8 @@ function FeatureCard({ icon, title, text, badge, delay = 0 }) {
       whileHover={{ y: -10, transition: { duration: 0.3 } }}
       className="group relative overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/70 p-7 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl transition-all duration-300 hover:border-blue-500/25 hover:shadow-[0_24px_64px_rgba(59,130,246,0.10)] dark:border-white/8 dark:bg-white/[0.03] dark:hover:border-white/15"
     >
-      {/* Hover glow */}
       <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-500/0 blur-[60px] transition-all duration-500 group-hover:bg-blue-500/12" />
 
-      {/* Icon */}
       <div
         className="relative z-10 mb-5 flex h-13 w-13 items-center justify-center rounded-2xl border border-blue-500/15 bg-gradient-to-br from-blue-500/10 to-blue-600/5 text-blue-600 shadow-[0_6px_20px_rgba(59,130,246,0.10)] dark:text-blue-300 dark:from-blue-500/15 dark:to-blue-600/5"
         style={{ width: "52px", height: "52px" }}
@@ -150,20 +153,16 @@ function HeroSection() {
 
   return (
     <section className="relative overflow-hidden px-6 pb-20 pt-32 md:pb-24 md:pt-40">
-      {/* Background beams */}
       <div className="absolute inset-0">
         <BackgroundBeamsWithCollision className="h-full w-full">
           <div className="pointer-events-none absolute inset-0 bg-white/45 dark:bg-slate-950/40" />
         </BackgroundBeamsWithCollision>
       </div>
 
-      {/* Soft glow */}
       <div className="pointer-events-none absolute left-1/2 top-20 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[110px] dark:bg-cyan-400/10" />
 
       <div className="relative z-10 mx-auto max-w-[72rem]">
-        {/* Top text */}
         <div className="mx-auto max-w-3xl text-center">
-          {/* Heading */}
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -185,7 +184,6 @@ function HeroSection() {
                 </motion.span>
               </AnimatePresence>
 
-              {/* Accent underline */}
               <motion.div
                 animate={{ scaleX: [0.75, 1, 0.75], opacity: [0.35, 0.85, 0.35] }}
                 transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
@@ -195,7 +193,6 @@ function HeroSection() {
             around you
           </motion.h1>
 
-          {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -206,7 +203,6 @@ function HeroSection() {
             deals near you with a cleaner local experience.
           </motion.p>
 
-          {/* Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -233,7 +229,6 @@ function HeroSection() {
             </motion.a>
           </motion.div>
 
-          {/* Stats */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -255,18 +250,15 @@ function HeroSection() {
           </motion.div>
         </div>
 
-        {/* Compact showcase */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.28 }}
           className="relative mx-auto mt-14 max-w-4xl"
         >
-          {/* Glow behind card */}
           <div className="absolute inset-0 -z-10 rounded-[32px] bg-blue-500/10 blur-[55px]" />
 
           <div className="overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/80 shadow-[0_28px_80px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_28px_80px_rgba(0,0,0,0.38)]">
-            {/* Browser top bar */}
             <div className="flex items-center gap-3 border-b border-blue-500/10 px-5 py-3 dark:border-white/10">
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
@@ -279,9 +271,7 @@ function HeroSection() {
             </div>
 
             <div className="grid lg:grid-cols-[1fr_0.85fr]">
-              {/* Left side */}
               <div className="p-5 md:p-6">
-                {/* Search row */}
                 <div className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                   <FaSearch className="text-sm text-blue-500 dark:text-blue-400" />
                   <span className="flex-1 text-sm text-slate-400 dark:text-slate-500">
@@ -292,7 +282,6 @@ function HeroSection() {
                   </span>
                 </div>
 
-                {/* Results */}
                 <div className="mt-4 space-y-3">
                   {[
                     { name: "Harbor Café", meta: "Coffee • 4.9 • 0.8 mi", deal: "20% OFF" },
@@ -306,12 +295,10 @@ function HeroSection() {
                       transition={{ duration: 0.45, delay: 0.38 + i * 0.08 }}
                       className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white/80 p-3.5 dark:border-white/10 dark:bg-white/[0.03]"
                     >
-                      {/* Avatar */}
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/10 text-sm font-semibold text-blue-600 dark:text-blue-300">
                         {item.name.charAt(0)}
                       </div>
 
-                      {/* Text */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <p className="truncate font-[var(--font-outfit)] text-sm font-semibold text-slate-900 dark:text-white">
@@ -334,7 +321,6 @@ function HeroSection() {
                 </div>
               </div>
 
-              {/* Right side */}
               <div className="border-t border-blue-500/10 p-5 dark:border-white/10 lg:border-l lg:border-t-0 md:p-6">
                 <div className="relative overflow-hidden rounded-[22px] border border-blue-500/10 bg-slate-50/90 p-4 dark:border-white/10 dark:bg-[#0d1728]">
                   <motion.div
@@ -374,7 +360,6 @@ function ShowcasePanel() {
       transition={{ duration: 0.7 }}
       className="relative"
     >
-      {/* Glow */}
       <motion.div
         animate={{
           scale: [1, 1.05, 1],
@@ -385,7 +370,6 @@ function ShowcasePanel() {
       />
 
       <div className="overflow-hidden rounded-[32px] border border-blue-500/12 bg-white/85 shadow-[0_40px_100px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/8 dark:bg-white/[0.03] dark:shadow-[0_40px_100px_rgba(0,0,0,0.40)]">
-        {/* Browser chrome */}
         <div className="flex items-center gap-3 border-b border-blue-500/8 px-6 py-3.5 dark:border-white/8">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
@@ -400,9 +384,7 @@ function ShowcasePanel() {
         </div>
 
         <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
-          {/* Left - Search + Results */}
           <div className="space-y-5 p-6 md:p-8">
-            {/* Search bar */}
             <div className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white px-4 py-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]">
               <FaSearch className="text-sm text-blue-500 dark:text-blue-400" />
               <motion.div className="flex-1">
@@ -419,7 +401,6 @@ function ShowcasePanel() {
               </div>
             </div>
 
-            {/* Result cards */}
             {[
               { name: "Harbor Café", type: "Coffee", rating: "4.9", distance: "0.8 mi", deal: "20% OFF" },
               { name: "Summit Fitness", type: "Gym", rating: "4.7", distance: "1.2 mi", deal: null },
@@ -458,7 +439,6 @@ function ShowcasePanel() {
               </motion.div>
             ))}
 
-            {/* Stats strip */}
             <div className="grid grid-cols-3 gap-3 pt-2">
               {[
                 { value: "500+", label: "Businesses" },
@@ -480,7 +460,6 @@ function ShowcasePanel() {
             </div>
           </div>
 
-          {/* Right panel */}
           <div className="border-t border-blue-500/8 p-6 dark:border-white/8 lg:border-l lg:border-t-0 lg:p-8">
             <div
               className={`relative overflow-hidden rounded-[24px] p-5 ${
@@ -516,7 +495,7 @@ function ShowcasePanel() {
   );
 }
 
-// Features section
+
 function FeaturesSection() {
   const features = [
     {
@@ -563,7 +542,7 @@ function FeaturesSection() {
   );
 }
 
-// How it works
+
 function HowItWorksSection() {
   const steps = [
     {
@@ -646,7 +625,6 @@ function AudienceSection() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Users */}
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -695,7 +673,6 @@ function AudienceSection() {
             </div>
           </motion.div>
 
-          {/* Businesses */}
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -749,7 +726,7 @@ function AudienceSection() {
   );
 }
 
-// FAQ section
+
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);
   const faqs = [
@@ -791,7 +768,6 @@ function FAQSection() {
 
       <div className="relative z-10 mx-auto max-w-6xl">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] items-start">
-          {/* Left column */}
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -811,7 +787,6 @@ function FAQSection() {
               Everything you need to know about using Vicinity to discover local businesses or grow your own.
             </p>
 
-            {/* Info cards */}
             <div className="mt-8 space-y-3">
               {[
                 { icon: <FaCompass />, label: "Free to use", desc: "No hidden fees for users or businesses" },
@@ -839,7 +814,6 @@ function FAQSection() {
               ))}
             </div>
 
-            {/* CTA link */}
             <motion.a
               href="/signup"
               whileHover={{ x: 4 }}
@@ -849,7 +823,6 @@ function FAQSection() {
             </motion.a>
           </motion.div>
 
-          {/* Right column */}
           <div className="space-y-3">
             {faqs.map((faq, i) => {
               const isOpen = openIndex === i;
@@ -920,7 +893,7 @@ function FAQSection() {
   );
 }
 
-// CTA section
+
 function CTASection() {
   return (
     <section className="relative px-6 pb-28 md:pb-36">
@@ -933,10 +906,8 @@ function CTASection() {
           variants={fadeUp}
           className="relative overflow-hidden rounded-[36px] px-8 py-16 md:px-16 md:py-20"
         >
-          {/* Gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-900" />
 
-          {/* Animated orbs */}
           <motion.div
             animate={{
               x: ["-10%", "10%", "-10%"],
@@ -956,7 +927,6 @@ function CTASection() {
             className="absolute bottom-0 right-0 h-[250px] w-[250px] rounded-full bg-cyan-400/15 blur-[70px]"
           />
 
-          {/* Grid overlay */}
           <div
             className="absolute inset-0 opacity-[0.06]"
             style={{
@@ -968,7 +938,6 @@ function CTASection() {
             }}
           />
 
-          {/* Content */}
           <div className="relative z-10 text-center">
             <h3 className="mx-auto max-w-2xl font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.05em] text-white md:text-5xl leading-[1.1]">
               Your neighborhood is waiting to be explored.
@@ -978,7 +947,6 @@ function CTASection() {
               Join thousands of people using Vicinity to discover local businesses, read reviews, and find the best deals nearby.
             </p>
 
-            {/* Buttons */}
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <motion.a
                 whileHover={{ scale: 1.05, y: -2 }}
@@ -1000,7 +968,6 @@ function CTASection() {
               </motion.a>
             </div>
 
-            {/* Bottom stats */}
             <div className="mt-12 flex flex-wrap items-center justify-center gap-10">
               {[
                 { value: "500+", label: "Businesses" },
@@ -1029,14 +996,13 @@ function CTASection() {
   );
 }
 
-// Main page
+
 export default function LandingPage() {
   return (
     <main
       className={`${inter.variable} ${outfit.variable} relative min-h-screen overflow-x-hidden bg-transparent text-slate-900 transition-colors duration-300 dark:text-white`}
       style={{ fontFamily: "var(--font-inter)" }}
     >
-      {/* Main page content */}
       <div className="relative z-10">
         <Navbar />
         <HeroSection />

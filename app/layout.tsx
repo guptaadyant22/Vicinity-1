@@ -1,9 +1,5 @@
-// Root layout component for Next.js app with theme, auth providers, and global styles
-// FIXES:
-// - Removes duplicate theme boot script
-// - Applies dark class before hydration
-// - Gives html/body the same dark-safe background
-// - Cleans unused imports
+// Root layout for the Next.js app providing theme and auth context to all pages.
+// Includes a pre-hydration dark mode script, global styles, and a floating AI chat widget.
 
 import { ReactNode } from 'react'
 import dynamic from 'next/dynamic'
@@ -11,7 +7,7 @@ import { ThemeProvider } from '../context/ThemeContext'
 import { AuthProvider } from '../context/AuthContext'
 import '../styles/globals.css'
 
-// Load AIChat dynamically on client only
+
 const AIChat = dynamic(() => import('../components/AIChat'), { ssr: false })
 
 export const metadata = {
@@ -22,6 +18,7 @@ export const metadata = {
   },
 }
 
+// Root layout wrapping all pages with theme, auth, and global UI
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -29,7 +26,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        {/* Theme boot script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -51,7 +47,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
 
-        {/* Global shell styles */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
@@ -90,12 +85,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         suppressHydrationWarning
         className="font-sans antialiased bg-slate-50 dark:bg-[#081120] text-slate-900 dark:text-white transition-colors duration-300 relative min-h-screen"
       >
-        {/* App providers */}
         <ThemeProvider>
           <AuthProvider>
             {children}
 
-            {/* AI chat */}
             <div className="fixed bottom-6 right-6 z-50">
               <AIChat />
             </div>

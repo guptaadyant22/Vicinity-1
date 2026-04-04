@@ -1,4 +1,6 @@
-// components/AISearchBar.tsx
+// AI-powered search bar with gradient glow, loading spinner, and clear button.
+// Triggers an AI search on Enter key press and renders inline loading feedback.
+
 'use client'
 
 import React, { useRef } from 'react'
@@ -22,6 +24,7 @@ interface AISearchBarProps {
   onClear?: () => void
 }
 
+// Renders a search input with AI-search trigger and loading state
 export default function AISearchBar({
   searchTerm,
   onSearchChange,
@@ -31,17 +34,20 @@ export default function AISearchBar({
 }: AISearchBarProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
 
+  // Trigger AI search on Enter
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchTerm.trim() && !isSearching) {
       onAISearch(searchTerm)
     }
   }
 
+  // Update search term state on input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     onSearchChange(value)
   }
 
+  // Clear input and refocus
   const handleClearSearch = () => {
     onSearchChange('')
     onClear?.()
@@ -78,7 +84,7 @@ export default function AISearchBar({
         )}
       </div>
 
-      {/* Inline loading state */}
+      {/* Inline loading indicator */}
       {isSearching && (
         <div className="mt-2 text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1">
           <FaSpinner className="animate-spin" size={12} />

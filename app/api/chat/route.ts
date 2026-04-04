@@ -1,6 +1,5 @@
-// AI chatbot that answers questions about businesses, accounts, and reviews
-// Handles guest users, community members, and business owners with personalized responses
-
+// AI chatbot API route that answers questions about businesses, accounts, and reviews.
+// Handles guest, community, and business-owner user types with personalized Groq-powered responses.
 
 import { createClient } from "@supabase/supabase-js";
 
@@ -9,6 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Check if a user message falls within the chatbot's domain
 function isWithinScope(message: string): boolean {
   const lowerMessage = message.toLowerCase();
   const scopePatterns = [
@@ -17,10 +17,11 @@ function isWithinScope(message: string): boolean {
     /\b(review|rate|rating|feedback|comment|star)\b/i,
     /\b(vicinity|directory|local|discover|can|do)\b/i,
   ];
-  
+
   return scopePatterns.some(pattern => pattern.test(lowerMessage));
 }
 
+// Handle AI chat messages with context-aware responses
 export async function POST(req: Request) {
   try {
     const { message, userId, userType, page } = await req.json();
@@ -37,13 +38,11 @@ export async function POST(req: Request) {
       });
     }
 
-    // ============================================
-    // CASE 1: GUEST USER (OR NO USERID)
-    // ============================================
+
     if (!userId || userType === "guest") {
       console.log("👤 Guest user - fetching all businesses");
-      
-      // SIMPLE QUERY - NO NESTED REVIEWS
+
+
       const { data: businesses, error: bizError } = await supabase
         .from("businesses")
         .select("id, name, type, rating, review_count, address, city, state, zip, phone");
@@ -52,9 +51,9 @@ export async function POST(req: Request) {
       console.log("❌ Error:", bizError?.message);
 
       let businessesText = "**No businesses available in directory yet**";
-      
+
       if (businesses && businesses.length > 0) {
-        // Sort by rating
+
         const sorted = [...businesses].sort((a: any, b: any) => 
           (Number(b.rating) || 0) - (Number(a.rating) || 0)
         );
@@ -66,7 +65,7 @@ export async function POST(req: Request) {
             const ratingDisplay = b.review_count && b.review_count > 0
               ? `⭐${Number(b.rating || 0).toFixed(1)}/5 (${b.review_count})`
               : `📝 New`;
-            
+
             return `${idx + 1}. **${b.name}** (${b.type || 'Business'})\n   ${ratingDisplay} | ${b.address || 'Address'}, ${b.city || 'City'} | 📞 ${b.phone || 'N/A'}`;
           })
           .join('\n\n');
@@ -90,14 +89,12 @@ ${businessesText}
       return await callGroqAPI(guestSystemPrompt, message);
     }
 
-    // ============================================
-    // CASE 2: REGULAR USER (COMMUNITY MEMBER)
-    // ============================================
+
     if (userType === "user" || userType === "regular" || userType === "community") {
       console.log("👤 Regular user:", userId);
 
       try {
-        // Get user profile
+
         const { data: profile } = await supabase
           .from("users")
           .select("id, email, full_name, city, created_at")
@@ -106,7 +103,7 @@ ${businessesText}
 
         console.log("✅ User profile:", profile?.email);
 
-        // Get user's reviews
+
         const { data: userReviews } = await supabase
           .from("reviews")
           .select("id, rating, text, comment, business_id, created_at")
@@ -116,7 +113,7 @@ ${businessesText}
 
         console.log("✅ User reviews:", userReviews?.length || 0);
 
-        // Get user's favorites
+
         const { data: favorites } = await supabase
           .from("favorites")
           .select("business_id")
@@ -124,7 +121,7 @@ ${businessesText}
 
         console.log("✅ User favorites:", favorites?.length || 0);
 
-        // Get favorite business details separately
+
         let favoriteBusinesses = [];
         if (favorites && favorites.length > 0) {
           const bizIds = favorites.map(f => f.business_id).filter(Boolean);
@@ -137,7 +134,7 @@ ${businessesText}
           }
         }
 
-        // SIMPLE QUERY - ALL BUSINESSES (NO NESTED REVIEWS)
+
         const { data: allBusinesses, error: allBizError } = await supabase
           .from("businesses")
           .select("id, name, type, rating, review_count, address, city, phone");
@@ -145,12 +142,12 @@ ${businessesText}
         console.log("✅ All businesses fetched:", allBusinesses?.length || 0);
         console.log("❌ Error:", allBizError?.message);
 
-        // Sort by rating
+
         const businessesSorted = allBusinesses 
           ? [...allBusinesses].sort((a: any, b: any) => (Number(b.rating) || 0) - (Number(a.rating) || 0))
           : [];
 
-        // Calculate user stats
+
         let userStats = {
           reviewCount: userReviews?.length || 0,
           avgRating: "N/A",
@@ -161,13 +158,13 @@ ${businessesText}
         if (userReviews && userReviews.length > 0) {
           const totalRating = userReviews.reduce((sum: number, r: any) => sum + (Number(r.rating) || 0), 0);
           userStats.avgRating = (totalRating / userReviews.length).toFixed(1);
-          
+
           const thirtyDaysAgo = new Date();
           thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
           userStats.recentReviews = userReviews.filter((r: any) => new Date(r.created_at) > thirtyDaysAgo).length;
         }
 
-        // Format favorites
+
         let favoritesText = "No favorites yet";
         if (favoriteBusinesses.length > 0) {
           favoritesText = favoriteBusinesses
@@ -181,7 +178,7 @@ ${businessesText}
             .join('\n');
         }
 
-        // Format recent reviews
+
         let recentReviewsText = "No reviews written yet";
         if (userReviews && userReviews.length > 0) {
           recentReviewsText = userReviews
@@ -193,7 +190,7 @@ ${businessesText}
             .join('\n');
         }
 
-        // Format all businesses
+
         let allBusinessesText = "No businesses available";
         if (businessesSorted.length > 0) {
           allBusinessesText = businessesSorted
@@ -245,14 +242,12 @@ ${allBusinessesText}
       }
     }
 
-    // ============================================
-    // CASE 3: BUSINESS OWNER
-    // ============================================
+
     if (userType === "business") {
       console.log("🏢 Business owner:", userId);
 
       try {
-        // Get business
+
         const { data: business } = await supabase
           .from("businesses")
           .select("id, name, type, owner_id, rating, review_count, address, city, state, zip, phone, website")
@@ -267,7 +262,7 @@ ${allBusinessesText}
 
         console.log("✅ Business loaded:", business.name);
 
-        // Get reviews
+
         const { data: reviews } = await supabase
           .from("reviews")
           .select("id, rating, text, comment, user_name, created_at")
@@ -277,7 +272,7 @@ ${allBusinessesText}
 
         console.log("✅ Business reviews:", reviews?.length || 0);
 
-        // Get competitors (same type)
+
         const { data: competitors } = await supabase
           .from("businesses")
           .select("id, name, type, rating, review_count, address, city")
@@ -286,7 +281,7 @@ ${allBusinessesText}
 
         console.log("✅ Competitors:", competitors?.length || 0);
 
-        // Calculate stats
+
         let stats = {
           avgRating: Number(business.rating || 0).toFixed(1),
           totalReviews: business.review_count || 0,
@@ -300,13 +295,13 @@ ${allBusinessesText}
           stats.fiveStars = reviews.filter((r: any) => r.rating === 5).length;
           stats.fourStars = reviews.filter((r: any) => r.rating === 4).length;
           stats.oneStars = reviews.filter((r: any) => r.rating === 1).length;
-          
+
           const thirtyDaysAgo = new Date();
           thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
           stats.recentReviews = reviews.filter((r: any) => new Date(r.created_at) > thirtyDaysAgo).length;
         }
 
-        // Format reviews
+
         let reviewsText = "No reviews yet";
         if (reviews && reviews.length > 0) {
           reviewsText = reviews
@@ -318,7 +313,7 @@ ${allBusinessesText}
             .join('\n');
         }
 
-        // Format competitors
+
         let competitorsText = "No competitors";
         if (competitors && competitors.length > 1) {
           competitorsText = competitors

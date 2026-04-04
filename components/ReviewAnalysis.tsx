@@ -1,3 +1,6 @@
+// Displays AI-generated review insights including sentiment, strengths, and improvement areas.
+// Fetches analysis from the /api/analyze-reviews endpoint and renders color-coded cards.
+
 'use client';
 import { useEffect, useState } from 'react';
 import { FiBarChart2, FiTrendingUp, FiAlertCircle } from 'react-icons/fi';
@@ -12,10 +15,12 @@ interface ReviewAnalysisData {
   averageRating: number;
 }
 
+// Displays AI-generated review insights with sentiment cards
 export default function ReviewAnalysis({ businessId }: { businessId: string }) {
   const [analysis, setAnalysis] = useState<ReviewAnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch review analysis on mount
   useEffect(() => {
     const fetchAnalysis = async () => {
       try {
@@ -36,6 +41,7 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
     fetchAnalysis();
   }, [businessId]);
 
+  // Loading skeleton
   if (loading) {
     return (
       <div className="p-8 bg-white/80 dark:bg-white/[0.04] border border-blue-500/12 dark:border-white/10 rounded-[26px] animate-pulse backdrop-blur-xl shadow-[0_12px_36px_rgba(15,23,42,0.08)]">
@@ -49,6 +55,7 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
     );
   }
 
+  // Empty state
   if (!analysis || analysis.totalReviews === 0) {
     return (
       <div className="p-8 bg-blue-50/60 dark:bg-blue-500/[0.06] border border-blue-500/12 dark:border-white/10 rounded-[26px] text-center backdrop-blur-xl">
@@ -57,6 +64,7 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
     );
   }
 
+  // Map sentiment labels to color classes
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
       case 'Very Positive':
@@ -81,7 +89,7 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
         <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Review Insights</h2>
       </div>
 
-      {/* Sentiment Overview */}
+      {/* Sentiment overview cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className={`p-6 rounded-2xl border backdrop-blur-sm ${getSentimentColor(analysis.sentimentLabel)}`}>
           <p className="text-sm font-semibold opacity-80 mb-2">Overall Sentiment</p>
@@ -109,7 +117,7 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
         </div>
       </div>
 
-      {/* Strengths */}
+      {/* Strengths list */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <FiTrendingUp className="text-emerald-500 dark:text-emerald-400" size={24} />
@@ -128,7 +136,7 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
         </div>
       </div>
 
-      {/* Areas for Improvement */}
+      {/* Improvement areas */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <FiAlertCircle className="text-amber-500 dark:text-amber-400" size={24} />
@@ -147,7 +155,7 @@ export default function ReviewAnalysis({ businessId }: { businessId: string }) {
         </div>
       </div>
 
-      {/* Key Themes */}
+      {/* Theme tags */}
       {analysis.themes.length > 0 && (
         <div>
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Popular Themes</h3>

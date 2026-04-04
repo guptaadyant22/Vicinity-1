@@ -1,12 +1,7 @@
-'use client'
+// Manages dark/light theme state using React context and localStorage persistence.
+// Syncs the "dark" class on the HTML root element and exposes a toggle for components.
 
-// Theme context for Vicinity
-// FIXES:
-// 1. Applies the root .dark class in a dedicated effect
-// 2. Reads localStorage only after mount
-// 3. Defaults safely to dark mode
-// 4. Keeps mounted state for hydration-safe UI
-// 5. Uses nullable context so useTheme guard actually works
+'use client'
 
 import {
   createContext,
@@ -24,11 +19,12 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | null>(null)
 
+// Provides dark/light theme state and toggle to children
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isDark, setIsDark] = useState(true)
   const [mounted, setMounted] = useState(false)
 
-  // Initialize theme on mount
+  // Read persisted theme preference on mount
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('theme')
 
@@ -37,14 +33,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else if (savedTheme === 'dark') {
       setIsDark(true)
     } else {
-      // Default Vicinity dashboard theme
       setIsDark(true)
     }
 
     setMounted(true)
   }, [])
 
-  // Keep <html> class and localStorage in sync with state
+  // Sync <html> class and localStorage when theme changes
   useEffect(() => {
     if (!mounted) return
 
@@ -59,7 +54,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [isDark, mounted])
 
-  // Toggle theme state
+  // Toggle between dark and light mode
   const toggleTheme = () => {
     setIsDark((prev) => !prev)
   }
@@ -71,6 +66,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// Hook to access theme context — must be used inside ThemeProvider
 export function useTheme(): ThemeContextType {
   const context = useContext(ThemeContext)
 

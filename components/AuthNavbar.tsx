@@ -1,3 +1,6 @@
+// Simple auth-page navbar with logo, theme toggle, and optional navigation link.
+// Used on login, signup, and forgot-password screens.
+
 'use client'
 
 import React from 'react'
@@ -13,6 +16,7 @@ interface AuthNavbarProps {
     homeText?: string
 }
 
+// Simplified navbar for auth pages (login, signup, forgot-password)
 export default function AuthNavbar({ linkTo, linkText, homeText = "Home" }: AuthNavbarProps) {
     return (
         <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4">

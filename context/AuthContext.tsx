@@ -1,3 +1,6 @@
+// Provides global authentication state (session, user, userType) via React context.
+// Listens to Supabase auth events and exposes login, logout, and Google OAuth helpers.
+
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
@@ -26,6 +29,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Provides auth state and methods to all child components
 export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient()
   const [session, setSession] = useState<Session | null>(null)
@@ -35,11 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<AuthError | Error | null>(null)
 
+  // Subscribe to auth state changes on mount
   useEffect(() => {
-    console.log('🔐 Setting up Supabase auth state listener...')
-    
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('📡 Initial session:', session?.user?.id || 'no session')
       setSession(session)
       if (session?.user) {
         setUser(session.user)
@@ -50,7 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔐 Auth state changed:', event, session?.user?.id || 'no user')
       setSession(session)
       
       if (event === 'SIGNED_IN' && session?.user) {
@@ -68,35 +69,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     return () => {
-      console.log('🔐 Cleaning up Supabase auth state listener...')
       subscription.unsubscribe()
     }
   }, [])
 
+  // Extract user type and profile data from auth metadata
   const fetchUserData = async (authUser: User) => {
     try {
-      console.log('📡 Processing auth user data for:', authUser.id)
-      
       const user = authUser
       
       if (!user) {
-        console.log('❌ No user provided')
         setUserData(null)
         setUserType(null)
         setLoading(false)
         return
       }
 
-      console.log('✅ Auth user:', {
-        id: user.id,
-        email: user.email,
-        user_metadata: user.user_metadata
-      })
-
-      // Get user_type from auth metadata first
       const typeFromAuth = (user.user_metadata?.user_type as string) || 'user'
       setUserType(typeFromAuth)
-      console.log('✅ User type:', typeFromAuth)
 
       setUserData({
         id: user.id,
@@ -108,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setError(null)
     } catch (err) {
-      console.error('❌ Exception in fetchUserData:', err)
+      console.error('Exception in fetchUserData:', err)
       setError(err as Error)
       setUserData(null)
       setUserType(null)
@@ -117,10 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Initiate Google OAuth flow
   const signInWithGoogle = async () => {
     try {
-      console.log('🔐 Starting Google OAuth sign-in...')
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -129,18 +118,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       
       if (error) {
-        console.error('❌ Google Sign-In Error:', error)
+        console.error('Google Sign-In Error:', error)
         setError(error)
         return
       }
-      
-      console.log('✅ Google OAuth initiated')
     } catch (err) {
-      console.error('❌ Google OAuth Error:', err)
+      console.error('Google OAuth Error:', err)
       setError(err as AuthError)
     }
   }
 
+  // Clear all auth state and redirect to home
   const logout = async () => {
     try {
       await supabase.auth.signOut()
@@ -178,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// Hook to access auth context — must be used inside AuthProvider
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext)
   if (!context) {

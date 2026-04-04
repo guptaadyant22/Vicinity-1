@@ -1,13 +1,8 @@
 'use client'
 
-// Reviews management page with AI-powered sentiment analysis and filtering
-// COMPONENTS:
-// REVIEW CARD - Individual review display with user info, rating, content, and actions
-// REVIEWS ANALYZER - AI analysis modal showing sentiment breakdown, themes, and recommendations
-// HELPER FUNCTIONS:
-// UPDATE STATS - Calculates total reviews, average rating, and recent review count
-// ANALYZE REVIEWS WITH AI - Calls API to analyze reviews and generate insights
-// FORMAT DATE - Converts timestamp to readable date format
+
+// Business reviews dashboard showing all customer reviews with AI-powered analysis.
+// Allows owners to respond to reviews and view sentiment trends.
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -37,7 +32,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-// Font setup
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -48,8 +43,7 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-// Theme classes
-// Content wrapper only; background should come from BusinessLayout
+
 const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative min-h-screen text-slate-900 transition-colors duration-300 dark:text-white`
 
@@ -82,7 +76,7 @@ export default function BusinessDashboardPage() {
     recentReviews: 0,
   })
 
-  // Load reviews and set up realtime
+
   useEffect(() => {
     if (!user?.id) return
 
@@ -102,7 +96,7 @@ export default function BusinessDashboardPage() {
 
         setBusinessId(businessData.id)
 
-        // Initial fetch
+
         const { data: reviewsData } = await supabase
           .from('reviews')
           .select('*')
@@ -112,7 +106,7 @@ export default function BusinessDashboardPage() {
         setReviews(reviewsData || [])
         updateStats(reviewsData || [])
 
-        // Realtime subscription
+
         activeChannel = supabase
           .channel(`business-reviews-${businessData.id}`)
           .on(
@@ -159,12 +153,12 @@ export default function BusinessDashboardPage() {
     }
   }, [user?.id, supabase])
 
-  // Update stats on reviews change
+
   useEffect(() => {
     updateStats(reviews)
   }, [reviews])
 
-  // Stats helper
+
   const updateStats = (reviewsData) => {
     if (reviewsData && reviewsData.length > 0) {
       const totalReviews = reviewsData.length
@@ -192,7 +186,7 @@ export default function BusinessDashboardPage() {
     }
   }
 
-  // AI reviews analysis
+
   const analyzeReviewsWithAI = async () => {
     if (reviews.length === 0) {
       setError('No reviews to analyze')
@@ -239,7 +233,6 @@ export default function BusinessDashboardPage() {
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
           <div className="relative z-10 flex min-h-[60vh] items-center justify-center">
-            {/* Loading spinner */}
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -254,9 +247,7 @@ export default function BusinessDashboardPage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        {/* Top header bar */}
         <div className="relative z-10 border-b border-blue-500/10 dark:border-white/10 bg-white/70 dark:bg-[#0b1322] backdrop-blur-xl transition-colors duration-300">
-          {/* Header glow */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
             <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-cyan-100/50 blur-3xl dark:bg-cyan-400/10" />
@@ -264,12 +255,10 @@ export default function BusinessDashboardPage() {
 
           <div className="relative flex min-h-[88px] items-center px-8">
             <div>
-              {/* Title */}
               <h1 className="font-[var(--font-outfit)] text-[30px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
                 Reviews
               </h1>
 
-              {/* Subtitle */}
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Manage and analyze your customer feedback
               </p>
@@ -277,7 +266,6 @@ export default function BusinessDashboardPage() {
           </div>
         </div>
 
-        {/* Alerts */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -302,12 +290,9 @@ export default function BusinessDashboardPage() {
           )}
         </AnimatePresence>
 
-        {/* Main content */}
         <main className="relative z-10">
           <div className="max-w-6xl mx-auto p-8 pb-20">
-            {/* Stats cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              {/* Total reviews */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -326,7 +311,6 @@ export default function BusinessDashboardPage() {
                   {stats.totalReviews}
                 </p>
 
-                {/* Rating distribution bars */}
                 <div className="space-y-2">
                   {[5, 4, 3, 2, 1].map((star) => {
                     const count = reviews.filter((r) => Math.round(r.rating) === star).length
@@ -355,7 +339,6 @@ export default function BusinessDashboardPage() {
                 </div>
               </motion.div>
 
-              {/* Average rating */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -378,7 +361,6 @@ export default function BusinessDashboardPage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400">/5</p>
                 </div>
 
-                {/* Column chart */}
                 <div className="space-y-2">
                   <div className="flex items-end justify-center gap-1 h-16">
                     {[...Array(5)].map((_, i) => {
@@ -409,7 +391,6 @@ export default function BusinessDashboardPage() {
                 </div>
               </motion.div>
 
-              {/* Recent reviews */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -429,7 +410,6 @@ export default function BusinessDashboardPage() {
                   {stats.recentReviews}
                 </p>
 
-                {/* Growth bar */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-500 dark:text-slate-400">Growth</span>
@@ -463,14 +443,12 @@ export default function BusinessDashboardPage() {
               </motion.div>
             </div>
 
-            {/* AI analysis panel */}
             <AnimatePresence>
               {showAnalyzer && analysis && (
                 <ReviewsAnalyzer analysis={analysis} onClose={() => setShowAnalyzer(false)} />
               )}
             </AnimatePresence>
 
-            {/* Filter bar */}
             <div className={`mb-6 ${GLASS_BG} flex items-center justify-between px-6 py-4 rounded-[28px] relative z-10`}>
               <div className="flex gap-2 overflow-x-auto flex-1 no-scrollbar">
                 {['all', '5', '4', '3', '2', '1'].map((rating) => (
@@ -491,7 +469,6 @@ export default function BusinessDashboardPage() {
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                {/* AI analyze button */}
                 <motion.button
                   onClick={analyzeReviewsWithAI}
                   disabled={analyzerLoading || reviews.length === 0}
@@ -508,7 +485,6 @@ export default function BusinessDashboardPage() {
                   </span>
                 </motion.button>
 
-                {/* Refresh button */}
                 <motion.button
                   onClick={() => window.location.reload()}
                   whileHover={{ scale: 1.05 }}
@@ -520,7 +496,6 @@ export default function BusinessDashboardPage() {
               </div>
             </div>
 
-            {/* Reviews list */}
             <div className="space-y-4">
               {filteredReviews.length > 0 ? (
                 filteredReviews.map((review, idx) => (
@@ -552,7 +527,7 @@ export default function BusinessDashboardPage() {
   )
 }
 
-// Review card component
+
 function ReviewCard({ review, idx }) {
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Recently'
@@ -578,10 +553,8 @@ function ReviewCard({ review, idx }) {
       transition={{ delay: idx * 0.05 }}
       className={REVIEW_CARD}
     >
-      {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
-          {/* User avatar */}
           <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-[var(--font-outfit)] font-semibold text-lg shadow-[0_10px_30px_rgba(59,130,246,0.24)]">
             {(review.user_name || 'A').charAt(0).toUpperCase()}
           </div>
@@ -596,7 +569,6 @@ function ReviewCard({ review, idx }) {
           </div>
         </div>
 
-        {/* Star rating */}
         <div className="flex gap-0.5">
           {[1, 2, 3, 4, 5].map((star) => (
             <FaStar
@@ -612,19 +584,16 @@ function ReviewCard({ review, idx }) {
         </div>
       </div>
 
-      {/* Title */}
       {review.title && (
         <h3 className="font-[var(--font-outfit)] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white text-lg mb-2">
           {review.title}
         </h3>
       )}
 
-      {/* Content */}
       <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
         {review.comment || review.text}
       </p>
 
-      {/* Photos */}
       {review.photos && review.photos.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
           {review.photos.map((photo, i) => (
@@ -638,9 +607,7 @@ function ReviewCard({ review, idx }) {
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex items-center gap-3 border-t border-blue-500/12 dark:border-white/10 pt-4 mt-4">
-        {/* Share action */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -648,7 +615,6 @@ function ReviewCard({ review, idx }) {
           <FaShare size={14} />
         </motion.button>
 
-        {/* Bookmark action */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
@@ -660,7 +626,7 @@ function ReviewCard({ review, idx }) {
   )
 }
 
-// Analyzer component
+
 function ReviewsAnalyzer({ analysis, onClose }) {
   const ANALYZER_CARD =
     'bg-white/80 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 rounded-[28px] p-8 mb-8 space-y-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] transition-all duration-300'
@@ -672,7 +638,6 @@ function ReviewsAnalyzer({ analysis, onClose }) {
       exit={{ opacity: 0, y: -20 }}
       className={ANALYZER_CARD}
     >
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-500/10 rounded-2xl text-blue-600 dark:text-blue-300 border border-blue-500/20">
@@ -683,7 +648,6 @@ function ReviewsAnalyzer({ analysis, onClose }) {
           </h2>
         </div>
 
-        {/* Close button */}
         <motion.button
           whileHover={{ rotate: 90 }}
           onClick={onClose}
@@ -693,7 +657,6 @@ function ReviewsAnalyzer({ analysis, onClose }) {
         </motion.button>
       </div>
 
-      {/* Sentiment cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -746,14 +709,12 @@ function ReviewsAnalyzer({ analysis, onClose }) {
         </motion.div>
       </div>
 
-      {/* Key themes */}
       <div>
         <h3 className="text-slate-900 dark:text-white font-[var(--font-outfit)] font-semibold mb-4 flex items-center gap-2 tracking-[-0.02em]">
           <FaArrowUp className="text-blue-600 dark:text-blue-300" /> Key Themes
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Praised */}
           <div className="bg-white dark:bg-[#111827] backdrop-blur-sm border border-blue-500/12 dark:border-white/10 p-4 rounded-[22px] transition-colors duration-300">
             <p className="text-slate-500 dark:text-slate-300 text-xs font-[var(--font-outfit)] font-semibold mb-3 tracking-[0.14em]">
               ✓ MOST PRAISED
@@ -775,7 +736,6 @@ function ReviewsAnalyzer({ analysis, onClose }) {
             </div>
           </div>
 
-          {/* Complaints */}
           <div className="bg-white dark:bg-[#111827] backdrop-blur-sm border border-blue-500/12 dark:border-white/10 p-4 rounded-[22px] transition-colors duration-300">
             <p className="text-slate-500 dark:text-slate-300 text-xs font-[var(--font-outfit)] font-semibold mb-3 tracking-[0.14em]">
               ⚠ TOP COMPLAINTS
@@ -799,7 +759,6 @@ function ReviewsAnalyzer({ analysis, onClose }) {
         </div>
       </div>
 
-      {/* Recommendations */}
       {analysis.recommendations && analysis.recommendations.length > 0 && (
         <div>
           <h3 className="text-slate-900 dark:text-white font-[var(--font-outfit)] font-semibold mb-3 flex items-center gap-2 tracking-[-0.02em]">
@@ -819,7 +778,6 @@ function ReviewsAnalyzer({ analysis, onClose }) {
         </div>
       )}
 
-      {/* Trend */}
       {analysis.trend && (
         <div className="bg-white dark:bg-[#111827] backdrop-blur-sm border border-blue-200 dark:border-blue-500/20 p-4 rounded-[22px] transition-colors duration-300">
           <p className="text-slate-500 dark:text-slate-300 text-sm font-[var(--font-outfit)] font-semibold mb-2 flex items-center gap-2">

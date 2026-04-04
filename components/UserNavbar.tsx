@@ -1,10 +1,7 @@
-'use client'
+// Navigation bar for all /user/** pages with section links, profile button, and logout.
+// Highlights the currently active page and provides theme toggle.
 
-// =================================================================
-// USER NAVBAR — Consistent navigation for all /user/** pages
-// =================================================================
-// Usage: <UserNavbar activePage="dashboard" onLogout={handleLogout} />
-// activePage: 'dashboard' | 'saved' | 'reviews' | 'messages' | 'profile'
+'use client'
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
@@ -31,6 +28,7 @@ interface UserNavbarProps {
   onLogout?: () => void
 }
 
+// Navigation bar for user pages with active-page highlighting
 export default function UserNavbar({ activePage = '', onLogout }: UserNavbarProps) {
   const router = useRouter()
 
@@ -44,7 +42,7 @@ export default function UserNavbar({ activePage = '', onLogout }: UserNavbarProp
       <div className="w-full max-w-5xl bg-white/82 dark:bg-[#0d142488] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[24px] p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)] pointer-events-auto flex items-center justify-between pl-4 pr-2 transition-all duration-300">
         <VicinityLogo showText={true} />
 
-        {/* Center nav links */}
+        {/* Section links (desktop) */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
           {NAV_LINKS.map((link) => {
             const isActive = activePage === link.key
@@ -69,12 +67,10 @@ export default function UserNavbar({ activePage = '', onLogout }: UserNavbarProp
           })}
         </div>
 
-        {/* Right side actions */}
+        {/* Right-side actions */}
         <div className="flex items-center gap-2">
-          {/* Theme toggle */}
           <ThemeToggle />
 
-          {/* Profile button */}
           <motion.button
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
@@ -88,7 +84,6 @@ export default function UserNavbar({ activePage = '', onLogout }: UserNavbarProp
             <FaUser size={13} />
           </motion.button>
 
-          {/* Logout button */}
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.95 }}

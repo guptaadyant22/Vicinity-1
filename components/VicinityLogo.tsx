@@ -1,3 +1,6 @@
+// Renders the Vicinity brand mark SVG and optional text label.
+// Used in navbars, sidebars, and the footer throughout the app.
+
 import React from 'react'
 import { UI_SETTINGS } from '../lib/ui'
 
@@ -7,8 +10,7 @@ interface VicinityLogoProps {
   showText?: boolean
 }
 
-// Vicinity logo component
-// Uses the newer blue Vicinity accent styling
+// Renders the Vicinity brand SVG mark and optional text
 export default function VicinityLogo({
   className = '',
   textClassName = 'text-slate-900 dark:text-white',
@@ -16,7 +18,7 @@ export default function VicinityLogo({
 }: VicinityLogoProps) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      {/* Brand mark */}
+      {/* Brand mark SVG */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="35"
@@ -36,7 +38,6 @@ export default function VicinityLogo({
         </g>
       </svg>
 
-      {/* Brand text */}
       {showText && (
         <span className={`font-black text-xl tracking-tight ${textClassName}`}>
           {UI_SETTINGS.siteName}

@@ -1,9 +1,8 @@
 'use client'
 
-// Deals management page for creating, editing, and sharing promotional offers
-// Vicinity
-// Same backend and same functionality
-// Full version with dark mode floating card fixes
+
+// Business deals management page for creating, editing, toggling, and deleting promotional offers.
+// Uses the BusinessLayout and DealsSection components for a consistent dashboard experience.
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -26,7 +25,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-// Font setup
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -37,8 +36,7 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-// Shared theme classes
-// NOTE: keep this as a content wrapper only so BusinessLayout owns the full page background
+
 const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative text-slate-900 transition-colors duration-300 dark:text-white`
 
@@ -54,7 +52,7 @@ const MODAL_CARD =
 const GLASS_INPUT =
   'w-full px-4 py-3 bg-white dark:bg-[#111a2e] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#16233d] focus:outline-none transition-all'
 
-// Default built-in deal types
+
 const DEFAULT_DEAL_TYPES = [
   { id: 'percentage', label: '📊 Percentage Off', placeholder: '20', suffix: '%', requiresValue: true },
   { id: 'fixed', label: '💰 Fixed Discount', placeholder: '10.00', suffix: '$', requiresValue: true },
@@ -95,7 +93,7 @@ export default function DealsPage() {
     expiredDeals: 0,
   })
 
-  // Load business and deal data
+
   useEffect(() => {
     if (!user?.id) return
 
@@ -134,7 +132,7 @@ export default function DealsPage() {
 
         setDeals(dealsData || [])
 
-        // Realtime updates
+
         const channel = supabase
           .channel(`business-deals-${businessData.id}`)
           .on(
@@ -177,12 +175,12 @@ export default function DealsPage() {
     })()
   }, [user?.id, supabase])
 
-  // Refresh stats when deals change
+
   useEffect(() => {
     updateStats(deals)
   }, [deals])
 
-  // Stats calculator
+
   const updateStats = (dealsData) => {
     if (!dealsData || dealsData.length === 0) {
       setStats({ totalDeals: 0, activeDeals: 0, expiringSoon: 0, expiredDeals: 0 })
@@ -209,7 +207,7 @@ export default function DealsPage() {
     setStats({ totalDeals, activeDeals, expiringSoon, expiredDeals })
   }
 
-  // Reset popup form
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -223,25 +221,25 @@ export default function DealsPage() {
     setCustomDealType('')
   }
 
-  // Close popup
+
   const closeModal = () => {
     setIsModalOpen(false)
     resetForm()
   }
 
-  // Get deal type config
+
   const getDealTypeInfo = (typeId) => {
     return dealTypes.find((d) => d.id === typeId)
   }
 
-  // Check if this type requires a value
+
   const shouldShowValueInput = (typeId) => {
     if (typeId === '__new__') return false
     const typeInfo = getDealTypeInfo(typeId)
     return typeInfo?.requiresValue || false
   }
 
-  // Add new custom deal type
+
   const handleAddCustomDealType = () => {
     if (!customDealType.trim()) {
       setError('Please enter a deal type name')
@@ -262,7 +260,7 @@ export default function DealsPage() {
     setCustomDealType('')
   }
 
-  // Create or update deal
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -356,7 +354,7 @@ export default function DealsPage() {
     }
   }
 
-  // Toggle live state
+
   const toggleDealActive = async (deal) => {
     try {
       const newStatus = !deal.is_active
@@ -375,7 +373,7 @@ export default function DealsPage() {
     }
   }
 
-  // Delete deal
+
   const handleDelete = async (dealId) => {
     if (!confirm('Delete this deal?')) return
 
@@ -395,7 +393,7 @@ export default function DealsPage() {
     }
   }
 
-  // Start editing deal
+
   const handleEdit = (deal) => {
     setEditingDeal(deal)
     setFormData({
@@ -409,7 +407,7 @@ export default function DealsPage() {
     setIsModalOpen(true)
   }
 
-  // Copy promo code
+
   const handleCopyCode = async (code) => {
     try {
       await navigator.clipboard.writeText(code)
@@ -421,7 +419,7 @@ export default function DealsPage() {
     }
   }
 
-  // Filtered list
+
   const filteredDeals =
     filterType === 'all'
       ? deals
@@ -440,7 +438,6 @@ export default function DealsPage() {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-          {/* Loading state */}
           <div className="relative z-10 flex min-h-full items-center justify-center py-16 transition-colors">
             <motion.div
               animate={{ rotate: 360 }}
@@ -457,7 +454,6 @@ export default function DealsPage() {
     return (
       <BusinessLayout>
         <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-          {/* Empty business state */}
           <div className="relative z-10 flex min-h-full items-center justify-center py-16 transition-colors">
             <div className="text-center">
               <p className="text-xl text-slate-500 dark:text-slate-400">No business found</p>
@@ -474,16 +470,13 @@ export default function DealsPage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        {/* Header */}
         <div className="relative z-10 border-b border-blue-500/10 bg-white/75 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-[#0b1322]">
-          {/* Header glow */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
             <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-blue-100/50 blur-3xl dark:bg-blue-400/10" />
           </div>
 
           <div className="relative mx-auto flex max-w-7xl flex-col gap-6 px-6 py-7 lg:flex-row lg:items-end lg:justify-between lg:px-8">
-            {/* Header text */}
             <div className="max-w-2xl">
               <h1 className="font-[var(--font-outfit)] text-[34px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
                 Deals
@@ -493,7 +486,6 @@ export default function DealsPage() {
               </p>
             </div>
 
-            {/* Header actions */}
             <div className="flex items-center gap-3">
               <motion.button
                 onClick={() => window.location.reload()}
@@ -521,7 +513,6 @@ export default function DealsPage() {
           </div>
         </div>
 
-        {/* Alert banners */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -554,15 +545,12 @@ export default function DealsPage() {
 
         <main className="relative z-10">
           <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 pb-20 pt-8 lg:px-8">
-            {/* Stats section */}
             <section>
               <div className={`${GLASS_CARD} relative overflow-hidden`}>
-                {/* Card glow */}
                 <div className="absolute right-[-30px] top-[-20px] h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
                 <div className="absolute bottom-[-40px] left-[-20px] h-36 w-36 rounded-full bg-blue-200/30 blur-3xl dark:bg-blue-500/10" />
 
                 <div className="relative z-10 flex h-full flex-col justify-between gap-6">
-                  {/* Main copy */}
                   <div>
                     <h2 className="font-[var(--font-outfit)] text-[30px] font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
                       Keep your offers fresh and easy to manage.
@@ -573,10 +561,8 @@ export default function DealsPage() {
                     </p>
                   </div>
 
-                  {/* Stat chips */}
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                     <div className="rounded-[22px] border border-blue-500/10 bg-white/85 px-4 py-4 dark:border-white/10 dark:bg-[#111f36]">
-                      {/* Total */}
                       <p className="text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                         Total
                       </p>
@@ -586,7 +572,6 @@ export default function DealsPage() {
                     </div>
 
                     <div className="rounded-[22px] border border-blue-500/20 bg-blue-50 px-4 py-4 dark:border-blue-500/20 dark:bg-blue-500/10">
-                      {/* Active */}
                       <p className="text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
                         Active
                       </p>
@@ -596,7 +581,6 @@ export default function DealsPage() {
                     </div>
 
                     <div className="rounded-[22px] border border-slate-200 bg-slate-100 px-4 py-4 dark:border-white/10 dark:bg-[#172033]">
-                      {/* Expired */}
                       <p className="text-[10px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-300">
                         Expired
                       </p>
@@ -609,10 +593,8 @@ export default function DealsPage() {
               </div>
             </section>
 
-            {/* Filter bar */}
             <section className={`${GLASS_BG} rounded-[30px] p-4`}>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                {/* Filter buttons */}
                 <div className="flex gap-2 overflow-x-auto no-scrollbar">
                   {[
                     { key: 'all', label: 'All deals' },
@@ -635,14 +617,12 @@ export default function DealsPage() {
                   ))}
                 </div>
 
-                {/* Filter count chip */}
                 <div className="rounded-2xl border border-blue-500/12 bg-white/80 px-4 py-2.5 text-[11px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:border-white/10 dark:bg-[#111f36] dark:text-slate-400">
                   Showing {filteredDeals.length} result{filteredDeals.length === 1 ? '' : 's'}
                 </div>
               </div>
             </section>
 
-            {/* Deal list */}
             <section className="space-y-4">
               {filteredDeals.length > 0 ? (
                 filteredDeals.map((deal, idx) => (
@@ -679,7 +659,6 @@ export default function DealsPage() {
           </div>
         </main>
 
-        {/* Modal */}
         <AnimatePresence>
           {isModalOpen && (
             <motion.div
@@ -696,7 +675,6 @@ export default function DealsPage() {
                 className={`${MODAL_CARD} max-h-[90vh] w-full max-w-md overflow-y-auto`}
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Modal header */}
                 <div className="mb-6 flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-white/10">
                   <div>
                     <p className="text-[11px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">
@@ -707,7 +685,6 @@ export default function DealsPage() {
                     </h2>
                   </div>
 
-                  {/* Close button */}
                   <motion.button
                     onClick={closeModal}
                     whileHover={{ rotate: 90 }}
@@ -717,9 +694,7 @@ export default function DealsPage() {
                   </motion.button>
                 </div>
 
-                {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Title input */}
                   <div>
                     <label className="mb-2 block text-xs font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       Title <span className="text-red-500">*</span>
@@ -734,7 +709,6 @@ export default function DealsPage() {
                     />
                   </div>
 
-                  {/* Description input */}
                   <div>
                     <label className="mb-2 block text-xs font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       Description
@@ -747,7 +721,6 @@ export default function DealsPage() {
                     />
                   </div>
 
-                  {/* Deal type selector */}
                   <div>
                     <label className="mb-2 block text-xs font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       Deal Type <span className="text-red-500">*</span>
@@ -788,7 +761,6 @@ export default function DealsPage() {
                     </div>
                   </div>
 
-                  {/* Custom type area */}
                   {formData.discount_type === '__new__' && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -821,7 +793,6 @@ export default function DealsPage() {
                     </motion.div>
                   )}
 
-                  {/* Required value input */}
                   {formData.discount_type !== '__new__' &&
                     shouldShowValueInput(formData.discount_type) && (
                       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -852,7 +823,6 @@ export default function DealsPage() {
                       </motion.div>
                     )}
 
-                  {/* Optional value input for custom types */}
                   {formData.discount_type !== '__new__' &&
                     !shouldShowValueInput(formData.discount_type) &&
                     !DEFAULT_DEAL_TYPES.find((d) => d.id === formData.discount_type) && (
@@ -873,7 +843,6 @@ export default function DealsPage() {
                       </motion.div>
                     )}
 
-                  {/* Promo code */}
                   <div>
                     <label className="mb-2 block text-xs font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       Promo Code (Optional)
@@ -889,7 +858,6 @@ export default function DealsPage() {
                     />
                   </div>
 
-                  {/* Expiry date */}
                   <div>
                     <label className="mb-2 block text-xs font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                       Expires On <span className="text-red-500">*</span>
@@ -906,7 +874,6 @@ export default function DealsPage() {
                     />
                   </div>
 
-                  {/* Submit button */}
                   <motion.button
                     type="submit"
                     disabled={isCreating}
@@ -926,13 +893,13 @@ export default function DealsPage() {
   )
 }
 
-// Individual deal card
+
 function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCode, dealTypes }) {
   const isExpired = new Date(deal.expiry_date) < new Date()
   const daysLeft = Math.ceil((new Date(deal.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
   const dealType = dealTypes.find((d) => d.id === deal.discount_type)
 
-  // Card helpers
+
   const getEmoji = () => (dealType ? dealType.label.split(' ')[0] : '✨')
   const getLabel = () =>
     dealType ? dealType.label.substring(dealType.label.indexOf(' ') + 1) : 'Special Deal'
@@ -945,14 +912,11 @@ function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCod
       transition={{ delay: idx * 0.05 }}
       className="group relative overflow-hidden rounded-[30px] border border-blue-500/10 bg-white/88 p-6 shadow-[0_16px_50px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/24 hover:shadow-[0_22px_60px_rgba(59,130,246,0.10)] dark:border-white/10 dark:bg-[#0f172a]/94 dark:shadow-[0_20px_55px_rgba(0,0,0,0.35)]"
     >
-      {/* Hover glow */}
       <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-500/0 blur-3xl transition-all duration-500 group-hover:bg-blue-500/12" />
 
       <div className="relative z-10">
-        {/* Top section */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            {/* Deal icon */}
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] bg-blue-600 text-xl text-white shadow-[0_12px_30px_rgba(59,130,246,0.24)]">
               {getEmoji()}
             </div>
@@ -982,7 +946,6 @@ function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCod
                 )}
               </div>
 
-              {/* Time status */}
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 {isExpired
                   ? 'This deal has passed its expiry date.'
@@ -991,7 +954,6 @@ function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCod
                   : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`}
               </p>
 
-              {/* Pills */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-[var(--font-outfit)] font-semibold ${
@@ -1018,7 +980,6 @@ function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCod
             </div>
           </div>
 
-          {/* Card action buttons */}
           <div className="flex items-center gap-2 lg:justify-end">
             <motion.button
               onClick={() => onEdit(deal)}
@@ -1040,7 +1001,6 @@ function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCod
           </div>
         </div>
 
-        {/* Description panel */}
         {deal.description && (
           <div className="mt-5 rounded-[24px] border border-blue-500/10 bg-white/82 p-4 dark:border-white/10 dark:bg-[#111f36]">
             <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">
@@ -1049,9 +1009,7 @@ function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCod
           </div>
         )}
 
-        {/* Bottom row */}
         <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
-          {/* Promo code panel */}
           <div>
             {deal.code ? (
               <div className="rounded-[24px] border border-blue-500/12 bg-white/85 p-4 dark:border-white/10 dark:bg-[#111f36]">
@@ -1090,7 +1048,6 @@ function DealCard({ deal, idx, onEdit, onDelete, onToggle, onCopyCode, copiedCod
             )}
           </div>
 
-          {/* Main action */}
           <div className="flex items-center gap-2">
             <motion.button
               onClick={() => onToggle(deal)}

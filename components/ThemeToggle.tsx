@@ -1,19 +1,17 @@
-'use client'
+// Animated dark/light mode toggle button with sun and moon icons.
+// Reads from ThemeContext and waits for mount to prevent hydration mismatch.
 
-// Theme toggle for Vicinity dashboard
-// NOTES:
-// - Uses ThemeContext state
-// - Waits for mount to avoid hydration flicker
-// - Visual-only component; actual theme class logic must live in ThemeContext
+'use client'
 
 import { useTheme } from '../context/ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaSun, FaMoon } from 'react-icons/fa'
 
+// Renders an animated sun/moon button that toggles the theme
 const ThemeToggle = () => {
   const { isDark, toggleTheme, mounted } = useTheme()
 
-  // Prevent hydration mismatch / icon flicker
+  // Render placeholder until mounted to avoid icon flicker
   if (!mounted) {
     return <div className="w-[42px] h-[42px] shrink-0" aria-hidden="true" />
   }
@@ -36,7 +34,6 @@ const ThemeToggle = () => {
         }
       `}
     >
-      {/* Icon wrapper */}
       <div className="relative flex h-5 w-5 items-center justify-center">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

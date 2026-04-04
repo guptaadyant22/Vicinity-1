@@ -1,5 +1,5 @@
-// Analyzes customer reviews using Groq AI
-// Extracts sentiment breakdown, key themes, and recommendations for businesses
+// API route that analyzes customer reviews using Groq AI to extract sentiment and key themes.
+// Returns a structured JSON breakdown of praised aspects, complaints, and recommendations.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
@@ -9,6 +9,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Handle review analysis requests and return AI-generated insights
 export async function POST(req: NextRequest) {
   try {
     const { reviews, businessId } = await req.json()
@@ -22,12 +23,12 @@ export async function POST(req: NextRequest) {
 
     console.log(`🔍 Analyzing ${reviews.length} reviews...`)
 
-    // Format reviews for Groq
+
     const reviewText = reviews
       .map((r: any, i: number) => `Review ${i + 1} (Rating: ${r.rating}/5):\n"${r.text || r.title || 'No text provided'}"\n`)
       .join('\n---\n')
 
-    // Build context for AI analysis
+
     const context = `You are BizHub's intelligent review analyzer. Analyze customer reviews and provide insights in valid JSON format ONLY.
 
 Your task:
@@ -60,7 +61,7 @@ Rules:
 
     console.log('📡 Calling Groq API...')
 
-    // Call Groq API (matching your existing chat pattern)
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -95,7 +96,7 @@ Rules:
 
     console.log('📝 Raw Response:', responseText)
 
-    // Parse JSON from response
+
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       console.error('❌ Could not extract JSON from response:', responseText)

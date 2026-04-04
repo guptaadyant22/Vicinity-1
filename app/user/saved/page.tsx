@@ -1,5 +1,9 @@
 'use client'
 
+
+// Saved businesses page displaying the user's bookmarked/favorite businesses.
+// Allows removing saved items and navigating to individual business profiles.
+
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,8 +20,7 @@ import BusinessCard from '../../../components/BusinessCard'
 import UserNavbar from '../../../components/UserNavbar'
 import { FogBackground } from '@/components/ui/fog'
 
-// --- SHARED UI SYSTEM ---
-// Matches the Vicinity glass UI, but lighter so the fog shows through
+
 const UI = {
   page: 'relative min-h-screen bg-transparent text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300',
   card: 'bg-white/20 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/30 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition-colors duration-300',
@@ -27,8 +30,8 @@ const UI = {
   secondaryButton: 'bg-white/14 dark:bg-white/[0.04] backdrop-blur-2xl hover:bg-white/22 dark:hover:bg-white/[0.07] text-slate-700 dark:text-white border border-white/25 dark:border-white/10',
 }
 
-// --- STAT CARD ---
-// Statistics card for saved page metrics
+
+// Stat card with icon, value, and hover glow effect
 const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
   const iconStyleMap = {
     blue: 'bg-blue-500/10 dark:bg-blue-500/10 border-blue-400/20 dark:border-blue-400/20 text-blue-700 dark:text-blue-300',
@@ -44,7 +47,6 @@ const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
       whileHover={{ y: -4 }}
       className={`${UI.cardSoft} group relative p-6`}
     >
-      {/* Soft hover tint */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/[0.03] to-cyan-500/[0.05] opacity-0 group-hover:opacity-100 transition-opacity" />
 
       <div className="relative z-10 flex items-center gap-4">
@@ -65,19 +67,20 @@ const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
   )
 }
 
+// Saved businesses page with search, sort, and remove actions
 export default function SavedPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const supabase = createClient()
 
-  // --- MAIN PAGE STATE ---
+
   const [loading, setLoading] = useState(true)
   const [savedBusinesses, setSavedBusinesses] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('recent')
 
-  // --- STATS LOGIC ---
-  // Get the most frequent category with tie handling
+
+  // Find the most-saved business category
   const getTopCategory = () => {
     if (savedBusinesses.length === 0) return 'N/A'
 
@@ -103,19 +106,19 @@ export default function SavedPage() {
     return 'Diverse'
   }
 
-  // --- STATS OBJECT ---
+
   const stats = {
     total: savedBusinesses.length,
     topCategory: getTopCategory(),
     categories: new Set(savedBusinesses.map((b) => b.type)).size,
   }
 
-  // --- REDIRECT IF NOT LOGGED IN ---
+
   useEffect(() => {
     if (!authLoading && !user) router.push('/login')
   }, [user, authLoading, router])
 
-  // --- LOAD SAVED BUSINESSES ---
+
   useEffect(() => {
     if (!user) return
 
@@ -123,7 +126,7 @@ export default function SavedPage() {
       try {
         setLoading(true)
 
-        // Get favorite rows
+
         const { data: fData, error: fError } = await supabase
           .from('favorites')
           .select('business_id, created_at')
@@ -137,7 +140,7 @@ export default function SavedPage() {
           return
         }
 
-        // Load businesses for favorite ids
+
         const ids = fData.map((f) => f.business_id)
         const { data: bData, error: bError } = await supabase
           .from('businesses')
@@ -146,7 +149,7 @@ export default function SavedPage() {
 
         if (bError) throw bError
 
-        // Merge business info with save date
+
         const businessesWithDate = (bData || []).map((b) => {
           const fav = fData.find((f) => f.business_id === b.id)
           return {
@@ -168,7 +171,8 @@ export default function SavedPage() {
     fetchSaved()
   }, [user, supabase])
 
-  // --- REMOVE A PLACE FROM SAVED ---
+
+  // Remove a business from favorites
   const handleRemove = async (id) => {
     setSavedBusinesses((prev) => prev.filter((b) => b.id !== id))
     try {
@@ -178,7 +182,8 @@ export default function SavedPage() {
     }
   }
 
-  // --- TOGGLE FAVORITE STATE ---
+
+  // Toggle a business in/out of favorites
   const handleSave = async (businessId) => {
     try {
       const isSaved = savedBusinesses.some((b) => b.id === businessId)
@@ -193,13 +198,14 @@ export default function SavedPage() {
     }
   }
 
-  // --- LOGOUT ---
+
+  // Sign out and redirect to home
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  // --- APPLY SEARCH AND SORTING ---
+
   const filteredSaved = savedBusinesses
     .filter((b) => !searchTerm || b.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -214,7 +220,6 @@ export default function SavedPage() {
 
   return (
     <div className={UI.page}>
-      {/* Fog background */}
       <FogBackground
         className="fixed inset-0 z-0"
         color="#60a5fa"
@@ -223,12 +228,10 @@ export default function SavedPage() {
         speed={1}
       />
 
-      {/* Main content */}
       <div className="relative z-10">
         <UserNavbar activePage="saved" onLogout={handleLogout} />
 
         <main className="max-w-7xl mx-auto px-6 py-10 pt-32">
-          {/* Hero section */}
           <section className="mb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
               <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
@@ -243,21 +246,18 @@ export default function SavedPage() {
               </p>
             </motion.div>
 
-            {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               <StatCard label="Saved Places" value={stats.total} icon={FaHeart} color="blue" delay={0.1} />
               <StatCard label="Favorite Category" value={stats.topCategory} icon={FaFire} color="indigo" delay={0.2} />
               <StatCard label="Categories" value={stats.categories} icon={FaMapMarked} color="cyan" delay={0.3} />
             </div>
 
-            {/* Search + sort controls */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="flex flex-col md:flex-row gap-4"
             >
-              {/* Search input */}
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <FaSearch className="text-slate-500 dark:text-slate-400 text-sm" />
@@ -282,7 +282,6 @@ export default function SavedPage() {
                 )}
               </div>
 
-              {/* Sort select */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -295,7 +294,6 @@ export default function SavedPage() {
             </motion.div>
           </section>
 
-          {/* Saved places grid */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (

@@ -1,3 +1,6 @@
+// AI-powered description generator that calls the generate-description API endpoint.
+// Provides a textarea editor with character validation (100–500), regenerate, and save actions.
+
 'use client';
 import { useState } from 'react';
 import { FiRefreshCw, FiCheck, FiX } from 'react-icons/fi';
@@ -12,6 +15,7 @@ interface GeneratorProps {
   initialDescription?: string;
 }
 
+// AI description generator with editor, save, and regenerate actions
 export default function DescriptionGenerator({
   businessName,
   businessType,
@@ -25,6 +29,7 @@ export default function DescriptionGenerator({
   const [loading, setLoading] = useState(false);
   const [showEditor, setShowEditor] = useState(!!initialDescription);
 
+  // Call the AI description API
   const generateDescription = async () => {
     setLoading(true);
     try {
@@ -52,6 +57,7 @@ export default function DescriptionGenerator({
     }
   };
 
+  // Pass the finalized description to the parent
   const handleSave = () => {
     onDescriptionGenerated?.(description);
   };

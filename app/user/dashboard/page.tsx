@@ -1,21 +1,8 @@
-// Community user dashboard with business discovery, filtering, and AI-powered search
-// COMPONENTS:
-// VICINITY LOGO - Branded logo component with optional text display
-// HEADER - Navigation bar with user profile, logout, and navigation links
-// STAT CARD - Statistics card displaying key metrics (total places, reviews, ratings, saved)
-// SKELETON CARD - Loading placeholder for business cards in grid/list view
-// FILTER SECTION - Collapsible filter category with expandable content
-// HELPER FUNCTIONS:
-// FORMAT BUSINESS TYPE - Converts business type to short display format using category mapping
-// IS DEAL EXPIRED - Checks if deal expiry date has passed
-// IS BUSINESS OPEN NOW - Determines if business is currently open based on hours
-// HANDLE SEARCH INPUT CHANGE - Updates search query with debounced AI search trigger
-// HANDLE AI SEARCH - Sends search query to AI API and retrieves matched businesses
-// HANDLE SAVE - Saves/unsaves business to user favorites in database
-// HANDLE LOGOUT - Signs out user and redirects to home page
-// CLEAR ALL FILTERS - Resets all active filters and search state
-
 'use client'
+
+
+// User dashboard (browse) page for discovering and filtering local businesses.
+// Features category-based filtering, AI search, grid/list views, and favorites management.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -33,13 +20,13 @@ import { createClient } from '../../../lib/supabase'
 import VicinityLogo from '../../../components/VicinityLogo'
 import UserNavbar from '../../../components/UserNavbar'
 
-// --- THEMED CONSTANTS ---
+
 const THEME = {
   accent: '#2563eb',
   accentGrad: 'from-blue-600 to-cyan-500',
 }
 
-// Shared UI tokens
+
 const UI = {
   page: 'min-h-screen text-slate-900 dark:text-slate-200 font-sans selection:bg-blue-600/25 selection:text-white relative bg-white dark:bg-[#081120] transition-colors duration-300',
   shell: 'bg-white border border-blue-500/12 dark:bg-[#0f172a] dark:border-white/10 shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-colors duration-300',
@@ -49,7 +36,7 @@ const UI = {
   softBtn: 'bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/20',
 }
 
-// Adaptive colors for StatCards
+
 const statTheme = {
   blue: {
     iconWrap: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20',
@@ -92,6 +79,7 @@ const CATEGORY_MAP = {
   'japanese': { short: 'Japanese' },
 }
 
+// Map raw business type string to a short display label
 const formatBusinessType = (type: string) => {
   if (!type) return 'Other'
 
@@ -114,7 +102,8 @@ const formatBusinessType = (type: string) => {
   return type
 }
 
-// HELPER FUNCTION TO CHECK IF DEAL IS EXPIRED
+
+// Check if a deal expiry date has passed
 const isDealExpired = (expiryDate: string | null) => {
   if (!expiryDate) return false
   const now = new Date()
@@ -122,9 +111,7 @@ const isDealExpired = (expiryDate: string | null) => {
   return expiry < now
 }
 
-// Header is now the shared UserNavbar component
 
-// Stat card
 interface DashboardStatCardProps {
   label: string;
   value: string | number;
@@ -133,6 +120,7 @@ interface DashboardStatCardProps {
   delay: number;
 }
 
+// Dashboard stat card with icon, value, and hover glow
 const StatCard = ({ label, value, icon: Icon, color, delay }: DashboardStatCardProps) => {
   const t = statTheme[color as keyof typeof statTheme] || statTheme.blue
   return (
@@ -160,7 +148,8 @@ const StatCard = ({ label, value, icon: Icon, color, delay }: DashboardStatCardP
   )
 }
 
-// Loading skeleton
+
+// Loading placeholder matching the business card layout
 const SkeletonCard = ({ viewMode }: { viewMode: string }) => (
   <div className={`rounded-[24px] ${UI.shellSoft} overflow-hidden ${viewMode === 'list' ? 'flex h-80' : 'h-[400px]'}`}>
     <div className={`${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'w-full h-56'} bg-gradient-to-br from-slate-100 to-blue-100 dark:from-slate-800 dark:to-slate-900 animate-pulse`} />
@@ -175,7 +164,8 @@ const SkeletonCard = ({ viewMode }: { viewMode: string }) => (
   </div>
 )
 
-// Filter section
+
+// Collapsible filter group for the sidebar
 const FilterSection = ({ title, icon: Icon, children }: { title: string; icon?: React.ComponentType<{ size?: number; className?: string }>; children: React.ReactNode }) => {
   const [expanded, setExpanded] = useState(true)
 
@@ -204,6 +194,7 @@ const FilterSection = ({ title, icon: Icon, children }: { title: string; icon?: 
   )
 }
 
+// User browse dashboard page with filters and favorites
 export default function UserDashboardPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
@@ -312,7 +303,7 @@ export default function UserDashboardPage() {
 
         setAvailableCategories(topCategories)
 
-        // FETCH ALL DEALS - MATCHING THE BUSINESS CARD LOGIC
+
         const dealsWithBusinesses = new Set()
 
         for (const business of formattedBusinesses) {
@@ -328,7 +319,7 @@ export default function UserDashboardPage() {
             if (!dealsError && deals && deals.length > 0) {
               const deal = deals[0]
 
-              // CHECK IF DEAL HAS EXPIRED - EXACT SAME LOGIC AS BUSINESS CARD
+
               if (!isDealExpired(deal.expiry_date)) {
                 dealsWithBusinesses.add(business.id)
               }
@@ -395,6 +386,7 @@ export default function UserDashboardPage() {
     return () => { supabase.removeChannel(channel) }
   }, [user, supabase])
 
+  // Determine if a business is currently open based on hours string
   const isBusinessOpenNow = (hours: string | Record<string, string> | null) => {
     if (!hours || typeof hours !== 'string') return true
 
@@ -460,6 +452,7 @@ export default function UserDashboardPage() {
     }
   }
 
+  // Update search query and debounce AI search
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchQuery(value)
@@ -483,6 +476,7 @@ export default function UserDashboardPage() {
     }
   }, [])
 
+  // Submit the search query to the AI search API
   const handleAiSearch = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
     if (!searchQuery.trim()) {
@@ -564,6 +558,7 @@ export default function UserDashboardPage() {
   const startIndex = (currentPage - 1) * PAGE_SIZE + 1
   const endIndex = Math.min(currentPage * PAGE_SIZE, filteredBusinesses.length)
 
+  // Toggle a business in/out of the user's favorites
   const handleSave = async (id: string) => {
     if (!user) return
     const newSaved = new Set(savedIds)
@@ -583,12 +578,14 @@ export default function UserDashboardPage() {
     }
   }
 
+  // Sign out and redirect to home
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
     router.refresh()
   }
 
+  // Reset all filters, search, and pagination
   const clearAllFilters = () => {
     setCategoryFilter(null)
     setOpenNowFilter(false)
@@ -617,7 +614,6 @@ export default function UserDashboardPage() {
       <UserNavbar activePage="dashboard" onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
-        {/* Hero */}
         <section className="mb-16 text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-10">
           <div className="max-w-2xl">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">

@@ -1,12 +1,17 @@
+// Site footer with branding, navigation columns, social links, and legal links.
+// Renders at the bottom of the landing page using shared UI constants.
+
 import React from 'react'
 import { FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa'
 import VicinityLogo from './VicinityLogo'
 import { UI_SETTINGS, LANDING_NAV_ITEMS, FOOTER_LINKS } from '../lib/ui'
 
+// Site-wide footer with branding, nav, and legal link columns
 export default function Footer() {
     return (
         <footer className="relative py-20 border-t border-blue-500/10 dark:border-white/10 text-slate-900 dark:text-white z-10 bg-white dark:bg-[#081120] transition-colors duration-300">
             <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                {/* Brand column */}
                 <div>
                     <div className="mb-6"><VicinityLogo /></div>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">{UI_SETTINGS.siteDescription}</p>
@@ -16,6 +21,8 @@ export default function Footer() {
                         <FaLinkedin className="hover:text-blue-600 dark:hover:text-blue-300 transition-colors cursor-pointer" />
                     </div>
                 </div>
+
+                {/* Navigation column */}
                 <div>
                     <h4 className="font-bold mb-6 text-slate-900 dark:text-white">Navigation</h4>
                     <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
@@ -24,6 +31,8 @@ export default function Footer() {
                         ))}
                     </ul>
                 </div>
+
+                {/* Company column */}
                 <div>
                     <h4 className="font-bold mb-6 text-slate-900 dark:text-white">Company</h4>
                     <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
@@ -32,6 +41,8 @@ export default function Footer() {
                         ))}
                     </ul>
                 </div>
+
+                {/* Legal column */}
                 <div>
                     <h4 className="font-bold mb-6 text-slate-900 dark:text-white">Legal</h4>
                     <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
@@ -41,6 +52,8 @@ export default function Footer() {
                     </ul>
                 </div>
             </div>
+
+            {/* Copyright */}
             <div className="max-w-6xl mx-auto px-6 pt-8 border-t border-blue-500/10 dark:border-white/[0.05] text-center text-xs text-slate-400 dark:text-slate-500">
                 {UI_SETTINGS.copyright}
             </div>

@@ -1,5 +1,5 @@
-// Searches businesses using AI with smart keyword pre-filtering
-// Matches by category, name, and description to find relevant results
+// API route that performs AI-powered business search using Groq with smart keyword pre-filtering.
+// Accepts a query and business list, returns matched businesses with full details.
 
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -9,12 +9,12 @@ function normalizeId(id) {
   return String(id).trim().toLowerCase()
 }
 
-// Smart keyword pre-filter 
+
 function smartPreFilter(query, businesses) {
   const q = query.toLowerCase().trim()
   const keywords = q.split(/\s+/).filter(k => k.length > 0)
 
-  // Category mappings for better matching
+
   const categoryMap = {
     'coffee': ['coffee', 'cafe', 'bakery'],
     'cafe': ['cafe', 'coffee', 'bakery'],
@@ -39,14 +39,14 @@ function smartPreFilter(query, businesses) {
     const desc = (b.description || '').toLowerCase()
     const text = `${name} ${type} ${desc}`
 
-    // Check each keyword
+
     for (const kw of keywords) {
-      
+
       if (name.includes(kw) || type.includes(kw) || desc.includes(kw)) {
         return true
       }
 
-      // Check category mapping
+
       if (categoryMap[kw]) {
         const relatedCategories = categoryMap[kw]
         if (relatedCategories.some(cat => type.includes(cat))) {
@@ -59,6 +59,7 @@ function smartPreFilter(query, businesses) {
   })
 }
 
+// Handle AI-powered business search requests
 export async function POST(request) {
   try {
     console.log('🔵 API received request')
@@ -81,11 +82,11 @@ export async function POST(request) {
       })
     }
 
-    // STEP 1: Smart pre-filter to reduce noise
+
     let preFiltered = smartPreFilter(query, businesses)
     console.log(`📊 Pre-filter: ${preFiltered.length} potential matches`)
 
-    // If pre-filter finds nothing, search all
+
     if (preFiltered.length === 0) {
       console.log('⚠️ Pre-filter found nothing, searching all businesses')
       preFiltered = businesses
@@ -100,7 +101,7 @@ export async function POST(request) {
       })
     }
 
-    // STEP 2: Send only pre-filtered businesses to AI (max 30 to save tokens)
+
     const lightweightBusinesses = preFiltered
       .slice(0, 30)
       .map((b) => ({
@@ -116,7 +117,7 @@ export async function POST(request) {
       .map((b) => `ID:${b.id}|NAME:${b.name}|TYPE:${b.type}|DESC:${b.description}`)
       .join('\n')
 
-    // STRICT AI SEARCH PROMPT
+
     const prompt = `You are a strict business search assistant. From the provided businesses, find ONLY those that match the search query.
 
 SEARCH QUERY: "${query}"
@@ -164,7 +165,7 @@ RETURN ONLY VALID JSON: {"ids": ["id1", "id2"]} or {"ids": []} if no matches`
               content: prompt,
             },
           ],
-          temperature: 0.1, // Very low for strict matching
+          temperature: 0.1, 
           max_tokens: 300,
         }),
         signal: controller.signal,
@@ -224,14 +225,14 @@ RETURN ONLY VALID JSON: {"ids": ["id1", "id2"]} or {"ids": []} if no matches`
 
     console.log(`📊 AI found ${matchingIds.length} matching businesses`)
 
-    // Filter from original businesses to get full data
+
     const matchedBusinesses = businesses.filter(b => {
       return matchingIds.includes(normalizeId(b.id))
     })
 
     console.log(`✅ Final result: ${matchedBusinesses.length} businesses matched`)
 
-    // Return COMPLETE business objects with all fields
+
     return NextResponse.json({
       success: true,
       query: query,
@@ -253,7 +254,7 @@ RETURN ONLY VALID JSON: {"ids": ["id1", "id2"]} or {"ids": []} if no matches`
 
   } catch (error) {
     console.error('❌ CRITICAL API ERROR:', error?.message || error)
-    
+
     return NextResponse.json({
       success: false,
       error: 'Search error',

@@ -1,8 +1,9 @@
-// Generates professional business descriptions using Groq AI
-// Creates engaging 150-200 word descriptions based on business type and info
+// API route that generates professional business descriptions using Groq AI.
+// Creates engaging 150-200 word descriptions based on business type, location, and details.
 
 import { NextRequest, NextResponse } from 'next/server'
 
+// Generate a professional business description via Groq AI
 export async function POST(req: NextRequest) {
   try {
     const { businessContext } = await req.json()
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     console.log(`Type: ${businessContext.type}`)
     console.log(`Location: ${businessContext.location || 'Not specified'}`)
 
-    // Build context for Groq
+
     const prompt = `You are a professional business description writer. Create a compelling, concise business description (150-200 words) for this business.
 
 Business Information:
@@ -58,7 +59,7 @@ Return ONLY the description text, nothing else.`
           },
         ],
         max_tokens: 500,
-        temperature: 0.7, // Creative but consistent
+        temperature: 0.7, 
       }),
     })
 

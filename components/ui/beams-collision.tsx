@@ -1,6 +1,9 @@
 "use client"
 
-// Background beams with collision
+
+// Animated background effect with falling light beams that explode on collision.
+// Creates a visually dynamic backdrop using Framer Motion for the landing page hero section.
+
 import { AnimatePresence, motion } from "framer-motion"
 import React, { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
@@ -10,6 +13,7 @@ type BackgroundBeamsWithCollisionProps = {
   className?: string
 }
 
+// Container that renders animated falling beams with collision effects
 export const BackgroundBeamsWithCollision = ({
   children,
   className,
@@ -17,7 +21,7 @@ export const BackgroundBeamsWithCollision = ({
   const containerRef = useRef<HTMLDivElement>(null)
   const parentRef = useRef<HTMLDivElement>(null)
 
-  // Beam settings
+
   const beams = [
     { initialX: 10, translateX: 10, duration: 5, repeatDelay: 2, delay: 0 },
     { initialX: 100, translateX: 100, duration: 4, repeatDelay: 3, delay: 0.2, className: "h-6" },
@@ -47,12 +51,11 @@ export const BackgroundBeamsWithCollision = ({
     <div
       ref={parentRef}
       className={cn(
-        // Changed from bg-neutral-950 to bg-transparent
+
         "relative flex h-full w-full items-center justify-center overflow-hidden bg-transparent",
         className
       )}
     >
-      {/* Animated beams */}
       {beams.map((beam) => (
         <CollisionMechanism
           key={`${beam.initialX}-beam`}
@@ -62,10 +65,8 @@ export const BackgroundBeamsWithCollision = ({
         />
       ))}
 
-      {/* Foreground content */}
       {children}
 
-      {/* Collision line */}
      <div
   ref={containerRef}
   className="pointer-events-none absolute inset-x-0 bottom-0 h-px w-full opacity-0"
@@ -92,11 +93,12 @@ type CollisionMechanismProps = {
   beamOptions?: BeamOptions
 }
 
+// Individual beam that detects collision and triggers an explosion
 const CollisionMechanism = React.forwardRef<HTMLDivElement, CollisionMechanismProps>(
   ({ parentRef, containerRef, beamOptions = {} }, _ref) => {
     const beamRef = useRef<HTMLDivElement>(null)
 
-    // Collision state
+
     const [collision, setCollision] = useState<{
       detected: boolean
       coordinates: { x: number; y: number } | null
@@ -108,7 +110,7 @@ const CollisionMechanism = React.forwardRef<HTMLDivElement, CollisionMechanismPr
     const [beamKey, setBeamKey] = useState(0)
     const [cycleCollisionDetected, setCycleCollisionDetected] = useState(false)
 
-    // Check for beam collision
+
     useEffect(() => {
       const checkCollision = () => {
         if (
@@ -142,7 +144,7 @@ const CollisionMechanism = React.forwardRef<HTMLDivElement, CollisionMechanismPr
       return () => clearInterval(animationInterval)
     }, [cycleCollisionDetected, containerRef, parentRef])
 
-    // Reset collision and restart beam
+
     useEffect(() => {
       if (collision.detected && collision.coordinates) {
         const resetTimeout = setTimeout(() => {
@@ -188,7 +190,7 @@ const CollisionMechanism = React.forwardRef<HTMLDivElement, CollisionMechanismPr
             repeatDelay: beamOptions.repeatDelay ?? 0,
           }}
           className={cn(
-            // Beam styles
+
             "absolute left-0 top-20 m-auto h-14 w-px rounded-full bg-gradient-to-t from-indigo-500 via-purple-500 to-transparent",
             beamOptions.className
           )}
@@ -214,7 +216,8 @@ const CollisionMechanism = React.forwardRef<HTMLDivElement, CollisionMechanismPr
 
 CollisionMechanism.displayName = "CollisionMechanism"
 
-// Collision burst
+
+// Burst of particles rendered at a collision point
 const Explosion = (props: React.HTMLProps<HTMLDivElement>) => {
   const spans = Array.from({ length: 20 }, (_, index) => ({
     id: index,
@@ -229,7 +232,6 @@ const Explosion = (props: React.HTMLProps<HTMLDivElement>) => {
       {...props}
       className={cn("absolute z-50 h-2 w-2", props.className)}
     >
-      {/* Center flash */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -238,7 +240,6 @@ const Explosion = (props: React.HTMLProps<HTMLDivElement>) => {
         className="absolute -inset-x-10 top-0 m-auto h-2 w-10 rounded-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent blur-sm"
       />
 
-      {/* Spark particles */}
       {spans.map((span) => (
         <motion.span
           key={span.id}

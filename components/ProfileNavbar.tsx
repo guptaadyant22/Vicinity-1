@@ -1,3 +1,6 @@
+// Minimal navbar shown on public business profile pages with a dashboard link.
+// Displays the Vicinity logo and a single CTA button.
+
 'use client'
 
 import React from 'react'
@@ -6,6 +9,7 @@ import { motion } from 'framer-motion'
 import { FaArrowRight } from 'react-icons/fa'
 import VicinityLogo from './VicinityLogo'
 
+// Minimal navbar for public business profiles with dashboard link
 export default function ProfileNavbar() {
     const router = useRouter()
 
