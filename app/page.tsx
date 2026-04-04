@@ -65,7 +65,15 @@ function SectionGlow({ position = "left" }) {
 }
 
 // Section header
-function SectionHeader({ title, text, center = false }) {
+function SectionHeader({
+  title,
+  text,
+  center = false,
+}: {
+  title: string;
+  text?: string;
+  center?: boolean;
+}) {
   return (
     <motion.div
       initial="hidden"
@@ -73,14 +81,17 @@ function SectionHeader({ title, text, center = false }) {
       viewport={{ once: true, margin: "-60px" }}
       custom={0}
       variants={fadeUp}
-      className={center ? "mx-auto mb-16 max-w-2xl text-center" : "mb-16 max-w-2xl"}
+      className={center ? "mx-auto mb-10 max-w-2xl text-center" : "mb-10 max-w-2xl"}
     >
       <h2 className="font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.06em] text-slate-900 dark:text-white md:text-5xl leading-[1.1]">
         {title}
       </h2>
-      <p className="mt-5 text-[15px] leading-8 text-slate-500 dark:text-slate-400">
-        {text}
-      </p>
+
+      {text && (
+        <p className="mt-5 text-[15px] leading-8 text-slate-500 dark:text-slate-400">
+          {text}
+        </p>
+      )}
     </motion.div>
   );
 }
@@ -620,7 +631,6 @@ function HowItWorksSection() {
     </section>
   );
 }
-
 function AudienceSection() {
   const cardClass =
     "group relative overflow-hidden rounded-[28px] border bg-white/80 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:bg-white/[0.03] transition-all duration-300";
@@ -629,10 +639,11 @@ function AudienceSection() {
     <section className="relative px-6 pb-24 md:pb-32">
       <SectionGlow position="left" />
       <div className="relative z-10 mx-auto max-w-6xl">
-        <SectionHeader
-          title="Great for locals. Powerful for businesses."
-          text="Whether you're discovering new places or growing your business, Vicinity gives you the tools to do it better."
-        />
+        <div className="mb-8 md:mb-10">
+          <SectionHeader
+            title="Great for locals. Powerful for businesses."
+          />
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Users */}
@@ -737,6 +748,7 @@ function AudienceSection() {
     </section>
   );
 }
+
 // FAQ section
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);

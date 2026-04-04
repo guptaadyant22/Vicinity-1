@@ -1,11 +1,8 @@
 'use client'
 
-// Hybrid Vicinity dashboard
-// Mixes the stronger visual style of the original with the cleaner structure
-// Keeps things premium without overwhelming the page
-
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Inter, Outfit } from 'next/font/google'
@@ -34,7 +31,11 @@ import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 import { useTheme } from '../../../context/ThemeContext'
 
-// Font setup
+const DotLottieReact = dynamic(
+  () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
+  { ssr: false }
+)
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -45,7 +46,6 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-// Animations
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
   visible: {
@@ -63,13 +63,11 @@ const staggerWrap = {
   },
 }
 
-// Animated background
 function HeroBackground() {
   const { isDark } = useTheme()
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Base background */}
       <div
         className={`absolute inset-0 ${
           isDark
@@ -78,7 +76,6 @@ function HeroBackground() {
         }`}
       />
 
-      {/* Main glow */}
       <motion.div
         animate={{
           y: [0, -16, 0],
@@ -91,7 +88,6 @@ function HeroBackground() {
         }`}
       />
 
-      {/* Left glow */}
       <motion.div
         animate={{
           x: [0, 14, 0],
@@ -104,7 +100,6 @@ function HeroBackground() {
         }`}
       />
 
-      {/* Right glow */}
       <motion.div
         animate={{
           x: [0, -12, 0],
@@ -117,7 +112,6 @@ function HeroBackground() {
         }`}
       />
 
-      {/* Grid */}
       <motion.div
         animate={{ backgroundPosition: ['0px 0px', '72px 72px'] }}
         transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
@@ -132,7 +126,6 @@ function HeroBackground() {
         }}
       />
 
-      {/* Accent beam */}
       <motion.div
         animate={{
           opacity: [0.12, 0.3, 0.12],
@@ -142,7 +135,6 @@ function HeroBackground() {
         className="absolute right-[12%] top-[14%] h-32 w-[3px] rounded-full bg-blue-400/70 blur-sm"
       />
 
-      {/* Bottom fade */}
       <div
         className={`absolute inset-0 ${
           isDark
@@ -154,31 +146,26 @@ function HeroBackground() {
   )
 }
 
-// Soft section glow
 function SectionGlow({ position = 'left' }) {
   const { isDark } = useTheme()
 
   return (
-    <>
-      {/* Main glow */}
-      <motion.div
-        animate={{
-          scale: [1, 1.05, 1],
-          opacity: [0.12, 0.22, 0.12],
-          x: [0, position === 'left' ? 16 : -16, 0],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        className={`absolute ${
-          position === 'left' ? '-left-20 top-10' : '-right-20 top-10'
-        } h-[260px] w-[260px] rounded-full blur-[110px] ${
-          isDark ? 'bg-blue-500/10' : 'bg-blue-100/80'
-        }`}
-      />
-    </>
+    <motion.div
+      animate={{
+        scale: [1, 1.05, 1],
+        opacity: [0.12, 0.22, 0.12],
+        x: [0, position === 'left' ? 16 : -16, 0],
+      }}
+      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      className={`absolute ${
+        position === 'left' ? '-left-20 top-10' : '-right-20 top-10'
+      } h-[260px] w-[260px] rounded-full blur-[110px] ${
+        isDark ? 'bg-blue-500/10' : 'bg-blue-100/80'
+      }`}
+    />
   )
 }
 
-// Reusable premium card
 function GlassCard({ children, className = '' }) {
   return (
     <div
@@ -195,14 +182,12 @@ export default function BusinessDashboardPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  // Main state
   const [businessData, setBusinessData] = useState(null)
   const [reviews, setReviews] = useState([])
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewTrendData, setReviewTrendData] = useState([])
 
-  // Load dashboard data
   useEffect(() => {
     const loadData = async () => {
       if (authLoading || !user) return
@@ -210,14 +195,12 @@ export default function BusinessDashboardPage() {
       try {
         setLoading(true)
 
-        // Load business profile
         const { data: businessProfile } = await supabase
           .from('businesses')
           .select('*')
           .eq('owner_id', user.id)
           .single()
 
-        // Redirect if profile is missing
         if (!businessProfile) {
           router.push('/business/profile')
           return
@@ -225,7 +208,6 @@ export default function BusinessDashboardPage() {
 
         setBusinessData(businessProfile)
 
-        // Load reviews
         const { data: reviewRows } = await supabase
           .from('reviews')
           .select('*')
@@ -235,7 +217,6 @@ export default function BusinessDashboardPage() {
         const fetchedReviews = reviewRows || []
         setReviews(fetchedReviews)
 
-        // Load active deals
         const { data: dealRows } = await supabase
           .from('deals')
           .select('*')
@@ -245,7 +226,6 @@ export default function BusinessDashboardPage() {
 
         setDeals(dealRows || [])
 
-        // Build 7-day review trend
         const last7Days = Array.from({ length: 7 }, (_, i) => {
           const d = new Date()
           d.setDate(d.getDate() - (6 - i))
@@ -274,23 +254,19 @@ export default function BusinessDashboardPage() {
     loadData()
   }, [authLoading, user, router, supabase])
 
-  // Derived values
   const businessName = businessData?.name || 'Your Business'
   const businessId = businessData?.id
   const totalReviews = reviews.length
   const latestReview = reviews[0] || null
 
-  // Average rating
   const avgRating =
     totalReviews > 0
       ? reviews.reduce((sum, review) => sum + (review.rating || 0), 0) / totalReviews
       : 0
 
-  // Positive review share
   const positiveReviews = reviews.filter((review) => (review.rating || 0) >= 4).length
   const positiveRate = totalReviews > 0 ? Math.round((positiveReviews / totalReviews) * 100) : 0
 
-  // Active valid deals
   const activeDeals = deals.filter((deal) => {
     if (!deal.expiry_date) return true
     return new Date() <= new Date(deal.expiry_date)
@@ -298,7 +274,6 @@ export default function BusinessDashboardPage() {
 
   const activeDealCount = activeDeals.length
 
-  // Last 30 day reviews
   const lastMonthReviews = reviews.filter((review) => {
     if (!review.created_at) return false
     const monthAgo = new Date()
@@ -306,7 +281,6 @@ export default function BusinessDashboardPage() {
     return new Date(review.created_at) >= monthAgo
   }).length
 
-  // Profile completion
   const profileChecks = [
     businessData?.name,
     businessData?.description,
@@ -318,7 +292,6 @@ export default function BusinessDashboardPage() {
   const completedFields = profileChecks.filter(Boolean).length
   const profileCompletion = Math.round((completedFields / profileChecks.length) * 100)
 
-  // Short summary for the hero
   let dashboardSummary = 'Your page is live and ready for quick updates.'
 
   if (totalReviews === 0 && activeDealCount === 0) {
@@ -331,7 +304,6 @@ export default function BusinessDashboardPage() {
     dashboardSummary = 'Your page has activity, and a few updates could make it feel even stronger.'
   }
 
-  // Greeting helper
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return 'Good morning'
@@ -339,7 +311,6 @@ export default function BusinessDashboardPage() {
     return 'Good evening'
   }
 
-  // Quick stats
   const stats = [
     {
       label: 'Average rating',
@@ -359,7 +330,6 @@ export default function BusinessDashboardPage() {
     },
   ]
 
-  // Loading state
   if (loading) {
     return (
       <div
@@ -368,7 +338,6 @@ export default function BusinessDashboardPage() {
         }`}
         style={{ fontFamily: 'var(--font-inter)' }}
       >
-        {/* Spinner */}
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1.7, repeat: Infinity, ease: 'linear' }}
@@ -387,7 +356,6 @@ export default function BusinessDashboardPage() {
       className={`${inter.variable} ${outfit.variable} relative min-h-screen overflow-x-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#081120] dark:text-white`}
       style={{ fontFamily: 'var(--font-inter)' }}
     >
-      {/* Background */}
       <HeroBackground />
 
       <BusinessLayout>
@@ -398,10 +366,8 @@ export default function BusinessDashboardPage() {
             animate="visible"
             className="mx-auto max-w-7xl px-6 pb-20 pt-8 lg:px-8"
           >
-            {/* Hero */}
             <motion.section variants={fadeUp} className="relative pb-8 md:pb-10">
               <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-                {/* Hero left */}
                 <div className="max-w-4xl">
                   <h1 className="mt-1 font-[var(--font-outfit)] text-4xl font-semibold tracking-[-0.07em] text-slate-900 dark:text-white md:text-6xl">
                     {getGreeting()},{' '}
@@ -421,7 +387,6 @@ export default function BusinessDashboardPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-500/20 bg-white px-5 py-3 font-[var(--font-outfit)] text-sm font-semibold text-slate-900 transition-colors hover:border-blue-500/40 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.06]"
                     >
-                      {/* View public page */}
                       <FaEye className="text-xs" />
                       View public profile
                     </a>
@@ -430,70 +395,24 @@ export default function BusinessDashboardPage() {
                       href="/business/profile"
                       className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-[var(--font-outfit)] text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
                     >
-                      {/* Edit business */}
                       <FaPen className="text-xs" />
                       Edit business
                     </Link>
                   </div>
                 </div>
 
-                {/* Hero right compact overview */}
-                <div className="relative">
-                  <GlassCard className="relative p-6 md:p-7">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/8 via-transparent to-transparent" />
-
-                    <div className="relative z-10">
-                      <p className="font-[var(--font-outfit)] text-sm font-medium tracking-[0.02em] text-blue-600 dark:text-blue-300">
-                        Today on Vicinity
-                      </p>
-
-                      <h2 className="mt-2 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
-                        Your page in one quick read
-                      </h2>
-
-                      <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
-                        Strong pages stay current, clear, and easy to trust.
-                      </p>
-
-                      <div className="mt-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-500 dark:text-slate-400">
-                            Positive reviews
-                          </span>
-                          <span className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white">
-                            {positiveRate}%
-                          </span>
-                        </div>
-
-                        <div className="h-px bg-blue-500/10 dark:bg-white/10" />
-
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-500 dark:text-slate-400">
-                            Reviews this month
-                          </span>
-                          <span className="font-[var(--font-outfit)] text-lg font-semibold text-slate-900 dark:text-white">
-                            {lastMonthReviews}
-                          </span>
-                        </div>
-
-                        <div className="h-px bg-blue-500/10 dark:bg-white/10" />
-
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-500 dark:text-slate-400">
-                            Next best move
-                          </span>
-                          <span className="text-right font-[var(--font-outfit)] text-sm font-semibold text-blue-600 dark:text-blue-300">
-                            {activeDealCount === 0 ? 'Add a deal' : 'Check reviews'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </GlassCard>
+                <div className="relative flex items-center justify-center">
+                  <div className="h-[300px] w-[300px] md:h-[380px] md:w-[380px]">
+                    <DotLottieReact
+                      src="https://lottie.host/4e4e53d8-bbfd-4a17-84b5-77bae5c846a5/ObgSrdv2ck.lottie"
+                      loop
+                      autoplay
+                    />
+                  </div>
                 </div>
               </div>
             </motion.section>
 
-            {/* Stats row */}
             <motion.section variants={fadeUp} className="relative pb-8">
               <SectionGlow position="left" />
 
@@ -511,10 +430,8 @@ export default function BusinessDashboardPage() {
               </div>
             </motion.section>
 
-            {/* Main row */}
             <motion.section variants={fadeUp} className="relative pb-8">
               <div className="grid gap-6 lg:grid-cols-2">
-                {/* Latest review */}
                 <GlassCard className="p-6 md:p-8">
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -537,7 +454,6 @@ export default function BusinessDashboardPage() {
                   {latestReview ? (
                     <div className="mt-7">
                       <div className="flex items-start gap-4">
-                        {/* Avatar */}
                         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.22)]">
                           {(latestReview.user_name || 'C').charAt(0).toUpperCase()}
                         </div>
@@ -549,7 +465,6 @@ export default function BusinessDashboardPage() {
                                 {latestReview.user_name || 'Customer'}
                               </h3>
 
-                              {/* Stars */}
                               <div className="mt-2 flex gap-1">
                                 {[...Array(5)].map((_, i) => (
                                   <FaStar
@@ -596,7 +511,6 @@ export default function BusinessDashboardPage() {
                   )}
                 </GlassCard>
 
-                {/* Deals */}
                 <GlassCard className="p-6 md:p-8">
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -663,10 +577,8 @@ export default function BusinessDashboardPage() {
               </div>
             </motion.section>
 
-            {/* Bottom row */}
             <motion.section variants={fadeUp} className="relative pb-12">
               <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-                {/* Light analytics */}
                 <GlassCard className="p-6 md:p-7">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -736,7 +648,6 @@ export default function BusinessDashboardPage() {
                   </div>
                 </GlassCard>
 
-                {/* Next actions */}
                 <GlassCard className="p-6 md:p-7">
                   <h2 className="mt-0 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
                     Keep your page active
@@ -790,7 +701,6 @@ export default function BusinessDashboardPage() {
   )
 }
 
-// Small text helper
 function truncateText(text, maxLength) {
   if (!text) return ''
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
