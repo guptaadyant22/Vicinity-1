@@ -1,6 +1,5 @@
 'use client'
 
-
 // Business messaging page for real-time conversations between owners and customers.
 // Supports thread selection, message sending, and status updates via Supabase subscriptions.
 
@@ -24,10 +23,8 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
-
 
 const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative text-slate-900 transition-colors duration-300 dark:text-white`
@@ -41,7 +38,7 @@ const SOFT_BUTTON =
 const FILTER_BUTTON =
   'inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 font-[var(--font-outfit)] text-xs font-semibold transition-all'
 
-
+// Format timestamps for requests and messages
 const formatTime = (dateValue) => {
   if (!dateValue) return 'Recently'
 
@@ -54,6 +51,7 @@ const formatTime = (dateValue) => {
   })
 }
 
+// Build the status badge styles
 const getStatusBadgeClasses = (status) => {
   if (status === 'active') {
     return 'bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300'
@@ -71,12 +69,10 @@ export default function BusinessMessagesPage() {
   const { user, loading: authLoading } = useAuth()
   const [supabase] = useState(() => createClient())
 
-
   const [business, setBusiness] = useState(null)
   const [requests, setRequests] = useState([])
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [currentMessages, setCurrentMessages] = useState([])
-
 
   const [loading, setLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
@@ -86,21 +82,20 @@ export default function BusinessMessagesPage() {
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
 
-
   const selectedRequestIdRef = useRef(null)
   const messagesEndRef = useRef(null)
 
-
+  // Keep the selected request id available during async refreshes
   useEffect(() => {
     selectedRequestIdRef.current = selectedRequest?.id || null
   }, [selectedRequest?.id])
 
-
+  // Auto-scroll to the newest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [currentMessages])
 
-
+  // Load all messages for a selected conversation
   const loadConversation = useCallback(
     async (requestId, showLoader = true) => {
       if (!requestId) {
@@ -121,7 +116,6 @@ export default function BusinessMessagesPage() {
 
         setCurrentMessages(data || [])
 
-
         const { data: freshReq } = await supabase
           .from('message_requests')
           .select('*, businesses(id, name, image_url, city, state, type)')
@@ -139,7 +133,7 @@ export default function BusinessMessagesPage() {
     [supabase]
   )
 
-
+  // Load all requests tied to the current business owner
   const loadRequests = useCallback(
     async (showLoader = true) => {
       if (!user?.id) return
@@ -149,7 +143,6 @@ export default function BusinessMessagesPage() {
         setError(null)
 
         let bizData = business
-
 
         if (!bizData) {
           const { data, error: bizErr } = await supabase
@@ -172,7 +165,6 @@ export default function BusinessMessagesPage() {
           setBusiness(data)
         }
 
-
         const { data: rows, error: reqErr } = await supabase
           .from('message_requests')
           .select('*, businesses(id, name, image_url, city, state, type)')
@@ -189,7 +181,6 @@ export default function BusinessMessagesPage() {
           setCurrentMessages([])
           return
         }
-
 
         const currentId = selectedRequestIdRef.current
         const stillExists = currentId ? list.find((r) => r.id === currentId) : null
@@ -210,13 +201,13 @@ export default function BusinessMessagesPage() {
     [user?.id, business, supabase, loadConversation, currentMessages.length]
   )
 
-
+  // Initial load
   useEffect(() => {
     if (!user?.id) return
     loadRequests()
   }, [user?.id])
 
-
+  // Realtime updates for message request list
   useEffect(() => {
     if (!business?.id) return
 
@@ -239,7 +230,7 @@ export default function BusinessMessagesPage() {
     }
   }, [business?.id, supabase, loadRequests])
 
-
+  // Realtime updates for the selected thread
   useEffect(() => {
     if (!selectedRequest?.id) return
 
@@ -262,7 +253,7 @@ export default function BusinessMessagesPage() {
     }
   }, [selectedRequest?.id, supabase, loadConversation])
 
-
+  // Accept a pending request
   const handleAcceptRequest = async (requestId) => {
     try {
       setError(null)
@@ -299,7 +290,7 @@ export default function BusinessMessagesPage() {
     }
   }
 
-
+  // Ignore a pending request
   const handleIgnoreRequest = async (requestId) => {
     try {
       setError(null)
@@ -336,7 +327,7 @@ export default function BusinessMessagesPage() {
     }
   }
 
-
+  // Send a business reply
   const handleReply = async (e) => {
     e.preventDefault()
 
@@ -391,7 +382,7 @@ export default function BusinessMessagesPage() {
     }
   }
 
-
+  // Filter inbox by request status
   const filteredRequests = useMemo(() => {
     if (filterType === 'pending') return requests.filter((r) => r.status === 'pending')
     if (filterType === 'active') return requests.filter((r) => r.status === 'active')
@@ -399,12 +390,11 @@ export default function BusinessMessagesPage() {
     return requests
   }, [requests, filterType])
 
-
   const isPending = selectedRequest?.status === 'pending'
   const isActive = selectedRequest?.status === 'active'
   const isIgnored = selectedRequest?.status === 'ignored'
 
-
+  // Loading screen
   if (loading || authLoading) {
     return (
       <BusinessLayout>
@@ -504,6 +494,7 @@ export default function BusinessMessagesPage() {
 
         <main className="relative z-10 mx-auto max-w-7xl px-5 pb-5 pt-4 lg:px-6">
           <div className="grid gap-4 xl:grid-cols-[310px_minmax(0,1fr)]">
+            {/* Inbox column */}
             <section className={`${PANEL} flex h-[calc(100vh-170px)] min-h-[560px] flex-col overflow-hidden`}>
               <div className="border-b border-blue-500/10 px-4 py-3 dark:border-white/10">
                 <div className="flex items-center justify-between gap-3">
@@ -558,6 +549,7 @@ export default function BusinessMessagesPage() {
               </div>
             </section>
 
+            {/* Conversation column */}
             <section className={`${PANEL} flex h-[calc(100vh-170px)] min-h-[560px] flex-col overflow-hidden`}>
               {selectedRequest ? (
                 <>
@@ -595,6 +587,7 @@ export default function BusinessMessagesPage() {
                   </div>
 
                   <div className="grid min-h-0 flex-1 lg:grid-cols-[220px_minmax(0,1fr)]">
+                    {/* Left details rail */}
                     <aside className="border-b border-blue-500/10 bg-white/35 p-3 dark:border-white/10 dark:bg-white/[0.02] lg:border-b-0 lg:border-r">
                       <div className="space-y-3">
                         <div className="rounded-[20px] border border-blue-500/12 bg-white/80 p-3 dark:border-white/10 dark:bg-[#111827]">
@@ -672,6 +665,7 @@ export default function BusinessMessagesPage() {
                       </div>
                     </aside>
 
+                    {/* Right thread panel */}
                     <div className="flex min-h-0 flex-col">
                       <div className="flex-1 overflow-y-auto px-3 py-3 md:px-4">
                         {messagesLoading ? (
@@ -714,7 +708,7 @@ export default function BusinessMessagesPage() {
                                           : 'border border-blue-500/12 bg-white text-slate-800 dark:border-white/10 dark:bg-[#111827] dark:text-slate-200'
                                       }`}
                                     >
-                                      <p className="text-sm leading-6 whitespace-pre-line">
+                                      <p className="whitespace-pre-line text-sm leading-6">
                                         {msg.text}
                                       </p>
                                       <p
@@ -749,10 +743,12 @@ export default function BusinessMessagesPage() {
                         )}
                       </div>
 
-                      <div className="border-t border-blue-500/10 bg-white/70 p-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#0f172a]/96 md:p-4">
+                      {/* Composer area - simplified so dark mode works cleanly */}
+                      <div className="border-t border-blue-500/10 bg-slate-50/80 p-3 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-[#111827] md:p-4">
                         {isActive && (
                           <form onSubmit={handleReply} className="space-y-2.5">
-                            <div className="rounded-[22px] border border-blue-500/15 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-[#111827]">
+                            {/* Single input surface layer */}
+                            <div className="rounded-[22px] border border-blue-500/15 bg-white/90 px-4 py-3 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-[#0f172a] dark:shadow-none">
                               <input
                                 type="text"
                                 value={replyText}
@@ -817,7 +813,7 @@ export default function BusinessMessagesPage() {
   )
 }
 
-
+// Single inbox row item
 function InboxRow({ request, idx, selected, onSelect }) {
   const isPending = request.status === 'pending'
   const isActive = request.status === 'active'
