@@ -31,18 +31,18 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 
-
+// Google Fonts setup for consistent typography across the profile editor, using Inter for body text and Outfit for headings and accents.
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
 })
-
+// Outfit is used for headings and important labels to give a modern, stylish look that complements the clean design of the profile editor.
 const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-outfit',
 })
 
-
+// Section definitions for the profile editor, each with a unique ID, label, and icon. These sections will be used to organize the profile editing interface and allow users to easily navigate between different aspects of their business profile.
 const SECTIONS = [
   { id: 'overview', label: 'Overview', icon: FaEye },
   { id: 'branding', label: 'Branding', icon: FaEye },
@@ -50,7 +50,7 @@ const SECTIONS = [
   { id: 'gallery', label: 'Gallery', icon: FaImage },
   { id: 'hours', label: 'Hours', icon: FaClock },
 ]
-
+// Days of the week and time slots for business hours management, allowing users to set opening and closing times for each day, with an option to mark days as closed.
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
@@ -67,7 +67,7 @@ const DEFAULT_HOURS = Object.fromEntries(
   DAYS.map((d) => [d, { open: '09:00', close: '17:00', closed: d === 'Sunday' }])
 )
 
-
+// Tailwind class combinations for consistent styling across the profile editor, including glassmorphism effects, hover states, and responsive design.
 const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative min-h-screen text-slate-900 transition-colors duration-300 dark:text-white`
 
@@ -100,7 +100,7 @@ const FormInput = ({ label, value, onChange, placeholder }) => (
   </div>
 )
 
-
+//card animation with icon, title, desc, and hover effect
 const TipCard = ({ icon: Icon, title, desc }) => (
   <motion.div
     initial={{ opacity: 0, y: 5 }}
@@ -122,7 +122,7 @@ const TipCard = ({ icon: Icon, title, desc }) => (
   </motion.div>
 )
 
-
+//tips for each section with relevant icons and advice, using the TipCard component for consistency and style. These will be displayed in the sidebar when the corresponding section is active.
 const BrandingTips = () => (
   <div className="space-y-3">
     <h4 className="text-xs font-[var(--font-outfit)] font-semibold tracking-[0.16em] text-slate-400 dark:text-slate-500 uppercase px-4">
