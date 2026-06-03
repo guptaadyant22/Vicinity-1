@@ -22,13 +22,15 @@ import {
   FaCheckCircle,
   FaHeart,
   FaTag,
-  FaEnvelope,
+  FaEnvelope,FaTwitter, FaInstagram, FaLinkedin
 } from "react-icons/fa";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import { useTheme } from "../context/ThemeContext";
 import { BackgroundBeamsWithCollision } from "@/components/ui/beams-collision";
 import dynamic from "next/dynamic";
+import VicinityLogo from '../components/VicinityLogo'
+import { UI_SETTINGS, LANDING_NAV_ITEMS, FOOTER_LINKS } from '../lib/ui'
+
 
 const DotLottieReact = dynamic(
   () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
@@ -38,7 +40,6 @@ const DotLottieReact = dynamic(
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
-// Shared fade-up animation variant for motion sections
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
   show: (delay = 0) => ({
@@ -147,30 +148,31 @@ function HeroSection() {
     const interval = setInterval(() => {
       setCurrentWord((prev) => (prev + 1) % words.length);
     }, 2400);
-
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <section className="relative overflow-hidden px-6 pb-20 pt-32 md:pb-24 md:pt-40">
-      <div className="absolute inset-0">
-        <BackgroundBeamsWithCollision className="h-full w-full">
-          <div className="pointer-events-none absolute inset-0 bg-white/45 dark:bg-slate-950/40" />
-        </BackgroundBeamsWithCollision>
+    <section className="relative overflow-hidden px-6 pb-20 pt-32 md:pb-24 md:pt-40 h-screen max-h-screen flex flex-col justify-center">
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/hero.webp"
+          alt="Hero Background"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-blue-900/30 mix-blend-multiply dark:bg-blue-950/60" />
       </div>
 
-      <div className="pointer-events-none absolute left-1/2 top-20 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[110px] dark:bg-cyan-400/10" />
+      <div className="relative z-10 mx-auto max-w-[82rem] w-full flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
-      <div className="relative z-10 mx-auto max-w-[72rem]">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="flex-1 max-w-xl flex flex-col items-center text-center lg:items-center lg:text-center">
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="mx-auto max-w-3xl font-[var(--font-outfit)] text-[clamp(2.6rem,5.2vw,4.5rem)] font-semibold leading-[1] tracking-[-0.07em] text-slate-900 dark:text-white"
+            className="font-[var(--font-outfit)] text-[clamp(2.4rem,4.5vw,4rem)] font-bold leading-[1.1] tracking-tight text-white drop-shadow-sm dark:text-white"
           >
             Find the best local{" "}
-            <span className="relative in  line-block min-w-[1.15em]">
+            <span className="relative inline-block min-w-[1.15em]">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={words[currentWord]}
@@ -178,16 +180,15 @@ function HeroSection() {
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: -18, filter: "blur(6px)" }}
                   transition={{ duration: 0.4 }}
-                  className="inline-block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-300"
+                  className="inline-block bg-white bg-clip-text text-transparent drop-shadow-md"
                 >
                   {words[currentWord]}
                 </motion.span>
               </AnimatePresence>
-
               <motion.div
-                animate={{ scaleX: [0.75, 1, 0.75], opacity: [0.35, 0.85, 0.35] }}
+                animate={{ scaleX: [0.75, 1, 0.75], opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                className="absolute -bottom-2 left-0 right-0 h-[4px] rounded-full bg-white/80"
               />
             </span>{" "}
             around you
@@ -197,7 +198,7 @@ function HeroSection() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.14 }}
-            className="mx-auto mt-6 max-w-2xl text-[15px] leading-7 text-slate-500 dark:text-slate-400"
+            className="mt-6 max-w-md text-lg leading-relaxed text-blue-50/90 drop-shadow-sm dark:text-blue-100/80"
           >
             Search businesses, read trusted reviews, message owners, and discover
             deals near you with a cleaner local experience.
@@ -207,13 +208,13 @@ function HeroSection() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.22 }}
-            className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            className="mt-8 flex flex-wrap items-center justify-center gap-4"
           >
             <motion.a
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
               href="#browse"
-              className="group inline-flex items-center gap-2.5 rounded-2xl bg-blue-600 px-7 py-3.5 font-[var(--font-outfit)] text-sm font-semibold text-white shadow-[0_12px_32px_rgba(59,130,246,0.24)] transition-all hover:bg-blue-700"
+              className="group inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-4 font-[var(--font-outfit)] text-sm font-bold text-blue-900 shadow-lg transition-all hover:bg-blue-50 dark:bg-white dark:text-blue-900 dark:hover:bg-blue-50"
             >
               Explore nearby
               <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
@@ -223,7 +224,7 @@ function HeroSection() {
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
               href="#signup"
-              className="inline-flex items-center gap-2 rounded-2xl border border-blue-500/15 bg-white/80 px-7 py-3.5 font-[var(--font-outfit)] text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-xl transition-all hover:border-blue-500/30 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.07]"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 bg-white/10 px-8 py-4 font-[var(--font-outfit)] text-sm font-bold text-white shadow-sm backdrop-blur-md transition-all hover:bg-white/20 dark:border-white/30 dark:bg-white/5 dark:hover:bg-white/15"
             >
               Create free account
             </motion.a>
@@ -233,18 +234,18 @@ function HeroSection() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.3 }}
-            className="mx-auto mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400 dark:text-slate-500"
+            className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/90 drop-shadow-sm"
           >
             <div className="flex items-center gap-2">
-              <FaStore className="text-blue-500 dark:text-blue-400" />
+              <FaStore className="text-blue-200 dark:text-blue-300" />
               <span className="font-medium">500+ businesses</span>
             </div>
             <div className="flex items-center gap-2">
-              <FaStar className="text-blue-500 dark:text-blue-400" />
+              <FaStar className="text-blue-200 dark:text-blue-300" />
               <span className="font-medium">10k reviews</span>
             </div>
             <div className="flex items-center gap-2">
-              <FaUsers className="text-blue-500 dark:text-blue-400" />
+              <FaUsers className="text-blue-200 dark:text-blue-300" />
               <span className="font-medium">Growing community</span>
             </div>
           </motion.div>
@@ -254,92 +255,86 @@ function HeroSection() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.28 }}
-          className="relative mx-auto mt-14 max-w-4xl"
+          className="flex-1 w-full max-w-xl"
         >
-          <div className="absolute inset-0 -z-10 rounded-[32px] bg-blue-500/10 blur-[55px]" />
+          <div className="overflow-hidden rounded-[24px] border border-white/30 bg-white/75 shadow-[0_32px_64px_rgba(0,0,0,0.2)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_32px_64px_rgba(0,0,0,0.5)]">
 
-          <div className="overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/80 shadow-[0_28px_80px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_28px_80px_rgba(0,0,0,0.38)]">
-            <div className="flex items-center gap-3 border-b border-blue-500/10 px-5 py-3 dark:border-white/10">
-              <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
-                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
-                <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
+            <div className="flex items-center gap-4 border-b border-white/30 bg-white/50 px-5 py-3 rounded-t-[24px] dark:border-white/10 dark:bg-white/[0.04]">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-red-400" />
+                <span className="h-3 w-3 rounded-full bg-yellow-400" />
+                <span className="h-3 w-3 rounded-full bg-green-400" />
               </div>
-              <div className="ml-3 flex-1 rounded-xl bg-slate-100/90 px-4 py-1.5 text-center text-xs font-medium tracking-wide text-slate-400 dark:bg-white/[0.05] dark:text-slate-500">
-                vicinity.app/discover
+              <div className="flex flex-1 items-center">
+                <div className="flex items-center gap-2 rounded-md bg-white/80 px-4 py-1.5 text-xs font-medium text-slate-500 shadow-inner dark:bg-white/10 dark:text-slate-400">
+                  <span className="text-slate-300 dark:text-slate-500">🔒</span>
+                  vicinity.app/browse
+                </div>
               </div>
+              <div className="w-12" />
             </div>
 
-            <div className="grid lg:grid-cols-[1fr_0.85fr]">
-              <div className="p-5 md:p-6">
-                <div className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="grid grid-cols-[1fr_0.85fr] bg-white/90 rounded-b-[24px] dark:bg-[#0d1b2e]/90">
+              <div className="p-5">
+                <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-sm dark:border-white/10 dark:bg-white/[0.06]">
                   <FaSearch className="text-sm text-blue-500 dark:text-blue-400" />
-                  <span className="flex-1 text-sm text-slate-400 dark:text-slate-500">
-                    Best coffee near me
-                  </span>
-                  <span className="rounded-xl bg-blue-600 px-3 py-1 text-[11px] font-bold text-white">
+                  <span className="flex-1 text-sm text-slate-500 dark:text-slate-400">Best coffee near me</span>
+                  <span className="rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold text-white shadow-sm">
                     AI
                   </span>
                 </div>
 
-                <div className="mt-4 space-y-3">
+                <div className="mt-4 space-y-2.5">
                   {[
-                    { name: "Harbor Café", meta: "Coffee • 4.9 • 0.8 mi", deal: "20% OFF" },
-                    { name: "Northline Books", meta: "Bookstore • 4.8 • 1.5 mi", deal: "BOGO" },
-                    { name: "Summit Fitness", meta: "Gym • 4.7 • 1.2 mi", deal: null },
+                    { name: "Harbor Café",     meta: "Coffee • 4.9 • 0.8 mi",    deal: "20% OFF" },
+                    { name: "Northline Books", meta: "Bookstore • 4.8 • 1.5 mi", deal: "BOGO"    },
+                    { name: "Summit Fitness",  meta: "Gym • 4.7 • 1.2 mi",       deal: null      },
                   ].map((item, i) => (
                     <motion.div
                       key={item.name}
                       initial={{ opacity: 0, x: -16 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.45, delay: 0.38 + i * 0.08 }}
-                      className="flex items-center gap-3 rounded-2xl border border-blue-500/10 bg-white/80 p-3.5 dark:border-white/10 dark:bg-white/[0.03]"
+                      className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all hover:border-blue-100 hover:shadow-md dark:bg-white/[0.04] dark:border-blue-500/30"
                     >
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/10 text-sm font-semibold text-blue-600 dark:text-blue-300">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
                         {item.name.charAt(0)}
                       </div>
-
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="truncate font-[var(--font-outfit)] text-sm font-semibold text-slate-900 dark:text-white">
+                          <p className="truncate font-[var(--font-outfit)] text-xs font-semibold text-slate-900 dark:text-white">
                             {item.name}
                           </p>
                           {item.deal && (
-                            <span className="shrink-0 rounded-md border border-green-500/15 bg-green-500/10 px-1.5 py-0.5 text-[10px] font-bold text-green-600 dark:text-green-300">
+                            <span className="shrink-0 rounded-md bg-green-100 px-1.5 py-0.5 text-[9px] font-bold text-green-700 dark:bg-green-500/15 dark:text-green-300">
                               {item.deal}
                             </span>
                           )}
                         </div>
-                        <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
-                          {item.meta}
-                        </p>
+                        <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{item.meta}</p>
                       </div>
-
-                      <FaHeart className="shrink-0 text-sm text-slate-300 dark:text-white/20" />
+                      <FaHeart className="shrink-0 text-xs text-slate-300 transition-colors group-hover:text-red-400 dark:text-white/20" />
                     </motion.div>
                   ))}
                 </div>
               </div>
 
-              <div className="border-t border-blue-500/10 p-5 dark:border-white/10 lg:border-l lg:border-t-0 md:p-6">
-                <div className="relative overflow-hidden rounded-[22px] border border-blue-500/10 bg-slate-50/90 p-4 dark:border-white/10 dark:bg-[#0d1728]">
+              <div className="border-l border-slate-100 p-4 flex items-center justify-center bg-slate-50/50 dark:border-white/8 dark:bg-white/[0.02] dark:border-blue-500/30">
+                <div className="relative rounded-[18px] border border-blue-100 dark:border-blue-500/30 bg-white p-3 shadow-sm w-full dark:border-white/8 dark:bg-[#0f1b2d]">
                   <motion.div
-                    animate={{
-                      x: ["-130%", "130%"],
-                      transition: { duration: 5, repeat: Infinity, ease: "linear" },
-                    }}
-                    className="absolute top-0 h-full w-20 bg-white/15 blur-md"
+                    animate={{ x: ["-130%", "130%"] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-0 h-full w-16 bg-blue-50/50 blur-xl dark:bg-blue-400/10"
                   />
-
-                  <div className="relative z-10 flex h-[360px] items-center justify-center overflow-hidden rounded-[18px] border border-blue-500/8 bg-white dark:border-white/8 dark:bg-[#0f1b2d]">
-  <div className="h-[300px] w-[300px] md:h-[340px] md:w-[340px]">
-    <DotLottieReact
-      src="https://lottie.host/33802768-1bbb-4a7b-a3cc-6c6151c8a4b5/tLoA9BEj41.lottie"
-      loop
-      autoplay
-    />
-  </div>
-</div>
+                  <div className="relative z-10 flex items-center justify-center rounded-[14px] bg-white dark:bg-[#0f1b2d]">
+                    <div className="h-[180px] w-[180px]">
+                      <DotLottieReact
+                        src="https://lottie.host/33802768-1bbb-4a7b-a3cc-6c6151c8a4b5/tLoA9BEj41.lottie"
+                        loop
+                        autoplay
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -349,6 +344,7 @@ function HeroSection() {
     </section>
   );
 }
+
 function ShowcasePanel() {
   const { isDark } = useTheme();
 
@@ -503,40 +499,98 @@ function FeaturesSection() {
       title: "Smart local search",
       text: "Find restaurants, shops, gyms, and more with AI-powered search that understands what you're looking for.",
       badge: "AI-powered",
+      number: "01",
     },
     {
       icon: <FaStore size={20} />,
       title: "Detailed profiles",
       text: "View hours, photos, menus, reviews, and active deals — everything you need to decide where to go.",
       badge: "All-in-one",
+      number: "02",
     },
     {
       icon: <FaShieldAlt size={20} />,
       title: "Verified reviews",
       text: "Read honest feedback from real customers. Leave your own reviews to help your community.",
       badge: "Community-driven",
+      number: "03",
     },
     {
       icon: <FaBolt size={20} />,
       title: "Exclusive deals",
       text: "Save money with special offers and promo codes from local businesses — updated in real time.",
       badge: "Real-time",
+      number: "04",
     },
   ];
 
   return (
-    <section id="features" className="relative px-6 pb-24 md:pb-32">
+    <section id="features" className="relative mt-16 px-6 pb-24 md:pb-32">
       <SectionGlow position="left" />
       <div className="relative z-10 mx-auto max-w-6xl">
-        <SectionHeader
-          title="Everything you need to explore local."
-          text="Vicinity brings together search, reviews, deals, and messaging so you can discover and connect with businesses in your area — all from one platform."
-        />
+
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-60px" }}
+          custom={0}
+          variants={fadeUp}
+          className="mb-12 flex flex-col gap-8 md:flex-row md:items-end md:justify-between"
+        >
+          <div className="max-w-xl">
+            
+            <h2 className="font-[var(--font-outfit)] text-3xl font-semibold leading-[1.1] tracking-[-0.06em] text-slate-900 dark:text-white md:text-5xl">
+              Everything you need<br className="hidden md:block" /> to explore local.
+            </h2>
+          </div>
+
+          
+        </motion.div>
+
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {features.map((f, i) => (
-            <FeatureCard key={f.title} {...f} delay={i * 0.08} />
+            <motion.div
+              key={f.title}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-40px" }}
+              custom={i * 0.08}
+              variants={fadeUp}
+              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+              className="group relative overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/70 p-7 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl transition-all duration-300 hover:border-blue-500/25 hover:shadow-[0_24px_64px_rgba(59,130,246,0.10)] dark:border-white/8 dark:bg-white/[0.03] dark:hover:border-white/15"
+            >
+              <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-500/0 blur-[60px] transition-all duration-500 group-hover:bg-blue-500/12" />
+
+              <span className="absolute right-6 top-5 font-[var(--font-outfit)] text-[11px] font-semibold tracking-[0.06em] text-slate-300 dark:text-white/20">
+                {f.number}
+              </span>
+
+              <div
+                className="relative z-10 mb-5 flex items-center justify-center rounded-2xl border border-blue-500/15 bg-gradient-to-br from-blue-500/10 to-blue-600/5 text-blue-600 shadow-[0_6px_20px_rgba(59,130,246,0.10)] dark:text-blue-300 dark:from-blue-500/15 dark:to-blue-600/5"
+                style={{ width: "52px", height: "52px" }}
+              >
+                {f.icon}
+              </div>
+
+              <h3 className="relative z-10 font-[var(--font-outfit)] text-[17px] font-semibold tracking-[-0.02em] text-slate-900 dark:text-white">
+                {f.title}
+              </h3>
+
+              <p className="relative z-10 mt-2.5 text-[13.5px] leading-[1.8] text-slate-500 dark:text-slate-400">
+                {f.text}
+              </p>
+
+            
+              {f.badge && (
+                <div className="relative z-10 mt-5 inline-flex items-center gap-1.5 rounded-full border border-blue-500/15 bg-blue-500/6 px-3 py-1 font-[var(--font-outfit)] text-[11px] font-semibold tracking-[0.04em] text-blue-600 dark:text-blue-300">
+                  <span className="h-1 w-1 rounded-full bg-blue-400" />
+                  {f.badge}
+                </div>
+              )}
+            </motion.div>
           ))}
         </div>
+
       </div>
     </section>
   );
@@ -548,177 +602,238 @@ function HowItWorksSection() {
     {
       number: "01",
       title: "Search",
-      text: "Type what you're looking for or browse by category. Our AI-powered search instantly finds the best matches near you.",
-      icon: <FaSearch size={18} />,
+      text: "Type what you're looking for or browse by category. Our AI finds the best matches near you.",
+      img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80&fit=crop",
     },
     {
       number: "02",
       title: "Compare",
-      text: "View ratings, read reviews, check hours and deals — then message the business directly if you have questions.",
-      icon: <FaCommentDots size={18} />,
+      text: "View ratings, read reviews, check hours and deals — then message the business directly.",
+      img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=80&fit=crop",
     },
     {
       number: "03",
       title: "Visit & Review",
       text: "Head to the business, enjoy the experience, then leave a review to help others discover great spots.",
-      icon: <FaStar size={18} />,
+      img: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&q=80&fit=crop",
     },
   ];
 
+  const renderStepCard = (step, i) => (
+    <motion.div
+      key={step.number}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.55, delay: i * 0.12, ease: "easeOut" }}
+      className="group relative flex flex-col overflow-hidden rounded-[28px] border border-blue-500/10 bg-white/70 backdrop-blur-xl transition-all duration-300 hover:border-blue-500/22 hover:shadow-[0_24px_56px_rgba(59,130,246,0.10)] dark:border-white/8 dark:bg-white/[0.03]"
+    >
+      <div className="relative flex-1 px-7 pb-5 pt-7">
+        <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-400/0 blur-[50px] transition-all duration-500 group-hover:bg-blue-400/12" />
+
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <span className="mb-2 block font-[var(--font-outfit)] text-3xl font-bold leading-none tracking-tight text-blue-500/15 dark:text-blue-400/12">
+              {step.number}
+            </span>
+            <h3 className="font-[var(--font-outfit)] text-[19px] whitespace-nowrap font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
+              {step.title}
+            </h3>
+          </div>
+            <p className="mt-2 text-[13.5px] leading-[1.8] text-slate-500 dark:text-slate-400">
+              {step.text}
+            </p>
+
+         
+        </div>
+      </div>
+
+      <div className="relative h-56 w-full shrink-0 overflow-hidden sm:h-64 mt-auto">
+        <motion.img
+          src={step.img}
+          alt={step.title}
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      </div>
+    </motion.div>
+  );
+
   return (
     <section id="how-it-works" className="relative px-6 pb-24 md:pb-32">
-      <SectionGlow position="right" />
+
       <div className="relative z-10 mx-auto max-w-6xl">
-        <SectionHeader
-          title="From search to visit in three simple steps."
-          text="Whether you're looking for a new coffee shop, a trusted mechanic, or tonight's dinner spot — Vicinity gets you there faster."
-          center
-        />
-        <div className="grid gap-6 md:grid-cols-3">
-          {steps.map((step, i) => (
-            <motion.div
-              key={step.number}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: "-40px" }}
-              custom={i * 0.1}
-              variants={fadeUp}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-              className="group relative overflow-hidden rounded-[28px] border border-blue-500/8 bg-white/80 p-7 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl hover:border-blue-500/22 hover:shadow-[0_20px_56px_rgba(59,130,246,0.10)] dark:border-white/8 dark:bg-white/[0.03] dark:hover:border-white/15 transition-all duration-300"
+        
+        <div className="grid gap-12 md:grid-cols-2 md:gap-16 lg:gap-24 items-start mb-12 md:mb-16">
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="flex flex-col justify-start"
+          >
+            <div className="mb-5 flex items-center gap-2">
+              <span className="h-px w-6 bg-blue-500" />
+              <span className="font-[var(--font-outfit)] text-[11px] font-semibold uppercase tracking-[0.08em] text-blue-500">
+                How it works
+              </span>
+            </div>
+
+            <h2 className="font-[var(--font-outfit)] text-4xl font-semibold leading-[1.1] tracking-[-0.06em] text-slate-900 dark:text-white md:text-5xl lg:text-6xl">
+              From search to visit in three simple steps.
+            </h2>
+
+            <p className="mt-5 text-[15px] leading-8 text-slate-500 dark:text-slate-400">
+              Whether you're looking for a new coffee shop, a trusted mechanic, or tonight's dinner spot — Vicinity gets you there faster.
+            </p>
+
+            <motion.a
+              href="/browse"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-blue-600 px-6 py-3 font-[var(--font-outfit)] text-sm font-semibold text-white transition-all hover:bg-blue-700"
             >
-              <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-blue-400/0 blur-[50px] transition-all duration-500 group-hover:bg-blue-400/15" />
+              Start exploring
+              <FaArrowRight className="text-xs" />
+            </motion.a>
+          </motion.div>
 
-              <div className="relative z-10 flex items-center justify-between mb-6">
-                <span className="font-[var(--font-outfit)] text-3xl font-bold tracking-tight text-blue-500/20 dark:text-blue-400/15">
-                  {step.number}
-                </span>
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-500/15 bg-gradient-to-br from-blue-500/10 to-blue-600/5 text-blue-600 dark:text-blue-300 group-hover:shadow-[0_6px_20px_rgba(59,130,246,0.15)] transition-shadow">
-                  {step.icon}
-                </div>
-              </div>
-
-              <h3 className="relative z-10 font-[var(--font-outfit)] text-xl font-semibold tracking-[-0.03em] text-slate-900 dark:text-white">
-                {step.title}
-              </h3>
-              <p className="relative z-10 mt-3 text-[13.5px] leading-[1.8] text-slate-500 dark:text-slate-400">
-                {step.text}
-              </p>
-            </motion.div>
-          ))}
+          <div className="flex flex-col h-full">
+            {renderStepCard(steps[0], 0)}
+          </div>
         </div>
+
+        <div className="grid gap-12 md:grid-cols-2 md:gap-16 lg:gap-24">
+          <div className="flex flex-col h-full">
+             {renderStepCard(steps[1], 1)}
+          </div>
+          <div className="flex flex-col h-full">
+             {renderStepCard(steps[2], 2)}
+          </div>
+        </div>
+
       </div>
     </section>
   );
 }
+
+
 function AudienceSection() {
   const cardClass =
-    "group relative overflow-hidden rounded-[28px] border bg-white/80 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:bg-white/[0.03] transition-all duration-300";
+    "group relative flex flex-col items-center text-center overflow-hidden rounded-[32px] border bg-white/80 pt-12 px-6 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:bg-white/[0.03] transition-all duration-300";
 
   return (
     <section className="relative px-6 pb-24 md:pb-32">
-      <SectionGlow position="left" />
+      
       <div className="relative z-10 mx-auto max-w-6xl">
-        <div className="mb-8 md:mb-10">
-          <SectionHeader
-            title="Great for locals. Powerful for businesses."
-          />
+        <div className="mb-10 md:mb-14 text-center">
+          <h2 className="font-[var(--font-outfit)] text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-5xl">
+            Great for locals. Powerful for businesses.
+          </h2>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <motion.div
-            initial="hidden"
-            whileInView="show"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            custom={0}
-            variants={fadeUp}
-            whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            className={`${cardClass} border-blue-500/8 hover:border-blue-500/22 dark:border-white/8 dark:hover:border-white/15`}
+            transition={{ duration: 0.5 }}
+            whileHover={{ y: -6, transition: { duration: 0.3 } }}
+            className={`${cardClass} border-blue-500/10 hover:border-blue-500/25 dark:border-white/10 dark:hover:border-white/20`}
           >
             <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-400/0 blur-[50px] transition-all duration-500 group-hover:bg-blue-400/15" />
 
-            <h3 className="relative z-10 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
-              For users
+            <h3 className="relative z-10 font-[var(--font-outfit)] text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+              For Personal
             </h3>
-            <p className="relative z-10 mt-3 text-sm leading-[1.8] text-slate-500 dark:text-slate-400">
+            <p className="relative z-10 mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
               Discover nearby restaurants, shops, and services. Read real reviews, find deals, and save your favorite spots.
             </p>
 
-            <div className="relative z-10 mt-6 h-[250px] overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-[220px] w-[220px] md:h-[250px] md:w-[250px]">
-                  <DotLottieReact
-                    src="https://lottie.host/0a569a01-8ee1-4d24-b8a7-a8506acc7c49/f4a3YwXYcM.lottie"
-                    loop
-                    autoplay
-                  />
-                </div>
-              </div>
-            </div>
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="/signup"
+              className="relative z-10 mt-6 inline-flex items-center gap-2 rounded-full bg-blue-100 px-6 py-3 font-[var(--font-outfit)] text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:hover:bg-blue-500/30"
+            >
+              Personal
+              <FaArrowRight className="text-xs" />
+            </motion.a>
 
-            <div className="relative z-10 mt-6 space-y-2.5">
+            <div className="relative z-10 mx-auto mt-8 flex max-w-sm flex-col gap-2.5 text-left w-full px-4">
               {[
                 "AI-powered search that understands context",
                 "Real-time reviews, hours, and deal alerts",
                 "Save favorites and message businesses directly",
               ].map((item) => (
-                <motion.div
-                  key={item}
-                  whileHover={{ x: 4 }}
-                  className="flex items-center gap-3 rounded-2xl border border-blue-500/8 bg-blue-50/30 px-4 py-3 dark:border-white/8 dark:bg-white/[0.02]"
-                >
-                  <FaCheckCircle className="text-blue-500 dark:text-blue-400 text-sm shrink-0" />
-                  <span className="text-sm text-slate-600 dark:text-slate-300">{item}</span>
-                </motion.div>
+                <div key={item} className="flex items-start gap-2.5">
+                  <FaCheckCircle className="mt-0.5 text-sm shrink-0 text-blue-500 dark:text-blue-400" />
+                  <span className="text-sm text-slate-600 dark:text-slate-400">{item}</span>
+                </div>
               ))}
+            </div>
+
+            <div className="relative p-6 flex h-[200px] w-full items-end justify-center overflow-hidden md:h-[240px]">
+              <div className="h-[160px] w-[160px] md:h-[180px] md:w-[180px]">
+                <DotLottieReact
+                  src="https://lottie.host/0a569a01-8ee1-4d24-b8a7-a8506acc7c49/f4a3YwXYcM.lottie"
+                  loop
+                  autoplay
+                />
+              </div>
             </div>
           </motion.div>
 
           <motion.div
-            initial="hidden"
-            whileInView="show"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            custom={0.1}
-            variants={fadeUp}
-            whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            className={`${cardClass} border-blue-500/8 hover:border-blue-500/22 dark:border-white/8 dark:hover:border-white/15`}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            whileHover={{ y: -6, transition: { duration: 0.3 } }}
+            className={`${cardClass} border-blue-500/10 hover:border-blue-500/25 dark:border-white/10 dark:hover:border-white/20`}
           >
             <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-400/0 blur-[50px] transition-all duration-500 group-hover:bg-blue-400/15" />
 
-            <h3 className="relative z-10 font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-white">
-              For businesses
+            <h3 className="relative z-10 font-[var(--font-outfit)] text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+              For Businesses
             </h3>
-            <p className="relative z-10 mt-3 text-sm leading-[1.8] text-slate-500 dark:text-slate-400">
+            <p className="relative z-10 mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
               Create a professional business profile, manage reviews, publish deals, and message customers — all from your dashboard.
             </p>
 
-            <div className="relative z-10 mt-6 h-[250px] overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-[220px] w-[220px] md:h-[250px] md:w-[250px] scale-[1.72] md:scale-[1.82] transform-gpu">
-                  <DotLottieReact
-                    src="https://lottie.host/a787e51b-7df0-41d2-8d23-a85c1c1a9576/nZxquDKzQ5.lottie"
-                    loop
-                    autoplay
-                  />
-                </div>
-              </div>
-            </div>
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="/signup"
+              className="relative z-10 mt-6 inline-flex items-center gap-2 rounded-full bg-blue-100 px-6 py-3 font-[var(--font-outfit)] text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:hover:bg-blue-500/30"
+            >
+              Business
+              <FaArrowRight className="text-xs" />
+            </motion.a>
 
-            <div className="relative z-10 mt-6 space-y-2.5">
+            <div className="relative z-10 mx-auto mt-8 flex max-w-sm flex-col gap-2.5 text-left w-full px-4">
               {[
                 "Full business dashboard with analytics",
                 "Publish deals and promo codes in seconds",
                 "Respond to reviews and message customers",
               ].map((item) => (
-                <motion.div
-                  key={item}
-                  whileHover={{ x: 4 }}
-                  className="flex items-center gap-3 rounded-2xl border border-blue-500/8 bg-blue-50/30 px-4 py-3 dark:border-white/8 dark:bg-white/[0.02]"
-                >
-                  <FaCheckCircle className="text-blue-500 dark:text-blue-400 text-sm shrink-0" />
-                  <span className="text-sm text-slate-600 dark:text-slate-300">{item}</span>
-                </motion.div>
+                <div key={item} className="flex items-start gap-2.5">
+                  <FaCheckCircle className="mt-0.5 text-sm shrink-0 text-blue-500 dark:text-blue-400" />
+                  <span className="text-sm text-slate-600 dark:text-slate-400">{item}</span>
+                </div>
               ))}
             </div>
+
+         <div className="relative flex w-full items-center justify-center  pb-4">
+            <div className="h-[160px] w-[160px] md:h-[180px] md:w-[180px] scale-[1.2] md:scale-[1.7] transform-gpu">
+              <DotLottieReact
+                src="https://lottie.host/a787e51b-7df0-41d2-8d23-a85c1c1a9576/nZxquDKzQ5.lottie"
+                loop
+                autoplay
+              />
+            </div>
+          </div>
           </motion.div>
         </div>
       </div>
@@ -896,63 +1011,119 @@ function FAQSection() {
 
 function CTASection() {
   return (
-    <section className="relative px-6 pb-28 md:pb-36">
-      <div className="relative z-10 mx-auto max-w-5xl">
+    <section className="relative px-6 pb-28 ">
+      <div className="relative z-10 mx-auto max-w-5xl xl:max-w-6xl">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
           custom={0}
           variants={fadeUp}
-          className="relative overflow-hidden rounded-[36px] px-8 py-16 md:px-16 md:py-20"
+          className="relative overflow-hidden rounded-[36px] px-8 py-24 md:px-16"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-900" />
+
+          <div className="absolute inset-0 bg-slate-50 dark:bg-[#060d1a]" />
+
+          <div className="absolute inset-0 dark:opacity-0"
+            style={{
+              background: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(59,130,246,0.10) 0%, transparent 70%)",
+            }}
+          />
+
+          <div className="absolute inset-0 opacity-0 dark:opacity-100"
+            style={{
+              background: "radial-gradient(ellipse 70% 50% at 50% 40%, rgba(59,130,246,0.22) 0%, transparent 70%)",
+            }}
+          />
 
           <motion.div
-            animate={{
-              x: ["-10%", "10%", "-10%"],
-              y: ["-5%", "5%", "-5%"],
-              opacity: [0.15, 0.3, 0.15],
-              transition: { duration: 10, repeat: Infinity, ease: "easeInOut" },
-            }}
-            className="absolute top-0 left-0 h-[300px] w-[300px] rounded-full bg-white/10 blur-[80px]"
+            animate={{ x: ["-10%", "8%", "-10%"], y: ["-8%", "6%", "-8%"], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -left-20 -top-20 h-[320px] w-[320px] rounded-full bg-blue-500/5 blur-[80px] dark:bg-blue-500/20"
           />
           <motion.div
-            animate={{
-              x: ["8%", "-8%", "8%"],
-              y: ["4%", "-4%", "4%"],
-              opacity: [0.1, 0.25, 0.1],
-              transition: { duration: 12, repeat: Infinity, ease: "easeInOut" },
-            }}
-            className="absolute bottom-0 right-0 h-[250px] w-[250px] rounded-full bg-cyan-400/15 blur-[70px]"
+            animate={{ x: ["8%", "-8%", "8%"], y: ["6%", "-6%", "6%"], opacity: [0.4, 0.9, 0.4] }}
+            transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -bottom-20 -right-20 h-[280px] w-[280px] rounded-full bg-indigo-500/5 blur-[70px] dark:bg-indigo-500/18"
           />
+
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" fill="none">
+            <motion.path
+              d="M -100 560 Q 500 -60 1100 560"
+              stroke="rgba(59,130,246,0.08)"
+              strokeWidth="1.5"
+              fill="none"
+              className="dark:[stroke:rgba(255,255,255,0.07)]"
+              initial={{ pathLength: 0, opacity: 0 }}
+              whileInView={{ pathLength: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 2, delay: 0.3, ease: "easeInOut" }}
+            />
+            <motion.path
+              d="M 150 560 Q 600 40 1150 560"
+              stroke="rgba(59,130,246,0.06)"
+              strokeWidth="1"
+              strokeDasharray="6 5"
+              fill="none"
+              initial={{ pathLength: 0, opacity: 0 }}
+              whileInView={{ pathLength: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 2.5, delay: 0.7, ease: "easeInOut" }}
+            />
+          </svg>
 
           <div
-            className="absolute inset-0 opacity-[0.06]"
+            className="absolute inset-0 opacity-[0.025] dark:opacity-[0.06]"
             style={{
-              backgroundImage:
-                "linear-gradient(to right, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px)",
-              backgroundSize: "60px 60px",
-              maskImage: "radial-gradient(ellipse at center, black 30%, transparent 80%)",
-              WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 80%)",
+              backgroundImage: "radial-gradient(circle, #3b82f6 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+              maskImage: "radial-gradient(ellipse at center, black 20%, transparent 75%)",
+              WebkitMaskImage: "radial-gradient(ellipse at center, black 20%, transparent 75%)",
             }}
           />
 
-          <div className="relative z-10 text-center">
-            <h3 className="mx-auto max-w-2xl font-[var(--font-outfit)] text-3xl font-semibold tracking-[-0.05em] text-white md:text-5xl leading-[1.1]">
-              Your neighborhood is waiting to be explored.
-            </h3>
+          <div className="absolute inset-0 rounded-[36px] border border-blue-500/10 dark:border-blue-500/20" />
 
-            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-[1.8] text-blue-100/70">
-              Join thousands of people using Vicinity to discover local businesses, read reviews, and find the best deals nearby.
-            </p>
+          <div className="relative z-10 flex flex-col items-center text-center">
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <motion.h3
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mx-auto max-w-3xl font-[var(--font-outfit)] text-4xl font-semibold leading-[1.1] tracking-[-0.05em] text-slate-900 dark:text-white md:text-6xl"
+            >
+              Your neighborhood is{" "}
+              <span
+                className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500 bg-clip-text text-transparent dark:from-blue-300 dark:via-blue-200 dark:to-white"
+              >
+                waiting to be explored.
+              </span>
+            </motion.h3>
+
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, delay: 0.4 }}
+              className="mx-auto mt-6 max-w-xl text-[15px] leading-[1.8] text-slate-500 dark:text-slate-400"
+            >
+              Join thousands of people using Vicinity to discover local businesses,
+              read reviews, and find the best deals nearby.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, delay: 0.5 }}
+              className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            >
               <motion.a
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 href="/browse"
-                className="group inline-flex items-center gap-2.5 rounded-2xl bg-white px-8 py-4 font-[var(--font-outfit)] text-sm font-bold text-blue-700 shadow-[0_16px_48px_rgba(0,0,0,0.15)] hover:shadow-[0_20px_56px_rgba(0,0,0,0.2)] transition-all"
+                className="group inline-flex items-center gap-2.5 rounded-2xl bg-blue-600 px-8 py-4 font-[var(--font-outfit)] text-sm font-bold text-white shadow-[0_8px_32px_rgba(59,130,246,0.35)] hover:bg-blue-700 hover:shadow-[0_12px_40px_rgba(59,130,246,0.45)] transition-all"
               >
                 Start exploring
                 <FaArrowRight className="text-xs transition-transform group-hover:translate-x-0.5" />
@@ -962,13 +1133,21 @@ function CTASection() {
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 href="/signup"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-8 py-4 font-[var(--font-outfit)] text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/18 hover:border-white/35"
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-8 py-4 font-[var(--font-outfit)] text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 dark:border-white/12 dark:bg-white/8  dark:hover:bg-white/14 dark:hover:border-white/22"
               >
                 Create free account
               </motion.a>
-            </div>
+            </motion.div>
 
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-10">
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0 }}
+              whileInView={{ opacity: 1, scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="mx-auto mt-14 mb-10 h-px w-64 bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-white/12"
+            />
+
+            <div className="flex flex-wrap items-center justify-center gap-10">
               {[
                 { value: "500+", label: "Businesses" },
                 { value: "10k+", label: "Reviews" },
@@ -979,20 +1158,197 @@ function CTASection() {
                   initial={{ opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
+                  transition={{ delay: 0.65 + i * 0.1 }}
                   className="text-center"
                 >
-                  <p className="font-[var(--font-outfit)] text-2xl font-bold text-white tracking-tight">
+                  <p className="font-[var(--font-outfit)] text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                     {stat.value}
                   </p>
-                  <p className="text-xs text-blue-200/60 mt-1">{stat.label}</p>
+                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{stat.label}</p>
                 </motion.div>
               ))}
             </div>
+
           </div>
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="relative overflow-hidden pt-10 border-t border-blue-500/10 bg-white text-slate-900 transition-colors duration-300 dark:border-white/10 dark:bg-[#081120] dark:text-white">
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
+        className="pointer-events-none absolute inset-0 z-0 flex items-end justify-center overflow-hidden"
+      >
+        <motion.h1
+          animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="translate-y-8 select-none font-[var(--font-outfit)] text-[22vw] font-bold leading-[0.75] tracking-[-0.04em]"
+          style={{
+            backgroundImage: "linear-gradient(90deg, rgba(59,130,246,0.07) 0%, rgba(147,197,253,0.13) 40%, rgba(59,130,246,0.07) 70%, rgba(59,130,246,0.03) 100%)",
+            backgroundSize: "200% 100%",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          VICINITY
+        </motion.h1>
+      </motion.div>
+
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <motion.div
+          animate={{ scale: [1, 1.15, 1], opacity: [0.04, 0.08, 0.04] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-blue-500 blur-[120px]"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], opacity: [0.03, 0.07, 0.03] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute -right-40 top-20 h-[400px] w-[400px] rounded-full bg-blue-400 blur-[100px]"
+        />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-4 lg:gap-8 ">
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col"
+          >
+            <div className="mb-6"><VicinityLogo /></div>
+            <p className="mb-8 text-sm text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
+              {UI_SETTINGS.siteDescription}
+            </p>
+            <div className="flex gap-3">
+              {[
+                { icon: <FaTwitter />, label: "Twitter" },
+                { icon: <FaInstagram />, label: "Instagram" },
+                { icon: <FaLinkedin />, label: "LinkedIn" },
+              ].map(({ icon, label }) => (
+                <motion.a
+                  key={label}
+                  href="#"
+                  aria-label={label}
+                  whileHover={{ y: -3, scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-500/10 bg-blue-500/5 text-slate-400 transition-colors hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-500 dark:text-slate-500 dark:hover:text-blue-300"
+                >
+                  {icon}
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+          >
+            <h4 className="mb-6 font-semibold text-slate-900 dark:text-white">Navigation</h4>
+            <ul className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
+              {LANDING_NAV_ITEMS.map((item, i) => (
+                <motion.li
+                  key={item.name}
+                  initial={{ opacity: 0, x: -8 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: 0.1 + i * 0.05 }}
+                >
+                  <a href={item.href} className="group inline-flex items-center gap-1.5 transition-colors hover:text-blue-600 dark:hover:text-blue-300">
+                    <span className="h-px w-0 bg-blue-500 transition-all duration-300 group-hover:w-3" />
+                    {item.name}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.16 }}
+          >
+            <h4 className="mb-6 font-semibold text-slate-900 dark:text-white">Company</h4>
+            <ul className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
+              {FOOTER_LINKS.company.map((item, i) => (
+                <motion.li
+                  key={item.name}
+                  initial={{ opacity: 0, x: -8 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: 0.18 + i * 0.05 }}
+                >
+                  <a href={item.href} className="group inline-flex items-center gap-1.5 transition-colors hover:text-blue-600 dark:hover:text-blue-300">
+                    <span className="h-px w-0 bg-blue-500 transition-all duration-300 group-hover:w-3" />
+                    {item.name}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.24 }}
+          >
+            <h4 className="mb-6 font-semibold text-slate-900 dark:text-white">Legal</h4>
+            <ul className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
+              {FOOTER_LINKS.legal.map((item, i) => (
+                <motion.li
+                  key={item.name}
+                  initial={{ opacity: 0, x: -8 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: 0.26 + i * 0.05 }}
+                >
+                  <a href={item.href} className="group inline-flex items-center gap-1.5 transition-colors hover:text-blue-600 dark:hover:text-blue-300">
+                    <span className="h-px w-0 bg-blue-500 transition-all duration-300 group-hover:w-3" />
+                    {item.name}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex flex-col items-center justify-center pb-16 text-center text-sm font-medium text-slate-500 dark:text-slate-400"
+        >
+          <p className="flex items-center gap-1.5">
+            Made with
+            <motion.span
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+              className="text-blue-500"
+            >
+              <FaHeart className="text-xs" />
+            </motion.span>
+            by Vicinity Team
+          </p>
+          <p className="mt-1 text-xs font-normal opacity-60">{UI_SETTINGS.copyright}</p>
+        </motion.div>
+      </div>
+
+    </footer>
   );
 }
 

@@ -7,8 +7,12 @@ import { useTheme } from '../context/ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaSun, FaMoon } from 'react-icons/fa'
 
+interface ThemeToggleProps {
+  forceDark?: boolean
+}
+
 // Renders an animated sun/moon button that toggles the theme
-const ThemeToggle = () => {
+const ThemeToggle = ({ forceDark = false }: ThemeToggleProps) => {
   const { isDark, toggleTheme, mounted } = useTheme()
 
   // Render placeholder until mounted to avoid icon flicker
@@ -28,7 +32,7 @@ const ThemeToggle = () => {
         relative flex h-[42px] w-[42px] items-center justify-center rounded-2xl border
         transition-all duration-300 shrink-0
         ${
-          isDark
+          isDark || forceDark
             ? 'bg-white/[0.05] border-white/10 text-yellow-400 hover:bg-white/[0.10] hover:border-yellow-400/30'
             : 'bg-white/80 border-blue-500/12 text-blue-600 hover:bg-blue-50 hover:border-blue-200'
         }

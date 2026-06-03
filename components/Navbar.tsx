@@ -3,7 +3,7 @@
 
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import VicinityLogo from './VicinityLogo'
 import ThemeToggle from './ThemeToggle'
@@ -11,6 +11,21 @@ import { LANDING_NAV_ITEMS } from '../lib/ui'
 
 // Landing page navbar with smooth-scroll links and auth CTAs
 export default function Navbar() {
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Trigger when scrolling past 90% of the viewport height (roughly the end of the hero section)
+      setIsScrolled(window.scrollY > window.innerHeight * 0.9)
+    }
+    
+    // Set initial state
+    handleScroll()
+    
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   // Smooth scroll to the target section on click
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault()
@@ -29,17 +44,27 @@ export default function Navbar() {
       transition={{ duration: 0.3 }}
       className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none px-4"
     >
-      <div className="w-full max-w-5xl bg-white/82 dark:bg-[#0d142488] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[24px] p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)] pointer-events-auto flex items-center justify-between pl-4 pr-2 transition-all duration-300">
-        <VicinityLogo />
+      <div 
+        className={`w-full max-w-5xl backdrop-blur-2xl border rounded-[24px] p-2 pointer-events-auto flex items-center justify-between pl-4 pr-2 transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-white/82 dark:bg-[#0d142488] border-blue-500/12 dark:border-white/10 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)]'
+            : 'bg-[#0d142488] border-white/10 shadow-[0_20px_70px_rgba(0,0,0,0.35)]'
+        }`}
+      >
+        <VicinityLogo textClassName={isScrolled ? 'text-slate-900 dark:text-white' : 'text-white'} />
 
         {/* Section links (desktop) */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <div className={`hidden md:flex items-center gap-8 text-sm font-medium ${isScrolled ? 'text-slate-600 dark:text-slate-300' : 'text-slate-300'}`}>
           {LANDING_NAV_ITEMS.map((item) => (
             <a
               key={item.name}
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
-              className="hover:text-slate-900 dark:hover:text-white transition-colors relative group text-slate-900 dark:text-white cursor-pointer"
+              className={`transition-colors relative group cursor-pointer ${
+                isScrolled 
+                  ? 'text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white'
+                  : 'text-white hover:text-white'
+              }`}
             >
               {item.name}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full" />
@@ -49,11 +74,15 @@ export default function Navbar() {
 
         {/* Auth actions */}
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <ThemeToggle forceDark={!isScrolled} />
 
           <a
             href="/login"
-            className="px-5 py-2.5 text-sm font-bold rounded-2xl transition-all bg-white/80 dark:bg-[rgba(255,255,255,0.05)] hover:bg-blue-50 dark:hover:bg-[rgba(255,255,255,0.08)] text-slate-700 dark:text-slate-300 border border-blue-500/12 dark:border-white/10"
+            className={`px-5 py-2.5 text-sm font-bold rounded-2xl transition-all border ${
+              isScrolled 
+                ? 'bg-white/80 dark:bg-[rgba(255,255,255,0.05)] hover:bg-blue-50 dark:hover:bg-[rgba(255,255,255,0.08)] text-slate-700 dark:text-slate-300 border-blue-500/12 dark:border-white/10'
+                : 'bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.08)] text-slate-300 border-white/10'
+            }`}
           >
             Log In
           </a>

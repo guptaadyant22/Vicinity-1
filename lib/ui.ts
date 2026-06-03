@@ -27,7 +27,7 @@ interface FooterLinksType {
 export const UI_SETTINGS: UISettingsType = {
     siteName: 'Vicinity',
     siteDescription: 'Discover local businesses, read reviews, and find the best deals near you.',
-    copyright: '© 2025 Vicinity Inc. All rights reserved.',
+    copyright: '© 2026 Vicinity Inc. All rights reserved.',
 
     colors: {
         primary: 'text-blue-600 dark:text-blue-300',
