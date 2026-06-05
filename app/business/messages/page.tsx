@@ -232,26 +232,36 @@ export default function BusinessMessagesPage() {
 
   // Realtime updates for the selected thread
   useEffect(() => {
-    if (!selectedRequest?.id) return
+  console.log("BUSINESS Selected Request:", selectedRequest?.id);
 
-    const channel = supabase
-      .channel(`biz-msgs-${selectedRequest.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `request_id=eq.${selectedRequest.id}`,
-        },
-        () => loadConversation(selectedRequest.id, false)
-      )
-      .subscribe()
+  if (!selectedRequest?.id) return;
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [selectedRequest?.id, supabase, loadConversation])
+  console.log("BUSINESS Creating subscription...");
+
+  const channel = supabase
+    .channel(`biz-msgs-${selectedRequest.id}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'messages',
+        filter: `request_id=eq.${selectedRequest.id}`,
+      },
+      (payload) => {
+        console.log("BUSINESS MESSAGE EVENT", payload);
+        loadConversation(selectedRequest.id, false);
+      }
+    )
+    .subscribe((status) => {
+      console.log("BUSINESS Realtime Status:", status);
+    });
+
+  return () => {
+    console.log("BUSINESS Removing channel", selectedRequest?.id);
+    supabase.removeChannel(channel);
+  };
+}, [selectedRequest?.id, supabase, loadConversation]);
 
   // Accept a pending request
   const handleAcceptRequest = async (requestId) => {

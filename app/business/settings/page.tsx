@@ -309,277 +309,453 @@ export default function BusinessSettingsPage() {
   }
 
 
-  const generateAdvancedPDFReport = async (reportData, businessName) => {
-    try {
-      const { jsPDF } = await import('jspdf')
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const pageWidth = doc.internal.pageSize.getWidth()
-      const pageHeight = doc.internal.pageSize.getHeight()
-      const margin = 15
-      const contentWidth = pageWidth - margin * 2
+const generateAdvancedPDFReport = async (reportData, businessName) => {
+  try {
+    const { jsPDF } = await import('jspdf')
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const margin = 18
+    const contentWidth = pageWidth - margin * 2
 
-      let yPosition = margin
+const vicinityLogoPng = await new Promise((resolve) => {
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+    <g fill="#2563eb" fill-rule="nonzero">
+      <g transform="translate(256,256) rotate(180) scale(5.33333,5.33333)">
+        <path d="M5,45l4,-11l12,-12l-6,23z"/>
+        <path d="M25,18l8,27h10l-11,-33z"/>
+        <path d="M16.059,14.164l3.941,-11.164h8z"/>
+        <path d="M10.731,29.002l12.269,-12.002v-2l-11.42,11.667z"/>
+        <path d="M15.142,16.429l-2.142,5.571l16.724,-16.275l-0.906,-2.547z"/>
+        <path d="M23.932,14.055l0.445,1.571l6.564,-6.448l-0.556,-1.476z"/>
+      </g>
+    </g>
+  </svg>`
+  const blob = new Blob([svgString], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+  const img = new Image()
+  img.onload = () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 256
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    URL.revokeObjectURL(url)
+    resolve(canvas.toDataURL('image/png'))
+  }
+  img.src = url
+})
 
+    const BLUE       = [37,  99,  235] 
+    const BLUE_DARK  = [29,  78,  216]   
+    const BLUE_LIGHT = [219, 234, 254]   
+    const SLATE_900  = [15,  23,  42]
+    const SLATE_600  = [71,  85,  105]
+    const SLATE_400  = [148, 163, 184]
+    const SLATE_100  = [241, 245, 249]
+    const WHITE      = [255, 255, 255]
+    const GREEN      = [22,  163, 74]
+    const RED        = [220, 38,  38]
 
-      const addPageIfNeeded = (spaceNeeded = 20) => {
-        if (yPosition + spaceNeeded > pageHeight - 20) {
-          doc.addPage()
-          yPosition = margin
-          return true
-        }
-        return false
+    let y = 0
+
+    const newPageIfNeeded = (need = 20) => {
+      if (y + need > pageHeight - 20) {
+        addFooter()
+        doc.addPage()
+        y = 0
+        addPageHeader()
       }
+    }
 
+    const setColor = (rgb, type = 'text') => {
+      if (type === 'fill') doc.setFillColor(...rgb)
+      else doc.setTextColor(...rgb)
+    }
 
-      const addHeading = (title) => {
-        addPageIfNeeded(15)
-        doc.setFontSize(14)
-        doc.setTextColor(37, 99, 235)
-        doc.text(title, margin, yPosition)
-        yPosition += 10
+    setColor([10, 25, 60], 'fill')
+    doc.rect(0, 0, pageWidth, pageHeight, 'F')
+
+    setColor([37, 99, 235], 'fill')
+    doc.ellipse(pageWidth / 2, -10, 110, 55, 'F')
+
+    doc.setDrawColor(255, 255, 255, 0.04)
+    doc.setLineWidth(0.15)
+    for (let i = 0; i < pageHeight; i += 14) {
+      doc.line(0, i, pageWidth, i)
+    }
+
+    const cx = pageWidth / 2, cy = 58
+    doc.addImage(vicinityLogoPng, 'PNG', cx - 12, cy - 14, 24, 24)
+
+    // Brand name
+    setColor(WHITE)
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    doc.text('VICINITY', cx, cy + 24, { align: 'center' })
+
+    setColor([147, 197, 253])
+    doc.setFontSize(7.5)
+    doc.setFont('helvetica', 'normal')
+    doc.text('LOCAL BUSINESS PLATFORM', cx, cy + 30, { align: 'center' })
+
+    setColor([59, 130, 246], 'fill')
+    doc.rect(cx - 30, cy + 36, 60, 0.6, 'F')
+
+    setColor(WHITE)
+    doc.setFontSize(26)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Business Report', cx, cy + 52, { align: 'center' })
+
+    setColor([147, 197, 253])
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.text(businessName, cx, cy + 62, { align: 'center' })
+
+    const metaY = cy + 80
+    const pills = [
+      { label: 'GENERATED', value: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) },
+      { label: 'PERIOD',    value: `${reportData.dateRange.start} – ${reportData.dateRange.end}` },
+    ]
+    pills.forEach((pill, i) => {
+      const bx = cx - 55 + i * 58
+      setColor([255, 255, 255, 0.06], 'fill')
+      doc.setFillColor(30, 58, 138)  
+      doc.roundedRect(bx, metaY, 52, 18, 4, 4, 'F')
+      setColor([147, 197, 253])
+      doc.setFontSize(6)
+      doc.setFont('helvetica', 'bold')
+      doc.text(pill.label, bx + 26, metaY + 6, { align: 'center' })
+      setColor(WHITE)
+      doc.setFontSize(7.5)
+      doc.setFont('helvetica', 'normal')
+      doc.text(pill.value, bx + 26, metaY + 13, { align: 'center' })
+    })
+
+    const stats = [
+      { label: 'Reviews',    value: String(reportData.reviews?.length  || 0) },
+      { label: 'Deals',      value: String(reportData.deals?.length    || 0) },
+      { label: 'Favourites', value: String(reportData.favorites?.length || 0) },
+    ]
+    const statY = metaY + 28
+    const boxW = 38, boxH = 26, gap = 7
+    const totalW = stats.length * boxW + (stats.length - 1) * gap
+    const startX = cx - totalW / 2
+    stats.forEach((s, i) => {
+      const bx = startX + i * (boxW + gap)
+      setColor([17, 24, 39], 'fill')
+      doc.roundedRect(bx, statY, boxW, boxH, 5, 5, 'F')
+      setColor([59, 130, 246], 'fill')
+      doc.roundedRect(bx, statY, boxW, 2.5, 1, 1, 'F')
+      setColor(WHITE)
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text(s.value, bx + boxW / 2, statY + 15, { align: 'center' })
+      setColor(SLATE_400)
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'normal')
+      doc.text(s.label, bx + boxW / 2, statY + 22, { align: 'center' })
+    })
+
+    setColor([30, 41, 59], 'fill')
+    doc.rect(0, pageHeight - 14, pageWidth, 14, 'F')
+    setColor(SLATE_400)
+    doc.setFontSize(7)
+    doc.text('Confidential · Generated by Vicinity · vicinity.app', cx, pageHeight - 5.5, { align: 'center' })
+
+    const addPageHeader = () => {
+      setColor(BLUE, 'fill')
+      doc.rect(0, 0, pageWidth, 1.5, 'F')
+
+      doc.addImage(vicinityLogoPng, 'PNG', margin - 1, 4, 8, 8)
+      
+      setColor(SLATE_900)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'bold')
+      doc.text('VICINITY', margin + 12, 11)
+
+      setColor(SLATE_400)
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'normal')
+      doc.text(businessName, pageWidth - margin, 11, { align: 'right' })
+
+      setColor(SLATE_100, 'fill')
+      doc.rect(margin, 16, contentWidth, 0.4, 'F')
+
+      y = 22
+    }
+
+    const addFooter = () => {
+      setColor(SLATE_100, 'fill')
+      doc.rect(margin, pageHeight - 14, contentWidth, 0.4, 'F')
+      setColor(SLATE_400)
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'normal')
+      doc.text('vicinity.app  ·  Confidential Business Export', margin, pageHeight - 8)
+      doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber}`, pageWidth - margin, pageHeight - 8, { align: 'right' })
+    }
+
+    const addSection = (title, iconChar = '●') => {
+      newPageIfNeeded(22)
+      setColor(SLATE_100, 'fill')
+      doc.roundedRect(margin, y, contentWidth, 12, 3, 3, 'F')
+      setColor(BLUE, 'fill')
+      doc.roundedRect(margin, y, 3, 12, 1.5, 1.5, 'F')
+      setColor(BLUE)
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'bold')
+      doc.text(title.toUpperCase(), margin + 8, y + 8)
+      y += 18
+    }
+
+    const addKV = (key, value, highlight = false) => {
+      newPageIfNeeded(8)
+      if (highlight) {
+        setColor([239, 246, 255], 'fill')
+        doc.roundedRect(margin, y - 1, contentWidth, 8, 2, 2, 'F')
       }
+      setColor(SLATE_600)
+      doc.setFontSize(8.5)
+      doc.setFont('helvetica', 'normal')
+      doc.text(key, margin + 3, y + 5)
+      setColor(SLATE_900)
+      doc.setFont('helvetica', 'bold')
+      const wrapped = doc.splitTextToSize(String(value || 'N/A'), contentWidth - 60)
+      doc.text(wrapped, margin + 58, y + 5)
+      y += Math.max(9, wrapped.length * 5.5) + 1
+    }
 
+    const addDivider = () => {
+      setColor(SLATE_100, 'fill')
+      doc.rect(margin, y, contentWidth, 0.4, 'F')
+      y += 5
+    }
 
-      doc.setFontSize(24)
-      doc.setTextColor(37, 99, 235)
-      doc.text('BUSINESS DATA EXPORT', pageWidth / 2, yPosition, { align: 'center' })
-      yPosition += 20
+    doc.addPage()
+    addPageHeader()
 
-      doc.setFontSize(11)
-      doc.setTextColor(100)
-      doc.text(
-        `Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
-        margin,
-        yPosition
-      )
-      yPosition += 6
-      doc.text(
-        `Export Period: ${reportData.dateRange.start} to ${reportData.dateRange.end}`,
-        margin,
-        yPosition
-      )
-      yPosition += 6
-      doc.text(`Business: ${businessName}`, margin, yPosition)
-      yPosition += 20
+    if (reportData.business) {
+      addSection('Business Information')
+      const b = reportData.business
+      const avgRating = reportData.reviews?.length
+        ? (reportData.reviews.reduce((s, r) => s + (r.rating || 0), 0) / reportData.reviews.length).toFixed(1)
+        : (b.rating || 0)
 
-
-      if (reportData.business) {
-        addHeading('BUSINESS INFORMATION')
-
-        doc.setFontSize(11)
-        doc.setTextColor(0)
-
-        const avgRating =
-          reportData.reviews && reportData.reviews.length > 0
-            ? (
-                reportData.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                reportData.reviews.length
-              ).toFixed(1)
-            : reportData.business.rating || 0
-
-        const businessFields = [
-          ['Business Name', reportData.business.name || 'N/A'],
-          ['Email', reportData.business.email || 'N/A'],
-          ['Phone', reportData.business.phone || 'N/A'],
-          ['Address', reportData.business.address || 'N/A'],
-          ['City', reportData.business.city || 'N/A'],
-          ['State', reportData.business.state || 'N/A'],
-          ['Zip Code', reportData.business.zip || 'N/A'],
-          ['Type', reportData.business.type || 'N/A'],
-          ['Website', reportData.business.website || 'N/A'],
-          ['Current Rating', `${avgRating}/5 stars`],
-          ['Total Reviews', String(reportData.reviews?.length || 0)],
-          ['Created Date', new Date(reportData.business.created_at).toLocaleDateString()],
-        ]
-
-        businessFields.forEach(([label, value]) => {
-          addPageIfNeeded(6)
-          const wrappedValue = doc.splitTextToSize(String(value), contentWidth - 60)
-          doc.text(`${label}:`, margin, yPosition)
-          doc.text(wrappedValue, margin + 50, yPosition)
-          yPosition += Math.max(6, wrappedValue.length * 5) + 2
-        })
-      }
-
-
-      if (reportData.reviews && reportData.reviews.length > 0) {
-        addHeading('CUSTOMER REVIEWS')
-
-        doc.setFontSize(10)
-        doc.setTextColor(100)
-        doc.text(`Total Reviews: ${reportData.reviews.length}`, margin, yPosition)
-        yPosition += 8
-
-        let reviewsCount = 0
-        reportData.reviews.forEach((review, index) => {
-          if (reviewsCount >= 30) {
-            addPageIfNeeded(10)
-            doc.setFontSize(9)
-            doc.setTextColor(150)
-            doc.text(
-              `... and ${reportData.reviews.length - 30} more reviews (see full data for complete list)`,
-              margin,
-              yPosition
-            )
-            return
-          }
-
-          addPageIfNeeded(25)
-
-          doc.setFontSize(11)
-          doc.setTextColor(37, 99, 235)
-          doc.text(`Review #${index + 1}`, margin, yPosition)
-          yPosition += 6
-
-          doc.setFontSize(10)
-          doc.setTextColor(0)
-          doc.text(`Rating: ${review.rating || 'N/A'}/5 stars`, margin, yPosition)
-          yPosition += 5
-          doc.text(`Date: ${new Date(review.created_at).toLocaleDateString()}`, margin, yPosition)
-          yPosition += 5
-          doc.text(`Reviewer: ${review.user_name || 'Anonymous'}`, margin, yPosition)
-          yPosition += 6
-
-          doc.setFontSize(9)
-          const reviewText = review.text || review.comment || 'No written comment'
-          const wrappedReview = doc.splitTextToSize(String(reviewText), contentWidth)
-          doc.text(wrappedReview, margin, yPosition)
-          yPosition += wrappedReview.length * 4 + 8
-
-          reviewsCount++
-        })
-      }
-
-
-      if (reportData.deals && reportData.deals.length > 0) {
-        addHeading('ACTIVE DEALS & PROMOTIONS')
-
-        doc.setFontSize(10)
-        doc.setTextColor(100)
-        doc.text(`Total Deals: ${reportData.deals.length}`, margin, yPosition)
-        yPosition += 8
-
-        reportData.deals.forEach((deal, index) => {
-          addPageIfNeeded(30)
-
-          doc.setFontSize(11)
-          doc.setTextColor(37, 99, 235)
-          doc.text(`Deal #${index + 1}: ${deal.title || 'Untitled Deal'}`, margin, yPosition)
-          yPosition += 7
-
-          doc.setFontSize(10)
-          doc.setTextColor(0)
-
-          if (deal.discount_type && deal.discount_value) {
-            const discountDisplay =
-              deal.discount_type === 'percentage'
-                ? `${deal.discount_value}% OFF`
-                : `$${deal.discount_value} OFF`
-            doc.text(`Discount: ${discountDisplay}`, margin, yPosition)
-            yPosition += 5
-          }
-
-          if (deal.original_price && deal.discounted_price) {
-            doc.text(`Price: $${deal.original_price} → $${deal.discounted_price}`, margin, yPosition)
-            yPosition += 5
-          }
-
-          doc.text(`Status: ${deal.is_active ? 'Active' : 'Inactive'}`, margin, yPosition)
-          yPosition += 5
-
-          if (deal.expiry_date) {
-            doc.text(`Expires: ${new Date(deal.expiry_date).toLocaleDateString()}`, margin, yPosition)
-            yPosition += 5
-          }
-
-          doc.text(`Created: ${new Date(deal.created_at).toLocaleDateString()}`, margin, yPosition)
-          yPosition += 6
-
-          if (deal.description) {
-            doc.setFontSize(9)
-            const wrappedDesc = doc.splitTextToSize(String(deal.description), contentWidth)
-            doc.text(wrappedDesc, margin, yPosition)
-            yPosition += wrappedDesc.length * 4 + 10
-          }
-
-          yPosition += 3
-        })
-      }
-
-
-      if (reportData.favorites && reportData.favorites.length > 0) {
-        addHeading('FAVORITES')
-        doc.setFontSize(10)
-        doc.setTextColor(0)
-        doc.text(`Total Users who favorited: ${reportData.favorites.length}`, margin, yPosition)
-        yPosition += 10
-
-        doc.setFontSize(9)
-        const favCount = Math.min(reportData.favorites.length, 20)
-        reportData.favorites.slice(0, favCount).forEach((fav, idx) => {
-          addPageIfNeeded(6)
-          doc.text(
-            `${idx + 1}. Favorited on: ${new Date(fav.created_at).toLocaleDateString()}`,
-            margin + 5,
-            yPosition
-          )
-          yPosition += 6
-        })
-
-        if (reportData.favorites.length > 20) {
-          yPosition += 2
-          doc.setFontSize(8)
-          doc.setTextColor(150)
-          doc.text(
-            `... and ${reportData.favorites.length - 20} more favorites`,
-            margin + 5,
-            yPosition
-          )
-        }
-      }
-
-
-      addPageIfNeeded(80)
-      doc.setFontSize(14)
-      doc.setTextColor(37, 99, 235)
-      doc.text('EXPORT SUMMARY', margin, yPosition)
-      yPosition += 12
-
-      doc.setFontSize(11)
-      doc.setTextColor(0)
-
-      const currentRatingDisplay =
-        reportData.business && reportData.business.rating
-          ? `${reportData.business.rating}/5 stars`
-          : 'N/A'
-
-      const summaryData = [
-        ['Business Information', reportData.business ? 'Included' : 'Not Included'],
-        ['Current Business Rating', currentRatingDisplay],
+      const fields = [
+        ['Business Name', b.name],
+        ['Email',         b.email],
+        ['Phone',         b.phone],
+        ['Address',       b.address],
+        ['City / State',  `${b.city || ''} ${b.state || ''}`.trim()],
+        ['Zip Code',      b.zip],
+        ['Type',          b.type],
+        ['Website',       b.website],
+        ['Rating',        `${avgRating} / 5 stars`],
         ['Total Reviews', String(reportData.reviews?.length || 0)],
-        ['Total Deals', String(reportData.deals?.length || 0)],
-        ['Total Favorites', String(reportData.favorites?.length || 0)],
-        ['Export Date Range', `${reportData.dateRange.start} to ${reportData.dateRange.end}`],
+        ['Member Since',  new Date(b.created_at).toLocaleDateString()],
       ]
+      fields.forEach(([k, v], i) => addKV(k, v, i % 2 === 0))
+      y += 6
+    }
 
-      summaryData.forEach(([label, value]) => {
-        addPageIfNeeded(6)
-        doc.text(`${label}: ${value}`, margin, yPosition)
-        yPosition += 7
+    if (reportData.reviews?.length) {
+      addSection('Customer Reviews')
+
+      const avg = (reportData.reviews.reduce((s, r) => s + (r.rating || 0), 0) / reportData.reviews.length).toFixed(1)
+      setColor(SLATE_900)
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text(`${avg} / 5`, margin, y + 6)
+      setColor(SLATE_400)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`avg from ${reportData.reviews.length} review${reportData.reviews.length !== 1 ? 's' : ''}`, margin + 24, y + 6)
+      y += 14
+
+      const cap = Math.min(reportData.reviews.length, 30)
+      reportData.reviews.slice(0, cap).forEach((r, i) => {
+        newPageIfNeeded(28)
+
+        const cardH = 26 + (r.text || r.comment ? 10 : 0)
+        setColor(i % 2 === 0 ? [248, 250, 252] : WHITE, 'fill')
+        doc.roundedRect(margin, y, contentWidth, cardH, 3, 3, 'F')
+        setColor(BLUE_LIGHT, 'fill')
+        doc.roundedRect(margin, y, 3, cardH, 1.5, 1.5, 'F')
+
+        const ratingNum = r.rating || 0
+        const drawStar = (cx, cy, r1, r2, filled) => {
+          const points = []
+          for (let p = 0; p < 10; p++) {
+            const angle = (p * Math.PI) / 5 - Math.PI / 2
+            const radius = p % 2 === 0 ? r1 : r2
+            points.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)])
+          }
+          if (filled) {
+            doc.setFillColor(234, 179, 8)
+          } else {
+            doc.setFillColor(203, 213, 225)
+          }
+          doc.lines(
+            points.slice(1).map((pt, i) => [pt[0] - points[i][0], pt[1] - points[i][1]]),
+            points[0][0], points[0][1], [1, 1], 'F', true
+          )
+        }
+        for (let d = 0; d < 5; d++) {
+          drawStar(margin + 7 + d * 5.5, y + 6, 2.5, 1.1, d < ratingNum)
+        }
+
+        setColor(SLATE_400)
+        doc.setFontSize(7.5)
+        doc.text(new Date(r.created_at).toLocaleDateString(), margin + 7, y + 15)
+        setColor(SLATE_600)
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'bold')
+        doc.text(r.user_name || 'Anonymous', margin + 40, y + 15)
+
+        if (r.text || r.comment) {
+          setColor(SLATE_600)
+          doc.setFontSize(8)
+          doc.setFont('helvetica', 'italic')
+          const wrap = doc.splitTextToSize(`"${r.text || r.comment}"`, contentWidth - 14)
+          doc.text(wrap[0], margin + 7, y + 23)
+        }
+
+        y += cardH + 4
       })
 
-      yPosition += 10
-
-      doc.setFontSize(9)
-      doc.setTextColor(150)
-      doc.text('This is an official data export from Vicinity Business Platform', margin, yPosition)
-
-      doc.save(`${businessName}_export_${new Date().toISOString().split('T')[0]}.pdf`)
-    } catch (err) {
-      console.error('PDF generation error:', err)
-      throw new Error('Failed to generate PDF')
+      if (reportData.reviews.length > 30) {
+        setColor(SLATE_400)
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'italic')
+        doc.text(`+ ${reportData.reviews.length - 30} more reviews not shown`, margin, y)
+        y += 8
+      }
+      y += 4
     }
+
+    if (reportData.deals?.length) {
+      addSection('Deals & Promotions')
+
+      reportData.deals.forEach((deal, i) => {
+        newPageIfNeeded(36)
+
+        setColor([240, 253, 244], 'fill')
+        doc.roundedRect(margin, y, contentWidth, 32, 3, 3, 'F')
+        setColor(GREEN, 'fill')
+        doc.roundedRect(margin, y, 3, 32, 1.5, 1.5, 'F')
+
+        setColor(SLATE_900)
+        doc.setFontSize(9.5)
+        doc.setFont('helvetica', 'bold')
+        doc.text(deal.title || 'Untitled Deal', margin + 7, y + 8)
+
+        if (deal.discount_type && deal.discount_value) {
+          const label = deal.discount_type === 'percentage' ? `${deal.discount_value}% OFF` : `$${deal.discount_value} OFF`
+          setColor(GREEN, 'fill')
+          doc.roundedRect(pageWidth - margin - 28, y + 2, 26, 10, 3, 3, 'F')
+          setColor(WHITE)
+          doc.setFontSize(8)
+          doc.setFont('helvetica', 'bold')
+          doc.text(label, pageWidth - margin - 15, y + 8.5, { align: 'center' })
+        }
+
+        setColor(SLATE_600)
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
+        const meta = [
+          deal.is_active ? '● Active' : '○ Inactive',
+          deal.expiry_date ? `Expires ${new Date(deal.expiry_date).toLocaleDateString()}` : '',
+          deal.original_price ? `$${deal.original_price} → $${deal.discounted_price}` : '',
+        ].filter(Boolean).join('   ')
+        doc.text(meta, margin + 7, y + 17)
+
+        if (deal.description) {
+          setColor(SLATE_400)
+          doc.setFontSize(7.5)
+          doc.setFont('helvetica', 'italic')
+          const wrap = doc.splitTextToSize(deal.description, contentWidth - 14)
+          doc.text(wrap[0], margin + 7, y + 25)
+        }
+
+        y += 36
+      })
+      y += 4
+    }
+
+    if (reportData.favorites?.length) {
+      addSection('Favourites')
+      setColor(SLATE_600)
+      doc.setFontSize(8.5)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`${reportData.favorites.length} user${reportData.favorites.length !== 1 ? 's' : ''} have saved this business.`, margin, y)
+      y += 10
+
+      const cap = Math.min(reportData.favorites.length, 20)
+      reportData.favorites.slice(0, cap).forEach((fav, i) => {
+        newPageIfNeeded(8)
+        setColor(i % 2 === 0 ? SLATE_100 : WHITE, 'fill')
+        doc.roundedRect(margin, y, contentWidth, 7, 1.5, 1.5, 'F')
+        setColor(SLATE_600)
+        doc.setFontSize(8)
+        doc.text(`${i + 1}.  Saved on ${new Date(fav.created_at).toLocaleDateString()}`, margin + 4, y + 5)
+        y += 9
+      })
+      if (reportData.favorites.length > 20) {
+        setColor(SLATE_400)
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'italic')
+        doc.text(`+ ${reportData.favorites.length - 20} more`, margin, y + 4)
+        y += 10
+      }
+      y += 6
+    }
+
+    addFooter()
+    doc.addPage()
+    addPageHeader()
+    addSection('Export Summary')
+
+    const summaryRows = [
+      ['Business Info',      reportData.business ? 'Included' : 'Not included'],
+      ['Rating',             reportData.business?.rating ? `${reportData.business.rating}/5` : 'N/A'],
+      ['Total Reviews',      String(reportData.reviews?.length  || 0)],
+      ['Total Deals',        String(reportData.deals?.length    || 0)],
+      ['Total Favourites',   String(reportData.favorites?.length || 0)],
+      ['Export Start',       reportData.dateRange.start],
+      ['Export End',         reportData.dateRange.end],
+      ['Generated At',       new Date().toLocaleString()],
+    ]
+    summaryRows.forEach(([k, v], i) => addKV(k, v, i % 2 === 0))
+
+    y += 10
+    newPageIfNeeded(60)
+
+    setColor(SLATE_100, 'fill')
+    doc.roundedRect(margin, y, contentWidth, 52, 6, 6, 'F')
+    setColor(BLUE, 'fill')
+    doc.roundedRect(margin, y, contentWidth, 2, 6, 6, 'F')
+
+    doc.addImage(vicinityLogoPng, 'PNG', pageWidth / 2 - 8, y + 8, 16, 16)
+
+    setColor(SLATE_900)
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Thank you for being part of Vicinity!', pageWidth / 2, y + 34, { align: 'center' })
+
+    setColor(SLATE_400)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text('We are glad to support your business journey.', pageWidth / 2, y + 42, { align: 'center' })
+
+    y += 60
+    addFooter()
+
+    doc.save(`${businessName}_Vicinity_Report_${new Date().toISOString().split('T')[0]}.pdf`)
+  } catch (err) {
+    console.error('PDF generation error:', err)
+    throw new Error('Failed to generate PDF')
   }
+}
 
 
   const toggleExportOption = (option) => {

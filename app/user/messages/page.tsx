@@ -356,7 +356,11 @@ export default function UserMessagesPage() {
 
 
   useEffect(() => {
-    if (!selectedRequest?.id) return
+     console.log("Selected Request:", selectedRequest?.id);
+
+  if (!selectedRequest?.id) return;
+
+  console.log("Creating subscription...");
 
     const channel = supabase
       .channel(`user-msgs-${selectedRequest.id}`)
@@ -368,15 +372,42 @@ export default function UserMessagesPage() {
           table: 'messages',
           filter: `request_id=eq.${selectedRequest.id}`,
         },
-        () => loadMessages(selectedRequest.id, false)
+        (payload) => {
+  console.log("MESSAGE EVENT", payload)
+  loadMessages(selectedRequest.id, false)
+}
       )
-      .subscribe()
+      .subscribe((status) => {
+          console.log("Realtime Status:", status);
+        });
 
     return () => {
+        console.log("Removing channel", selectedRequest?.id);
+
       supabase.removeChannel(channel)
     }
   }, [selectedRequest?.id, supabase, loadMessages])
 
+  useEffect(() => {
+  console.log("SUB EFFECT RUN");
+}, [loadMessages]);
+
+useEffect(() => {
+  const channel = supabase
+    .channel('test-realtime')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'messages',
+    }, (payload) => {
+      console.log('REALTIME WORKS:', payload)
+    })
+    .subscribe((status) => {
+      console.log('TEST STATUS:', status)
+    })
+
+  return () => supabase.removeChannel(channel)
+}, [])
 
   const handleSendFirstMessage = async (e) => {
     e.preventDefault()
