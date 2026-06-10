@@ -18,10 +18,10 @@ const GLASS_CARD =
   'bg-white/88 dark:bg-[#0d142496] backdrop-blur-2xl border border-blue-500/12 dark:border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)] relative overflow-hidden transition-colors duration-300'
 
 const GLASS_INPUT_BASE =
-  'w-full px-4 py-3 rounded-2xl outline-none focus:outline-none transition-all text-sm'
+  'w-full px-4 py-3 rounded-lg outline-none focus:outline-none transition-all text-sm'
 
 const GLASS_INPUT_THEME =
-  'bg-white dark:bg-white/4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 border border-blue-500/15 dark:border-white/10'
+  'bg-white dark:bg-white/4 text-slate-900 placeholder-slate-400 dark:placeholder-slate-500 border border-blue-500/15 dark:border-white/10'
 
 const GLASS_INPUT_NORMAL =
   'focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-white/6'
@@ -231,7 +231,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen relative flex flex-col bg-white dark:bg-[#081120] transition-colors duration-300 font-sans selection:bg-blue-600 selection:text-white">
+    <main className="min-h-screen relative flex flex-col bg-white dark:bg-[#081120] transition-colors duration-300  selection:bg-blue-600 selection:text-white">
       <GridBackground />
       <AuthNavbar linkTo="/signup" linkText="Sign Up" homeText="Back Home" />
 
@@ -339,7 +339,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600  transition-colors"
                   >
                     {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
                   </button>

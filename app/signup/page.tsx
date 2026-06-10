@@ -50,7 +50,7 @@ const LABEL_STYLE =
   'block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider'
 
 const INPUT_STYLE =
-  'w-full py-3 bg-white dark:bg-white/4 border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 focus:bg-blue-50/60 dark:focus:bg-white/6 focus:border-blue-500'
+  'w-full py-3 bg-white dark:bg-white/4 border border-blue-500/15 dark:border-white/10 rounded-lg text-slate-900 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 focus:bg-blue-50/60 dark:focus:bg-white/6 focus:border-blue-500'
 
 
 const BUSINESS_TYPES = [
@@ -103,7 +103,7 @@ const BUSINESS_STEPS = [
   { id: 4, label: 'Security', icon: FaLock },
   { id: 5, label: 'Confirm', icon: FaCheck },
 ]
-
+ 
 const COMMUNITY_STEPS = [
   { id: 1, label: 'Profile', icon: FaUser },
   { id: 2, label: 'Interests', icon: FaStar },
@@ -795,15 +795,15 @@ const BusinessStepForm = ({
         {step === 1 && (
           <div className="space-y-5">
             <h3 className={`text-xl font-bold ${TEXT_MAIN} mb-6`}>Tell us about yourself</h3>
-            <Input label="Your Full Name" required value={form.name} onChange={(e) => onInputChange('name', e.target.value)} error={errors.name} icon={FaUser} />
-            <Input label="Email Address" type="email" required value={form.email} onChange={(e) => onInputChange('email', e.target.value)} error={errors.email} icon={FaEnvelope} />
+            <Input label="Your Full Name" placeholder="Will Jacks" required value={form.name} onChange={(e) => onInputChange('name', e.target.value)} error={errors.name} icon={FaUser} />
+            <Input label="Email Address" placeholder="willjacks83@gmail.com" type="email" required value={form.email} onChange={(e) => onInputChange('email', e.target.value)} error={errors.email} icon={FaEnvelope} />
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-5">
             <h3 className={`text-xl font-bold ${TEXT_MAIN} mb-6`}>Business Details</h3>
-            <Input label="Business Name" required value={form.businessName} onChange={(e) => onInputChange('businessName', e.target.value)} error={errors.businessName} icon={FaBuilding} />
+            <Input label="Business Name" placeholder='24 Fitness GYM' required value={form.businessName} onChange={(e) => onInputChange('businessName', e.target.value)} error={errors.businessName} icon={FaBuilding} />
             <Select label="Business Type" required value={form.businessType} onChange={(e) => onInputChange('businessType', e.target.value)} error={errors.businessType} options={BUSINESS_TYPES} />
 
             {form.businessType === 'Other' && (
@@ -818,18 +818,18 @@ const BusinessStepForm = ({
               />
             )}
 
-            <Input label="Phone Number" type="tel" required value={form.phone} onChange={(e) => onInputChange('phone', e.target.value)} error={errors.phone} icon={FaPhone} />
-            <Input label="Website" value={form.website} onChange={(e) => onInputChange('website', e.target.value)} error={errors.website} placeholder="Optional" icon={FaGlobe} />
+            <Input label="Phone Number" placeholder='+1 212 555 1234' type="tel" required value={form.phone} onChange={(e) => onInputChange('phone', e.target.value)} error={errors.phone} icon={FaPhone} />
+            <Input label="Website (Optional)" value={form.website} onChange={(e) => onInputChange('website', e.target.value)} error={errors.website} placeholder="www.24fitness.com.us" icon={FaGlobe} />
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-5">
             <h3 className={`text-xl font-bold ${TEXT_MAIN} mb-6`}>Business Location</h3>
-            <Input label="Street Address" required value={form.streetAddress} onChange={(e) => onInputChange('streetAddress', e.target.value)} error={errors.streetAddress} icon={FaMapPin} />
+            <Input label="Street Address" placeholder='#-123, Lincon Towers, Downtown' required value={form.streetAddress} onChange={(e) => onInputChange('streetAddress', e.target.value)} error={errors.streetAddress} icon={FaMapPin} />
             <div className="grid grid-cols-2 gap-4">
-              <Input label="City" required value={form.city} onChange={(e) => onInputChange('city', e.target.value)} error={errors.city} />
-              <Input label="ZIP Code" required value={form.zipCode} onChange={(e) => onInputChange('zipCode', e.target.value)} error={errors.zipCode} />
+              <Input label="City" placeholder='LA' required value={form.city} onChange={(e) => onInputChange('city', e.target.value)} error={errors.city} />
+              <Input label="ZIP Code" placeholder='10001' required value={form.zipCode} onChange={(e) => onInputChange('zipCode', e.target.value)} error={errors.zipCode} />
             </div>
             <Select label="State" required value={form.state} onChange={(e) => onInputChange('state', e.target.value)} error={errors.state} options={US_STATES} />
           </div>
@@ -849,13 +849,14 @@ const BusinessStepForm = ({
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
+                  placeholder='********'
                   onChange={(e) => onInputChange('password', e.target.value)}
                   className={`${INPUT_STYLE} pl-11`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 transition-colors"
                 >
                   {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
                 </button>
@@ -888,13 +889,14 @@ const BusinessStepForm = ({
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={form.confirmPassword}
+                  placeholder='********'
                   onChange={(e) => onInputChange('confirmPassword', e.target.value)}
                   className={`${INPUT_STYLE} pl-11`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600  transition-colors"
                 >
                   {showConfirmPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
                 </button>
@@ -1044,10 +1046,10 @@ const CommunityStepForm = ({
         {step === 1 && (
           <div className="space-y-5">
             <h3 className={`text-xl font-bold ${TEXT_MAIN} mb-6`}>Create Your Profile</h3>
-            <Input label="Full Name" required value={form.name} onChange={(e) => onInputChange('name', e.target.value)} error={errors.name} icon={FaUser} />
-            <Input label="Email Address" type="email" required value={form.email} onChange={(e) => onInputChange('email', e.target.value)} error={errors.email} icon={FaEnvelope} />
-            <Input label="City" required value={form.city} onChange={(e) => onInputChange('city', e.target.value)} error={errors.city} icon={FaMapPin} />
-            <Input label="ZIP Code (Optional)" value={form.zipCode} onChange={(e) => onInputChange('zipCode', e.target.value)} error={errors.zipCode} placeholder="Optional" />
+            <Input label="Full Name" placeholder="Cooper Wills" required value={form.name} onChange={(e) => onInputChange('name', e.target.value)} error={errors.name} icon={FaUser} />
+            <Input label="Email Address" type="email" placeholder="cooper.wills@example.com" required value={form.email} onChange={(e) => onInputChange('email', e.target.value)} error={errors.email} icon={FaEnvelope} />
+            <Input label="City" placeholder="Los Angeles" required value={form.city} onChange={(e) => onInputChange('city', e.target.value)} error={errors.city} icon={FaMapPin} />
+            <Input label="ZIP Code (Optional)" value={form.zipCode} onChange={(e) => onInputChange('zipCode', e.target.value)} error={errors.zipCode} placeholder="10001" />
           </div>
         )}
 
@@ -1099,13 +1101,14 @@ const CommunityStepForm = ({
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
+                  placeholder="********"
                   onChange={(e) => onInputChange('password', e.target.value)}
                   className={`${INPUT_STYLE} pl-11`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 transition-colors"
                 >
                   {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
                 </button>
@@ -1138,13 +1141,14 @@ const CommunityStepForm = ({
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={form.confirmPassword}
+                  placeholder="********"
                   onChange={(e) => onInputChange('confirmPassword', e.target.value)}
                   className={`${INPUT_STYLE} pl-11`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600  transition-colors"
                 >
                   {showConfirmPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
                 </button>
@@ -1305,7 +1309,7 @@ const Select = ({
           {placeholder}
         </option>
         {options.map((o) => (
-          <option key={o} value={o} className="bg-white dark:bg-[#111827]">
+          <option key={o} value={o} className="bg-white dark:bg-[#111827] dark:text-white">
             {o}
           </option>
         ))}

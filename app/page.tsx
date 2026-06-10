@@ -5,7 +5,7 @@
 // Combines animated UI components with Framer Motion to create an engaging marketing experience.
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { Inter, Outfit } from "next/font/google";
 import {
   FaArrowRight,
@@ -25,6 +25,7 @@ import {
   FaEnvelope,FaTwitter, FaInstagram, FaLinkedin
 } from "react-icons/fa";
 import Navbar from "../components/Navbar";
+
 import { useTheme } from "../context/ThemeContext";
 import { BackgroundBeamsWithCollision } from "@/components/ui/beams-collision";
 import dynamic from "next/dynamic";
@@ -140,16 +141,17 @@ function FeatureCard({ icon, title, text, badge, delay = 0 }) {
   );
 }
 
-function HeroSection() {
+function HeroSection({ isAdhd }: { isAdhd: boolean }) {
   const words = ["spas", "cafes", "shops", "salons", "gyms"];
   const [currentWord, setCurrentWord] = useState(0);
 
   useEffect(() => {
+    if (isAdhd) return;
     const interval = setInterval(() => {
       setCurrentWord((prev) => (prev + 1) % words.length);
     }, 2400);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAdhd]);
 
   return (
     <section className="relative overflow-hidden px-6 pb-20 pt-32 md:pb-24 md:pt-40 h-screen max-h-screen flex flex-col justify-center">
@@ -329,9 +331,10 @@ function HeroSection() {
                   <div className="relative z-10 flex items-center justify-center rounded-[14px] bg-white dark:bg-[#0f1b2d]">
                     <div className="h-[180px] w-[180px]">
                       <DotLottieReact
+                        key={isAdhd ? "lottie-hero-paused" : "lottie-hero-playing"}
                         src="https://lottie.host/33802768-1bbb-4a7b-a3cc-6c6151c8a4b5/tLoA9BEj41.lottie"
                         loop
-                        autoplay
+                        autoplay={!isAdhd}
                       />
                     </div>
                   </div>
@@ -685,7 +688,7 @@ function HowItWorksSection() {
             </h2>
 
             <p className="mt-5 text-[15px] leading-8 text-slate-500 dark:text-slate-400">
-              Whether you're looking for a new coffee shop, a trusted mechanic, or tonight's dinner spot — Vicinity gets you there faster.
+              Whether you&apos;re looking for a new coffee shop, a trusted mechanic, or tonight&apos;s dinner spot — Vicinity gets you there faster.
             </p>
 
             <motion.a
@@ -719,7 +722,7 @@ function HowItWorksSection() {
 }
 
 
-function AudienceSection() {
+function AudienceSection({ isAdhd }: { isAdhd: boolean }) {
   const cardClass =
     "group relative flex flex-col items-center text-center overflow-hidden rounded-[32px] border bg-white/80 pt-12 px-6 shadow-[0_8px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:bg-white/[0.03] transition-all duration-300";
 
@@ -777,9 +780,10 @@ function AudienceSection() {
             <div className="relative p-6 flex h-[200px] w-full items-end justify-center overflow-hidden md:h-[240px]">
               <div className="h-[160px] w-[160px] md:h-[180px] md:w-[180px]">
                 <DotLottieReact
+                  key={isAdhd ? "lottie-aud1-paused" : "lottie-aud1-playing"}
                   src="https://lottie.host/0a569a01-8ee1-4d24-b8a7-a8506acc7c49/f4a3YwXYcM.lottie"
                   loop
-                  autoplay
+                  autoplay={!isAdhd}
                 />
               </div>
             </div>
@@ -828,9 +832,10 @@ function AudienceSection() {
          <div className="relative flex w-full items-center justify-center  pb-4">
             <div className="h-[160px] w-[160px] md:h-[180px] md:w-[180px] scale-[1.2] md:scale-[1.7] transform-gpu">
               <DotLottieReact
+                key={isAdhd ? "lottie-aud2-paused" : "lottie-aud2-playing"}
                 src="https://lottie.host/a787e51b-7df0-41d2-8d23-a85c1c1a9576/nZxquDKzQ5.lottie"
                 loop
-                autoplay
+                autoplay={!isAdhd}
               />
             </div>
           </div>
@@ -1354,21 +1359,35 @@ function Footer() {
 
 
 export default function LandingPage() {
+  const [isAdhd, setIsAdhd] = useState(false);
+
+  useEffect(() => {
+    const checkAdhd = () => {
+      setIsAdhd(document.documentElement.classList.contains('a11y-adhd'));
+    };
+    checkAdhd();
+    const observer = new MutationObserver(checkAdhd);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <main
-      className={`${inter.variable} ${outfit.variable} relative min-h-screen overflow-x-hidden bg-transparent text-slate-900 transition-colors duration-300 dark:text-white`}
-      style={{ fontFamily: "var(--font-inter)" }}
-    >
-      <div className="relative z-10">
-        <Navbar />
-        <HeroSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <AudienceSection />
-        <FAQSection />
-        <CTASection />
-        <Footer />
-      </div>
-    </main>
+    <MotionConfig reducedMotion={isAdhd ? "always" : "user"}>
+      <main
+        className={`${inter.variable} ${outfit.variable} relative min-h-screen overflow-x-hidden bg-transparent text-slate-900 transition-colors duration-300 dark:text-white`}
+        style={{ fontFamily: "var(--font-inter)" }}
+      >
+        <div className="relative z-10">
+          <Navbar />
+          <HeroSection isAdhd={isAdhd} />
+          <FeaturesSection />
+          <HowItWorksSection />
+          <AudienceSection isAdhd={isAdhd} />
+          <FAQSection />
+          <CTASection />
+          <Footer />
+        </div>
+      </main>
+    </MotionConfig>
   );
 }

@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic'
 import { ThemeProvider } from '../context/ThemeContext'
 import { AuthProvider } from '../context/AuthContext'
 import '../styles/globals.css'
+import '../styles/accessibility.css'
+import AccessibilityProvider from '../components/accessibility/AccessibilityProvider'
 
 
 const AIChat = dynamic(() => import('../components/AIChat'), { ssr: false })
@@ -87,7 +89,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         <ThemeProvider>
           <AuthProvider>
-            {children}
+            <AccessibilityProvider>
+              {children}
+            </AccessibilityProvider>
 
             <div className="fixed bottom-6 right-6 z-50">
               <AIChat />
