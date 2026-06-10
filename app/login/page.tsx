@@ -21,7 +21,7 @@ const GLASS_INPUT_BASE =
   'w-full px-4 py-3 rounded-2xl outline-none focus:outline-none transition-all text-sm'
 
 const GLASS_INPUT_THEME =
-  'bg-white dark:bg-white/4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 border border-blue-500/15 dark:border-white/10'
+  'bg-white dark:bg-white/4 text-slate-900 placeholder-slate-400 border border-blue-500/15 dark:border-white/10'
 
 const GLASS_INPUT_NORMAL =
   'focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-white/6'
