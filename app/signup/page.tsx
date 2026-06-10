@@ -50,8 +50,7 @@ const LABEL_STYLE =
   'block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider'
 
 const INPUT_STYLE =
-  'w-full py-3 bg-white dark:bg-white/4 border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 focus:bg-blue-50/60 dark:focus:bg-white/6 focus:border-blue-500'
-
+  'w-full py-3 bg-white dark:bg-white/4 border border-blue-500/15 dark:border-white/10 rounded-2xl text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-blue-50/60 dark:focus:bg-white/6 focus:border-blue-500'
 
 const BUSINESS_TYPES = [
   'Restaurant',
