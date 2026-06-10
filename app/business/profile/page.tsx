@@ -72,10 +72,10 @@ const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative min-h-screen text-slate-900 transition-colors duration-300 dark:text-white`
 
 const GLASS_BG =
-  'bg-white/75 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 transition-colors duration-300'
+  '  transition-colors duration-300'
 
 const GLASS_CARD =
-  'bg-white/80 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 rounded-[28px] p-8 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] transition-all duration-300'
+  ' rounded-[28px] p-8  transition-all duration-300'
 
 const GLASS_HOVER =
   'hover:bg-blue-50/80 dark:hover:bg-[#162033] hover:border-blue-500/28 transition-colors duration-300'
@@ -105,7 +105,7 @@ const TipCard = ({ icon: Icon, title, desc }) => (
   <motion.div
     initial={{ opacity: 0, y: 5 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 ${GLASS_HOVER} px-4 py-3 rounded-2xl transition-all group shadow-sm`}
+    className={` ${GLASS_HOVER} px-4 py-3 rounded-2xl transition-all group shadow-sm`}
   >
     <div className="flex items-start gap-3">
       <Icon
@@ -433,20 +433,6 @@ export default function BusinessProfilePage() {
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
-                <motion.div
-                  className={`text-xs px-3 py-1.5 rounded-full border flex items-center gap-2 transition-all ${
-                    completion === 100
-                      ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-300'
-                      : 'bg-white dark:bg-[#162033] border-blue-500/15 dark:border-white/10 text-slate-600 dark:text-slate-300'
-                  }`}
-                >
-                  <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-blue-500"
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                  {completion}%
-                </motion.div>
 
                 <motion.button
                   onClick={handleSave}
@@ -505,7 +491,7 @@ export default function BusinessProfilePage() {
                   className="space-y-6"
                 >
                   <div className="grid lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-2">
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -633,81 +619,7 @@ export default function BusinessProfilePage() {
                       </motion.div>
                     </div>
 
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.15 }}
-                      className="space-y-4"
-                    >
-                      <div className={GLASS_CARD}>
-                        <h4 className="text-xs font-[var(--font-outfit)] font-semibold tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase mb-4">
-                          Profile Progress
-                        </h4>
-
-                        <div className="relative w-24 h-24 mx-auto mb-4">
-                          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                            <circle
-                              cx="50"
-                              cy="50"
-                              r="45"
-                              fill="none"
-                              className="stroke-slate-200 dark:stroke-white/10"
-                              strokeWidth="3"
-                            />
-                            <motion.circle
-                              cx="50"
-                              cy="50"
-                              r="45"
-                              fill="none"
-                              stroke="url(#grad)"
-                              strokeWidth="3"
-                              strokeDasharray={`${completion * 2.83} 283`}
-                              strokeLinecap="round"
-                            />
-                            <defs>
-                              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style={{ stopColor: '#3b82f6' }} />
-                                <stop offset="100%" style={{ stopColor: '#06b6d4' }} />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-2xl font-[var(--font-outfit)] font-semibold tracking-[-0.04em] text-transparent bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text">
-                              {completion}%
-                            </span>
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-                          Almost there!
-                        </p>
-                      </div>
-
-                      {(data.rating > 0 || data.review_count > 0) && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className={GLASS_CARD}
-                        >
-                          <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-[var(--font-outfit)] font-semibold tracking-[0.16em] mb-3">
-                            Rating
-                          </p>
-
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-3xl font-[var(--font-outfit)] font-semibold text-blue-600 dark:text-blue-300">
-                              {data.rating.toFixed(1)}
-                            </span>
-                            <FaEye className="text-blue-600 dark:text-blue-300" />
-                          </div>
-
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {data.review_count} reviews
-                          </p>
-                        </motion.div>
-                      )}
-                    </motion.div>
+                    
                   </div>
                 </motion.div>
               )}
