@@ -372,7 +372,7 @@ const vicinityLogoPng = await new Promise((resolve) => {
       if (type === 'fill') doc.setFillColor(...rgb)
       else doc.setTextColor(...rgb)
     }
-
+//comment
     setColor([10, 25, 60], 'fill')
     doc.rect(0, 0, pageWidth, pageHeight, 'F')
 
