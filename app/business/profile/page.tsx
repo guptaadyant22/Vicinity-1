@@ -72,10 +72,10 @@ const PAGE_WRAP =
   `${inter.variable} ${outfit.variable} relative min-h-screen text-slate-900 transition-colors duration-300 dark:text-white`
 
 const GLASS_BG =
-  'bg-white/75 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 transition-colors duration-300'
+  '  transition-colors duration-300'
 
 const GLASS_CARD =
-  'bg-white/80 dark:bg-[#0f172a] backdrop-blur-xl border border-blue-500/12 dark:border-white/10 rounded-[28px] p-8 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] transition-all duration-300'
+  ' rounded-[28px] p-8  transition-all duration-300'
 
 const GLASS_HOVER =
   'hover:bg-blue-50/80 dark:hover:bg-[#162033] hover:border-blue-500/28 transition-colors duration-300'
@@ -105,7 +105,7 @@ const TipCard = ({ icon: Icon, title, desc }) => (
   <motion.div
     initial={{ opacity: 0, y: 5 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 ${GLASS_HOVER} px-4 py-3 rounded-2xl transition-all group shadow-sm`}
+    className={` ${GLASS_HOVER} px-4 py-3 rounded-2xl transition-all group shadow-sm`}
   >
     <div className="flex items-start gap-3">
       <Icon
