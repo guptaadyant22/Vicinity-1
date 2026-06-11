@@ -47,6 +47,7 @@ export default function BusinessMessagesPage() {
   const [requests, setRequests] = useState([])
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [currentMessages, setCurrentMessages] = useState([])
+  const [userNames, setUserNames] = useState<Record<string, string>>({})
 
   const [loading, setLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
@@ -94,6 +95,17 @@ export default function BusinessMessagesPage() {
       if (reqErr) throw reqErr
       const list = rows || []
       setRequests(list)
+
+      // Fetch display names for all user IDs
+      const uids = Array.from(new Set(list.map((r) => r.user_id).filter(Boolean)))
+      if (uids.length > 0) {
+        try {
+          const res = await fetch('/api/user-names', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userIds: uids }) })
+          const json = await res.json()
+          if (json.names) setUserNames((prev) => ({ ...prev, ...json.names }))
+        } catch (_e) { /* ignore name fetch failures */ }
+      }
+
       if (list.length === 0) { setSelectedRequest(null); setCurrentMessages([]); return }
       const currentId = selectedRequestIdRef.current
       const stillExists = currentId ? list.find((r) => r.id === currentId) : null
@@ -268,6 +280,7 @@ export default function BusinessMessagesPage() {
                 {filteredRequests.length > 0 ? (
                   filteredRequests.map((request, idx) => (
                     <InboxRow key={request.id} request={request} idx={idx} selected={selectedRequest?.id === request.id}
+                      userName={userNames[request.user_id]}
                       onSelect={async () => { setSelectedRequest(request); await loadConversation(request.id) }} />
                   ))
                 ) : (
@@ -297,7 +310,7 @@ export default function BusinessMessagesPage() {
                         </div>
                         <div className="min-w-0">
                           <h2 className="font-[var(--font-outfit)] text-sm font-semibold text-slate-900 dark:text-white truncate">
-                            User ···{selectedRequest.user_id?.slice(-4)}
+                            {userNames[selectedRequest.user_id] || `User ···${selectedRequest.user_id?.slice(-4)}`}
                           </h2>
                           <p className="text-[10px] text-slate-500 dark:text-slate-400">Started {formatTime(selectedRequest.created_at)}</p>
                         </div>
@@ -408,7 +421,7 @@ export default function BusinessMessagesPage() {
   )
 }
 
-function InboxRow({ request, idx, selected, onSelect }) {
+function InboxRow({ request, idx, selected, onSelect, userName }) {
   const isPending = request.status === 'pending'
   const isActive = request.status === 'active'
 
@@ -431,7 +444,7 @@ function InboxRow({ request, idx, selected, onSelect }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <h4 className="truncate font-[var(--font-outfit)] text-[13px] font-semibold text-slate-900 dark:text-white">
-              User ···{request.user_id?.slice(-4)}
+              {userName || `User ···${request.user_id?.slice(-4)}`}
             </h4>
             <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${getStatusBadgeClasses(request.status)}`}>
               {request.status}
