@@ -240,6 +240,7 @@ export default function BusinessMessagesPage() {
 
   const channel = supabase
     .channel(`biz-msgs-${selectedRequest.id}`)
+    // @ts-ignore
     .on(
       'postgres_changes',
       {
@@ -248,7 +249,7 @@ export default function BusinessMessagesPage() {
         table: 'messages',
         filter: `request_id=eq.${selectedRequest.id}`,
       },
-      (payload) => {
+      (payload: any) => {
         console.log("BUSINESS MESSAGE EVENT", payload);
         loadConversation(selectedRequest.id, false);
       }
@@ -352,31 +353,20 @@ export default function BusinessMessagesPage() {
       const messageText = replyText.trim()
       const now = new Date().toISOString()
 
-      console.log('Vicinity Sending business reply via RPC...')
-      const { error: rpcErr } = await supabase.rpc('send_chat_message', {
-        p_request_id: selectedRequest.id,
-        p_sender: 'business',
-        p_text: messageText,
+      const { error: insertErr } = await supabase.from('messages').insert({
+        request_id: selectedRequest.id,
+        sender: 'business',
+        text: messageText,
+        created_at: now,
+        user_id: selectedRequest.user_id,
       })
 
-      if (rpcErr) {
-        console.warn('Vicinity Reply RPC failed, falling back:', rpcErr.message)
+      if (insertErr) throw insertErr
 
-        const { error: insertErr } = await supabase.from('messages').insert({
-          request_id: selectedRequest.id,
-          sender: 'business',
-          text: messageText,
-          created_at: now,
-          user_id: selectedRequest.user_id,
-        })
-
-        if (insertErr) throw insertErr
-
-        await supabase
-          .from('message_requests')
-          .update({ updated_at: now })
-          .eq('id', selectedRequest.id)
-      }
+      await supabase
+        .from('message_requests')
+        .update({ updated_at: now })
+        .eq('id', selectedRequest.id)
 
       setReplyText('')
       setSuccess('Message sent!')

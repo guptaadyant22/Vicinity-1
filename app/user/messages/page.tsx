@@ -356,14 +356,15 @@ export default function UserMessagesPage() {
 
 
   useEffect(() => {
-     console.log("Selected Request:", selectedRequest?.id);
+    console.log('Selected Request:', selectedRequest?.id)
 
-  if (!selectedRequest?.id) return;
+    if (!selectedRequest?.id) return
 
-  console.log("Creating subscription...");
+    console.log('Creating subscription...')
 
     const channel = supabase
       .channel(`user-msgs-${selectedRequest.id}`)
+      // @ts-ignore
       .on(
         'postgres_changes',
         {
@@ -372,42 +373,49 @@ export default function UserMessagesPage() {
           table: 'messages',
           filter: `request_id=eq.${selectedRequest.id}`,
         },
-        (payload) => {
-  console.log("MESSAGE EVENT", payload)
-  loadMessages(selectedRequest.id, false)
-}
+        (payload: any) => {
+          console.log('MESSAGE EVENT', payload)
+          loadMessages(selectedRequest.id, false)
+        }
       )
       .subscribe((status) => {
-          console.log("Realtime Status:", status);
-        });
+        console.log('Realtime Status:', status)
+      })
 
     return () => {
-        console.log("Removing channel", selectedRequest?.id);
+      console.log('Removing channel', selectedRequest?.id)
 
       supabase.removeChannel(channel)
     }
   }, [selectedRequest?.id, supabase, loadMessages])
 
   useEffect(() => {
-  console.log("SUB EFFECT RUN");
-}, [loadMessages]);
+    console.log('SUB EFFECT RUN')
+  }, [loadMessages])
 
-useEffect(() => {
-  const channel = supabase
-    .channel('test-realtime')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'messages',
-    }, (payload) => {
-      console.log('REALTIME WORKS:', payload)
-    })
-    .subscribe((status) => {
-      console.log('TEST STATUS:', status)
-    })
+  useEffect(() => {
+    const channel = supabase
+      .channel('test-realtime')
+      // @ts-ignore
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload: any) => {
+          console.log('REALTIME WORKS:', payload)
+        }
+      )
+      .subscribe((status) => {
+        console.log('TEST STATUS:', status)
+      })
 
-  return () => supabase.removeChannel(channel)
-}, [])
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [supabase])
 
   const handleSendFirstMessage = async (e) => {
     e.preventDefault()
@@ -518,29 +526,19 @@ useEffect(() => {
       const messageText = chatMessage.trim()
       const now = new Date().toISOString()
 
-      const { error: rpcErr } = await supabase.rpc('send_chat_message', {
-        p_request_id: selectedRequest.id,
-        p_sender: 'user',
-        p_text: messageText,
-      })
+      const { error: insertErr } = await supabase.from('messages').insert([
+        {
+          request_id: selectedRequest.id,
+          sender: 'user',
+          text: messageText,
+          created_at: now,
+          user_id: user.id,
+        },
+      ])
 
-      if (rpcErr) {
-        console.warn('[Vicinity] Chat RPC failed, falling back:', rpcErr.message)
+      if (insertErr) throw insertErr
 
-        const { error: insertErr } = await supabase.from('messages').insert([
-          {
-            request_id: selectedRequest.id,
-            sender: 'user',
-            text: messageText,
-            created_at: now,
-            user_id: user.id,
-          },
-        ])
-
-        if (insertErr) throw insertErr
-
-        await supabase.from('message_requests').update({ updated_at: now }).eq('id', selectedRequest.id)
-      }
+      await supabase.from('message_requests').update({ updated_at: now }).eq('id', selectedRequest.id)
 
       setChatMessage('')
       await loadRequests(false)
