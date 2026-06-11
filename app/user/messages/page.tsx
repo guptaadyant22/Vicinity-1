@@ -1,9 +1,5 @@
 'use client'
 
-
-// User messaging page for real-time conversations with business owners.
-// Handles thread listing, message sending, and real-time updates via Supabase subscriptions.
-
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -15,8 +11,6 @@ import {
   FaPaperPlane,
   FaStore,
   FaSearch,
-  FaFilter,
-  FaSync,
   FaArrowLeft,
   FaTimes,
 } from 'react-icons/fa'
@@ -24,105 +18,53 @@ import { createClient } from '../../../lib/supabase'
 import UserNavbar from '../../../components/UserNavbar'
 import { FogBackground } from '@/components/ui/fog'
 
-
 const UI = {
-
-  page: 'relative min-h-screen bg-transparent text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-hidden transition-colors duration-300',
-
-
-  shell:
-    'bg-white/20 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/30 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition-colors duration-300',
-
-
-  cardSoft:
-    'bg-white/12 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/25 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.08)] transition-colors duration-300',
-
-
-  input:
-    'w-full px-4 py-3 rounded-2xl bg-white/14 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/25 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-blue-400/60 focus:bg-white/20 dark:focus:bg-white/[0.06] transition-all text-sm',
-
-
-  primaryBtn: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]',
-  secondaryBtn:
-    'bg-white/14 dark:bg-white/[0.04] backdrop-blur-2xl hover:bg-white/22 dark:hover:bg-white/[0.07] text-slate-700 dark:text-white border border-white/25 dark:border-white/10',
+  page: 'relative min-h-screen bg-transparent text-slate-900 dark:text-white font-sans overflow-hidden transition-colors duration-300',
+  input: 'w-full px-3 py-2 rounded-xl bg-white/14 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/25 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-blue-400/60 transition-all text-xs',
+  primaryBtn: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_8px_20px_rgba(59,130,246,0.22)]',
+  shell: 'bg-white/20 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/30 dark:border-white/10 rounded-[24px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition-colors duration-300',
 }
-
 
 const getStatusStyles = (status) => {
-  if (status === 'active') {
-    return {
-      wrap: 'bg-green-100/80 dark:bg-green-500/10 border-green-200/70 dark:border-green-500/30 text-green-700 dark:text-green-300',
-      icon: FaCheck,
-    }
-  }
-
-  if (status === 'ignored') {
-    return {
-      wrap: 'bg-red-100/80 dark:bg-red-500/10 border-red-200/70 dark:border-red-500/30 text-red-700 dark:text-red-300',
-      icon: FaTimesCircle,
-    }
-  }
-
-  return {
-    wrap: 'bg-blue-100/80 dark:bg-blue-500/10 border-blue-200/70 dark:border-blue-500/20 text-blue-700 dark:text-blue-300',
-    icon: FaClock,
-  }
+  if (status === 'active') return { wrap: 'bg-green-100/80 dark:bg-green-500/10 border-green-200/70 dark:border-green-500/30 text-green-700 dark:text-green-300', icon: FaCheck }
+  if (status === 'ignored') return { wrap: 'bg-red-100/80 dark:bg-red-500/10 border-red-200/70 dark:border-red-500/30 text-red-700 dark:text-red-300', icon: FaTimesCircle }
+  return { wrap: 'bg-blue-100/80 dark:bg-blue-500/10 border-blue-200/70 dark:border-blue-500/20 text-blue-700 dark:text-blue-300', icon: FaClock }
 }
-
 
 const formatTime = (dateValue) => {
   if (!dateValue) return 'Recently'
-
-  return new Date(dateValue).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
+  return new Date(dateValue).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
-
 
 const RequestCard = ({ request, selected, onClick }) => {
   const statusStyles = getStatusStyles(request.status)
   const StatusIcon = statusStyles.icon
-
   return (
     <motion.button
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -1 }}
       whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className={`w-full text-left rounded-[22px] border overflow-hidden transition-all backdrop-blur-2xl ${
+      className={`w-full text-left rounded-[18px] border overflow-hidden transition-all backdrop-blur-2xl ${
         selected
-          ? 'border-blue-300/50 dark:border-blue-500/30 bg-white/30 dark:bg-white/[0.06] shadow-lg'
+          ? 'border-blue-300/50 dark:border-blue-500/30 bg-white/30 dark:bg-white/[0.06] shadow-md'
           : 'border-white/25 dark:border-white/10 bg-white/14 dark:bg-white/[0.03] hover:bg-white/20 dark:hover:bg-white/[0.06]'
       }`}
     >
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3 mb-2.5">
+      <div className="p-3">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="min-w-0">
-            <h3 className="text-sm font-black text-slate-900 dark:text-white truncate">
-              {request.businesses?.name || 'Business'}
-            </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase mt-1 truncate">
-              {request.businesses?.type || 'Business'}
-            </p>
+            <h3 className="text-xs font-black text-slate-900 dark:text-white truncate">{request.businesses?.name || 'Business'}</h3>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase mt-0.5 truncate">{request.businesses?.type || 'Business'}</p>
           </div>
-
-          <div className={`shrink-0 px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1.5 ${statusStyles.wrap}`}>
-            <StatusIcon size={10} />
+          <div className={`shrink-0 px-2 py-0.5 rounded-lg border text-[9px] font-bold uppercase flex items-center gap-1 ${statusStyles.wrap}`}>
+            <StatusIcon size={8} />
             {request.status}
           </div>
         </div>
-
-        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2 mb-3">
-          {request.summary || 'No summary yet'}
-        </p>
-
-        <div className="flex items-center justify-between text-[11px]">
+        <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-1 mb-2">{request.summary || 'No summary yet'}</p>
+        <div className="flex items-center justify-between text-[10px]">
           <span className="text-slate-500 dark:text-slate-400 truncate pr-2">
-            {request.businesses?.city || 'Unknown city'}
-            {request.businesses?.state ? `, ${request.businesses.state}` : ''}
+            {request.businesses?.city || 'Unknown city'}{request.businesses?.state ? `, ${request.businesses.state}` : ''}
           </span>
           <span className="font-bold text-blue-600 dark:text-blue-300 shrink-0">Open</span>
         </div>
@@ -131,823 +73,349 @@ const RequestCard = ({ request, selected, onClick }) => {
   )
 }
 
-
-// User messaging page with real-time thread conversations
 export default function UserMessagesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [supabase] = useState(() => createClient())
-
-
   const preselectedBusinessId = searchParams.get('businessId')
-
 
   const [user, setUser] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
-
-
   const [requests, setRequests] = useState([])
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [selectedBusiness, setSelectedBusiness] = useState(null)
   const [messages, setMessages] = useState([])
-
-
   const [loading, setLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [sending, setSending] = useState(false)
-
-
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-
-
   const [firstMessage, setFirstMessage] = useState('')
   const [chatMessage, setChatMessage] = useState('')
-
-
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
-
 
   const selectedRequestIdRef = useRef(null)
   const hasHandledPreselectRef = useRef(false)
   const messagesEndRef = useRef(null)
 
-
-  useEffect(() => {
-    selectedRequestIdRef.current = selectedRequest?.id || null
-  }, [selectedRequest?.id])
-
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
+  useEffect(() => { selectedRequestIdRef.current = selectedRequest?.id || null }, [selectedRequest?.id])
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const {
-          data: { user: authUser },
-        } = await supabase.auth.getUser()
-
-        if (!authUser) {
-          router.push('/login')
-          return
-        }
-
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (!authUser) { router.push('/login'); return }
         setUser(authUser)
       } catch (err) {
-        console.error('Auth error:', err)
         setError('Failed to load account.')
       } finally {
         setAuthLoading(false)
       }
     }
-
     loadUser()
   }, [router, supabase])
 
-
-  const loadRequests = useCallback(
-    async (showLoader = true) => {
-      if (!user?.id) return
-
-      try {
-        if (showLoader) setLoading(true)
-
-        const { data, error: fetchErr } = await supabase
-          .from('message_requests')
-          .select(`*, businesses (id, name, type, city, state, image_url)`)
-          .eq('user_id', user.id)
-          .order('updated_at', { ascending: false })
-
-        if (fetchErr) throw fetchErr
-
-        const rows = data || []
-        setRequests(rows)
-
-
-        if (preselectedBusinessId && !hasHandledPreselectRef.current) {
-          hasHandledPreselectRef.current = true
-
-          const existing = rows.find((r) => r.business_id === preselectedBusinessId)
-
-          if (existing) {
-            setSelectedRequest(existing)
-            setSelectedBusiness(existing.businesses || null)
-            await loadMessages(existing.id, false)
-            return
-          }
-
-          const { data: bizData, error: bizErr } = await supabase
-            .from('businesses')
-            .select('id, name, type, city, state, image_url')
-            .eq('id', preselectedBusinessId)
-            .single()
-
-          if (!bizErr && bizData) {
-            setSelectedBusiness(bizData)
-            setSelectedRequest(null)
-            setMessages([])
-            return
-          }
-        }
-
-
-        if (rows.length === 0) {
-          if (!preselectedBusinessId) {
-            setSelectedRequest(null)
-            setSelectedBusiness(null)
-            setMessages([])
-          }
-          return
-        }
-
-
-        const currentId = selectedRequestIdRef.current
-        const keepSelected = currentId ? rows.find((r) => r.id === currentId) : null
-        const nextSelected = keepSelected || rows[0]
-
-        setSelectedRequest(nextSelected)
-        setSelectedBusiness(nextSelected.businesses || null)
-
-        if (currentId !== nextSelected.id || messages.length === 0) {
-          await loadMessages(nextSelected.id, false)
-        }
-      } catch (err) {
-        console.error('Load requests error:', err)
-        setError('Failed to load messages.')
-      } finally {
-        if (showLoader) setLoading(false)
-      }
-    },
-    [user?.id, preselectedBusinessId, supabase]
-  )
-
-
-  const loadMessages = useCallback(
-    async (requestId, showLoader = true) => {
-      if (!requestId) {
-        setMessages([])
-        return
-      }
-
-      try {
-        if (showLoader) setMessagesLoading(true)
-
-        const { data, error: fetchErr } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('request_id', requestId)
-          .order('created_at', { ascending: true })
-
-        if (fetchErr) throw fetchErr
-        setMessages(data || [])
-
-
-        const { data: freshReq } = await supabase
-          .from('message_requests')
-          .select(`*, businesses (id, name, type, city, state, image_url)`)
-          .eq('id', requestId)
-          .single()
-
-        if (freshReq) {
-          setSelectedRequest(freshReq)
-          setSelectedBusiness(freshReq.businesses || null)
-        }
-      } catch (err) {
-        console.error('Load messages error:', err)
-      } finally {
-        if (showLoader) setMessagesLoading(false)
-      }
-    },
-    [supabase]
-  )
-
-
-  useEffect(() => {
-    if (!user?.id) return
-    loadRequests()
-  }, [user?.id, loadRequests])
-
-
-  useEffect(() => {
-    if (!user?.id) return
-
-    const channel = supabase
-      .channel(`user-requests-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'message_requests',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => loadRequests(false)
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+  const loadMessages = useCallback(async (requestId, showLoader = true) => {
+    if (!requestId) { setMessages([]); return }
+    try {
+      if (showLoader) setMessagesLoading(true)
+      const { data, error: fetchErr } = await supabase.from('messages').select('*').eq('request_id', requestId).order('created_at', { ascending: true })
+      if (fetchErr) throw fetchErr
+      setMessages(data || [])
+      const { data: freshReq } = await supabase.from('message_requests').select(`*, businesses (id, name, type, city, state, image_url)`).eq('id', requestId).single()
+      if (freshReq) { setSelectedRequest(freshReq); setSelectedBusiness(freshReq.businesses || null) }
+    } catch (err) {
+      console.error('Load messages error:', err)
+    } finally {
+      if (showLoader) setMessagesLoading(false)
     }
+  }, [supabase])
+
+  const loadRequests = useCallback(async (showLoader = true) => {
+    if (!user?.id) return
+    try {
+      if (showLoader) setLoading(true)
+      const { data, error: fetchErr } = await supabase.from('message_requests').select(`*, businesses (id, name, type, city, state, image_url)`).eq('user_id', user.id).order('updated_at', { ascending: false })
+      if (fetchErr) throw fetchErr
+      const rows = data || []
+      setRequests(rows)
+
+      if (preselectedBusinessId && !hasHandledPreselectRef.current) {
+        hasHandledPreselectRef.current = true
+        const existing = rows.find((r) => r.business_id === preselectedBusinessId)
+        if (existing) { setSelectedRequest(existing); setSelectedBusiness(existing.businesses || null); await loadMessages(existing.id, false); return }
+        const { data: bizData, error: bizErr } = await supabase.from('businesses').select('id, name, type, city, state, image_url').eq('id', preselectedBusinessId).single()
+        if (!bizErr && bizData) { setSelectedBusiness(bizData); setSelectedRequest(null); setMessages([]); return }
+      }
+
+      if (rows.length === 0) { if (!preselectedBusinessId) { setSelectedRequest(null); setSelectedBusiness(null); setMessages([]) }; return }
+
+      const currentId = selectedRequestIdRef.current
+      const keepSelected = currentId ? rows.find((r) => r.id === currentId) : null
+      const nextSelected = keepSelected || rows[0]
+      setSelectedRequest(nextSelected)
+      setSelectedBusiness(nextSelected.businesses || null)
+      if (currentId !== nextSelected.id || messages.length === 0) await loadMessages(nextSelected.id, false)
+    } catch (err) {
+      setError('Failed to load messages.')
+    } finally {
+      if (showLoader) setLoading(false)
+    }
+  }, [user?.id, preselectedBusinessId, supabase, loadMessages])
+
+  useEffect(() => { if (!user?.id) return; loadRequests() }, [user?.id, loadRequests])
+
+  useEffect(() => {
+    if (!user?.id) return
+    const channel = supabase.channel(`user-requests-${user.id}`).on('postgres_changes', { event: '*', schema: 'public', table: 'message_requests', filter: `user_id=eq.${user.id}` }, () => loadRequests(false)).subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [user?.id, supabase, loadRequests])
 
-
   useEffect(() => {
-    console.log('Selected Request:', selectedRequest?.id)
-
     if (!selectedRequest?.id) return
-
-    console.log('Creating subscription...')
-
-    const channel = supabase
-      .channel(`user-msgs-${selectedRequest.id}`)
+    const channel = supabase.channel(`user-msgs-${selectedRequest.id}`)
       // @ts-ignore
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `request_id=eq.${selectedRequest.id}`,
-        },
-        (payload: any) => {
-          console.log('MESSAGE EVENT', payload)
-          loadMessages(selectedRequest.id, false)
-        }
-      )
-      .subscribe((status) => {
-        console.log('Realtime Status:', status)
-      })
-
-    return () => {
-      console.log('Removing channel', selectedRequest?.id)
-
-      supabase.removeChannel(channel)
-    }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `request_id=eq.${selectedRequest.id}` }, (payload: any) => { loadMessages(selectedRequest.id, false) })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [selectedRequest?.id, supabase, loadMessages])
 
   useEffect(() => {
-    console.log('SUB EFFECT RUN')
-  }, [loadMessages])
-
-  useEffect(() => {
-    const channel = supabase
-      .channel('test-realtime')
+    const channel = supabase.channel('test-realtime')
       // @ts-ignore
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-        },
-        (payload: any) => {
-          console.log('REALTIME WORKS:', payload)
-        }
-      )
-      .subscribe((status) => {
-        console.log('TEST STATUS:', status)
-      })
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload: any) => { console.log('REALTIME WORKS:', payload) })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [supabase])
 
   const handleSendFirstMessage = async (e) => {
     e.preventDefault()
     if (!firstMessage.trim() || !selectedBusiness?.id || !user?.id) return
-
     try {
-      setSending(true)
-      setError(null)
-
+      setSending(true); setError(null)
       const messageText = firstMessage.trim()
       const now = new Date().toISOString()
-
-
-      const { data: rpcData, error: rpcErr } = await supabase.rpc('create_message_thread', {
-        p_business_id: selectedBusiness.id,
-        p_first_message: messageText,
-      })
-
+      const { data: rpcData, error: rpcErr } = await supabase.rpc('create_message_thread', { p_business_id: selectedBusiness.id, p_first_message: messageText })
       if (rpcErr) {
-        console.warn('[Vicinity] RPC failed, falling back:', rpcErr.message)
-
-
         const existingMatch = requests.find((r) => r.business_id === selectedBusiness.id)
-        if (existingMatch) {
-          setSelectedRequest(existingMatch)
-          setSelectedBusiness(existingMatch.businesses || selectedBusiness)
-          setFirstMessage('')
-          await loadMessages(existingMatch.id)
-          setSuccess('You already have a request with this business.')
-          setTimeout(() => setSuccess(null), 2500)
-          return
-        }
-
-
-        const { data: requestRow, error: reqErr } = await supabase
-          .from('message_requests')
-          .insert([
-            {
-              business_id: selectedBusiness.id,
-              user_id: user.id,
-              summary: messageText,
-              status: 'pending',
-              created_at: now,
-              updated_at: now,
-            },
-          ])
-          .select(`*, businesses (id, name, type, city, state, image_url)`)
-          .single()
-
+        if (existingMatch) { setSelectedRequest(existingMatch); setSelectedBusiness(existingMatch.businesses || selectedBusiness); setFirstMessage(''); await loadMessages(existingMatch.id); setSuccess('You already have a request with this business.'); setTimeout(() => setSuccess(null), 2500); return }
+        const { data: requestRow, error: reqErr } = await supabase.from('message_requests').insert([{ business_id: selectedBusiness.id, user_id: user.id, summary: messageText, status: 'pending', created_at: now, updated_at: now }]).select(`*, businesses (id, name, type, city, state, image_url)`).single()
         if (reqErr) throw reqErr
-
-        const { error: msgErr } = await supabase.from('messages').insert([
-          {
-            request_id: requestRow.id,
-            sender: 'user',
-            text: messageText,
-            created_at: now,
-            user_id: user.id,
-          },
-        ])
-
-        if (msgErr) {
-          console.error('[Vicinity] Message insert failed:', msgErr)
-          setError('Request created but first message failed to save. Try sending again.')
-          setSelectedRequest(requestRow)
-          setSelectedBusiness(requestRow.businesses || selectedBusiness)
-          setFirstMessage('')
-          await loadRequests(false)
-          setTimeout(() => setError(null), 4000)
-          return
-        }
-
-        setFirstMessage('')
-        setSelectedRequest(requestRow)
-        setSelectedBusiness(requestRow.businesses || selectedBusiness)
-        setSuccess('Request sent successfully!')
-        setTimeout(() => setSuccess(null), 2500)
-        await loadRequests(false)
-        await loadMessages(requestRow.id, false)
-        return
+        const { error: msgErr } = await supabase.from('messages').insert([{ request_id: requestRow.id, sender: 'user', text: messageText, created_at: now, user_id: user.id }])
+        if (msgErr) { setError('Request created but first message failed.'); setSelectedRequest(requestRow); setSelectedBusiness(requestRow.businesses || selectedBusiness); setFirstMessage(''); await loadRequests(false); setTimeout(() => setError(null), 4000); return }
+        setFirstMessage(''); setSelectedRequest(requestRow); setSelectedBusiness(requestRow.businesses || selectedBusiness); setSuccess('Request sent!'); setTimeout(() => setSuccess(null), 2500); await loadRequests(false); await loadMessages(requestRow.id, false); return
       }
-
-
-      setFirstMessage('')
-      setSuccess(rpcData.already_existed ? 'Thread already exists — opening it.' : 'Request sent successfully!')
-      setTimeout(() => setSuccess(null), 2500)
-
-      await loadRequests(false)
-      await loadMessages(rpcData.request_id, false)
+      setFirstMessage(''); setSuccess(rpcData.already_existed ? 'Thread already exists — opening it.' : 'Request sent!'); setTimeout(() => setSuccess(null), 2500); await loadRequests(false); await loadMessages(rpcData.request_id, false)
     } catch (err) {
-      console.error('[Vicinity] First message error:', err)
-      setError(`Failed to send request: ${err.message || 'Unknown error'}`)
-      setTimeout(() => setError(null), 4000)
+      setError(`Failed to send: ${err.message || 'Unknown error'}`); setTimeout(() => setError(null), 4000)
     } finally {
       setSending(false)
     }
   }
-
 
   const handleSendChatMessage = async (e) => {
     e.preventDefault()
     if (!chatMessage.trim() || !selectedRequest?.id || selectedRequest.status !== 'active') return
-
     try {
-      setSending(true)
-      setError(null)
-
+      setSending(true); setError(null)
       const messageText = chatMessage.trim()
       const now = new Date().toISOString()
-
-      const { error: insertErr } = await supabase.from('messages').insert([
-        {
-          request_id: selectedRequest.id,
-          sender: 'user',
-          text: messageText,
-          created_at: now,
-          user_id: user.id,
-        },
-      ])
-
+      const { error: insertErr } = await supabase.from('messages').insert([{ request_id: selectedRequest.id, sender: 'user', text: messageText, created_at: now, user_id: user.id }])
       if (insertErr) throw insertErr
-
       await supabase.from('message_requests').update({ updated_at: now }).eq('id', selectedRequest.id)
-
-      setChatMessage('')
-      await loadRequests(false)
+      setChatMessage(''); await loadRequests(false)
     } catch (err) {
-      console.error('[Vicinity] Chat message error:', err)
-      setError(`Failed to send message: ${err.message || 'Unknown error'}`)
-      setTimeout(() => setError(null), 3000)
+      setError(`Failed to send: ${err.message || 'Unknown error'}`); setTimeout(() => setError(null), 3000)
     } finally {
       setSending(false)
     }
   }
 
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
-
+  const handleLogout = async () => { await supabase.auth.signOut(); router.push('/') }
 
   const filteredRequests = useMemo(() => {
     return requests.filter((r) => {
       const matchesStatus = statusFilter === 'all' || r.status === statusFilter
-      const matchesSearch =
-        searchQuery === '' ||
-        r.businesses?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.businesses?.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.summary?.toLowerCase().includes(searchQuery.toLowerCase())
-
+      const matchesSearch = searchQuery === '' || r.businesses?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || r.businesses?.type?.toLowerCase().includes(searchQuery.toLowerCase()) || r.summary?.toLowerCase().includes(searchQuery.toLowerCase())
       return matchesStatus && matchesSearch
     })
   }, [requests, searchQuery, statusFilter])
-
 
   const canSendFirstMessage = !!selectedBusiness && !selectedRequest
   const isPending = selectedRequest?.status === 'pending'
   const isIgnored = selectedRequest?.status === 'ignored'
   const isActive = selectedRequest?.status === 'active'
 
-
-  if (authLoading || !user) {
-    return <div className="min-h-screen bg-transparent" />
-  }
-
+  if (authLoading || !user) return <div className="min-h-screen bg-transparent" />
 
   return (
     <div className={UI.page}>
-      <FogBackground
-        className="fixed inset-0 z-0"
-        color="#60a5fa"
-        darkColor="#2563eb"
-        opacity={0.32}
-        speed={1}
-      />
-
+      <FogBackground className="fixed inset-0 z-0" color="#60a5fa" darkColor="#2563eb" opacity={0.32} speed={1} />
       <div className="relative z-10 h-screen overflow-hidden">
         <UserNavbar activePage="messages" onLogout={handleLogout} />
 
-        <main className="max-w-7xl mx-auto h-[calc(100vh-5.5rem)] px-4 md:px-6 pt-24 pb-4 overflow-hidden">
-          <div className="h-full flex flex-col gap-4">
-            <section className={`${UI.cardSoft} p-3 md:p-4 shrink-0`}>
-              <div className="flex flex-col xl:flex-row gap-3 xl:items-center">
-                <div className="relative flex-1 min-w-0">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <FaSearch className="text-slate-500 dark:text-slate-400 text-sm" />
-                  </div>
+        <main className="max-w-6xl mx-auto h-[calc(100vh-5.5rem)] px-4 md:px-6 pt-24 pb-4 overflow-hidden">
+          {/* Single unified shell — WhatsApp style */}
+          <div className={`${UI.shell} h-full grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)] overflow-hidden`}>
 
-                  <input
-                    type="text"
-                    placeholder="Search chats..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`${UI.input} pl-11 pr-12 py-3`}
-                  />
+            {/* LEFT: sidebar */}
+            <div className="flex flex-col border-r border-white/20 dark:border-white/10 min-h-0 overflow-hidden">
 
+              {/* Sidebar header: search + filters */}
+              <div className="px-3 pt-3 pb-2 border-b border-white/20 dark:border-white/10 shrink-0 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-black text-slate-900 dark:text-white">Chats</h2>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">{filteredRequests.length} visible</span>
+                </div>
+                <div className="relative">
+                  <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" />
+                  <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={`${UI.input} pl-7`} />
                   {searchQuery && (
-                    <motion.button
-                      whileHover={{ scale: 1.08 }}
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 transition-colors"
-                    >
-                      <FaTimes size={14} />
-                    </motion.button>
+                    <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500">
+                      <FaTimes size={10} />
+                    </button>
                   )}
                 </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="hidden md:flex items-center gap-2 mr-1">
-                    <FaFilter className="text-slate-500 dark:text-slate-400 text-sm" />
-                    <span className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      Status
-                    </span>
-                  </div>
-
-                  {['all', 'pending', 'active', 'ignored'].map((status) => (
-                    <motion.button
-                      key={status}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => setStatusFilter(status)}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
-                        statusFilter === status
-                          ? 'bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/20'
-                          : 'bg-white/14 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 border-white/25 dark:border-white/10 hover:bg-white/22 dark:hover:bg-white/[0.07]'
+                <div className="flex gap-1 flex-wrap">
+                  {['all', 'pending', 'active', 'ignored'].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                        statusFilter === s
+                          ? 'bg-blue-600 text-white border-transparent'
+                          : 'bg-white/14 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border-white/25 dark:border-white/10 hover:bg-white/22'
                       }`}
                     >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </motion.button>
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
                   ))}
-
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => loadRequests()}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${UI.secondaryBtn}`}
-                  >
-                    <FaSync size={11} />
-                    Refresh
-                  </motion.button>
-                </div>
-              </div>
-            </section>
-
-            <section className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4 flex-1 min-h-0">
-              <div className={`${UI.shell} min-h-0 overflow-hidden`}>
-                <div className="h-full flex flex-col">
-                  <div className="px-4 py-3 border-b border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/[0.03] shrink-0">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <h2 className="text-sm font-black text-slate-900 dark:text-white">Chats</h2>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          {filteredRequests.length} visible
-                        </p>
-                      </div>
-
-                      {selectedBusiness && !selectedRequest && (
-                        <span className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase bg-blue-100/80 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-500/20">
-                          New
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
-                    {selectedBusiness && !selectedRequest && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/80 dark:bg-blue-500/10 p-3"
-                      >
-                        <p className="text-xs font-black text-blue-700 dark:text-blue-300 mb-1">Ready to start</p>
-                        <p className="text-[11px] text-blue-600 dark:text-blue-200 leading-relaxed">
-                          {selectedBusiness.name} was opened from the business page.
-                        </p>
-                      </motion.div>
-                    )}
-
-                    {loading ? (
-                      <>
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className="h-28 rounded-2xl bg-white/10 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/20 dark:border-white/10 animate-pulse"
-                          />
-                        ))}
-                      </>
-                    ) : filteredRequests.length > 0 ? (
-                      <AnimatePresence mode="popLayout">
-                        {filteredRequests.map((request) => (
-                          <RequestCard
-                            key={request.id}
-                            request={request}
-                            selected={selectedRequest?.id === request.id}
-                            onClick={async () => {
-                              setSelectedRequest(request)
-                              setSelectedBusiness(request.businesses || null)
-                              await loadMessages(request.id)
-                            }}
-                          />
-                        ))}
-                      </AnimatePresence>
-                    ) : (
-                      <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-white/25 dark:border-white/10 bg-white/12 dark:bg-white/[0.03]">
-                        <FaComments className="mx-auto mb-3 text-slate-400 dark:text-slate-500" size={24} />
-                        <h3 className="text-base font-black text-slate-900 dark:text-white mb-2">No chats</h3>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 max-w-[18rem] mx-auto">
-                          Try another search or open a business page and tap chat.
-                        </p>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
 
-              <div className={`${UI.shell} min-h-0 overflow-hidden`}>
-                {selectedBusiness ? (
-                  <div className="h-full flex flex-col min-h-0">
-                    <div className="px-4 md:px-5 py-4 border-b border-white/20 dark:border-white/10 bg-white/12 dark:bg-white/[0.03] shrink-0">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white truncate">
-                            {selectedBusiness.name}
-                          </h2>
-                          <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 truncate">
-                            {selectedBusiness.type || 'Business'}
-                            {selectedBusiness.city ? ` • ${selectedBusiness.city}` : ''}
-                            {selectedBusiness.state ? `, ${selectedBusiness.state}` : ''}
-                          </p>
-                        </div>
-
-                        <motion.button
-                          whileHover={{ scale: 1.04 }}
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => router.back()}
-                          className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 ${UI.secondaryBtn}`}
-                        >
-                          <FaArrowLeft size={11} />
-                          Back
-                        </motion.button>
-                      </div>
-
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {isPending && (
-                          <div className="px-3 py-1.5 rounded-xl bg-blue-50/85 dark:bg-blue-500/10 border border-blue-200/70 dark:border-blue-500/20 text-[11px] text-blue-700 dark:text-blue-200">
-                            Pending approval
-                          </div>
-                        )}
-
-                        {isIgnored && (
-                          <div className="px-3 py-1.5 rounded-xl bg-red-100/85 dark:bg-red-500/10 border border-red-200/70 dark:border-red-500/20 text-[11px] text-red-700 dark:text-red-200">
-                            Request ignored
-                          </div>
-                        )}
-
-                        {isActive && (
-                          <div className="px-3 py-1.5 rounded-xl bg-green-100/85 dark:bg-green-500/10 border border-green-200/70 dark:border-green-500/20 text-[11px] text-green-700 dark:text-green-200">
-                            Active chat
-                          </div>
-                        )}
-                      </div>
-
-                      <AnimatePresence>
-                        {error && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            className="mt-3 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50/85 dark:bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-300"
-                          >
-                            {error}
-                          </motion.div>
-                        )}
-
-                        {success && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            className="mt-3 rounded-xl border border-green-200 dark:border-green-500/30 bg-green-50/85 dark:bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300"
-                          >
-                            {success}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-5 py-4 space-y-3">
-                      {messagesLoading ? (
-                        <div className="h-full min-h-[240px] flex items-center justify-center">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full"
-                          />
-                        </div>
-                      ) : messages.length > 0 ? (
-                        messages.map((msg, idx) => {
-                          const isUserMessage = msg.sender === 'user'
-
-                          return (
-                            <motion.div
-                              key={msg.id || idx}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}
-                            >
-                              <div
-                                className={`max-w-[82%] rounded-2xl px-4 py-3 shadow-sm ${
-                                  isUserMessage
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white/16 dark:bg-white/[0.05] border border-white/25 dark:border-white/10 text-slate-800 dark:text-slate-200 backdrop-blur-2xl'
-                                }`}
-                              >
-                                <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
-                                <p
-                                  className={`text-[10px] mt-2 ${
-                                    isUserMessage ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'
-                                  }`}
-                                >
-                                  {formatTime(msg.created_at)}
-                                </p>
-                              </div>
-                            </motion.div>
-                          )
-                        })
-                      ) : (
-                        <div className="h-full min-h-[260px] flex items-center justify-center">
-                          <div className="text-center py-10 px-6 rounded-3xl border border-dashed border-white/25 dark:border-white/10 bg-white/12 dark:bg-white/[0.03] max-w-md w-full">
-                            <div className="w-16 h-16 bg-white/20 dark:bg-white/[0.05] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 dark:border-white/10">
-                              <FaStore size={22} className="text-slate-400 dark:text-white/30" />
-                            </div>
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2">No messages yet</h3>
-                            <p className="text-sm text-slate-600 dark:text-slate-400">
-                              Start by sending your first request message to this business.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      <div ref={messagesEndRef} />
-                    </div>
-
-                    <div className="p-4 md:p-5 border-t border-white/20 dark:border-white/10 bg-white/12 dark:bg-white/[0.03] shrink-0">
-                      {canSendFirstMessage && (
-                        <form onSubmit={handleSendFirstMessage} className="space-y-3">
-                          <textarea
-                            value={firstMessage}
-                            onChange={(e) => setFirstMessage(e.target.value)}
-                            placeholder="Write why you want to connect with this business..."
-                            rows={3}
-                            className={`${UI.input} p-4 resize-none`}
-                          />
-
-                          <div className="flex justify-end">
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              type="submit"
-                              disabled={sending || !firstMessage.trim()}
-                              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-shadow disabled:opacity-50 ${UI.primaryBtn}`}
-                            >
-                              <FaPaperPlane size={13} />
-                              {sending ? 'Sending...' : 'Send Request'}
-                            </motion.button>
-                          </div>
-                        </form>
-                      )}
-
-                      {isPending && (
-                        <div className="p-3 rounded-2xl bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-xs text-slate-600 dark:text-slate-400 backdrop-blur-2xl">
-                          Wait for the business to accept before sending more.
-                        </div>
-                      )}
-
-                      {isIgnored && (
-                        <div className="p-3 rounded-2xl bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-xs text-slate-600 dark:text-slate-400 backdrop-blur-2xl">
-                          This request is closed and can no longer receive messages.
-                        </div>
-                      )}
-
-                      {isActive && (
-                        <form onSubmit={handleSendChatMessage} className="flex gap-3 items-center">
-                          <input
-                            type="text"
-                            value={chatMessage}
-                            onChange={(e) => setChatMessage(e.target.value)}
-                            placeholder="Type your message..."
-                            className={`${UI.input} flex-1 py-3`}
-                          />
-
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            type="submit"
-                            disabled={sending || !chatMessage.trim()}
-                            className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-shadow disabled:opacity-50 ${UI.primaryBtn}`}
-                          >
-                            <FaPaperPlane size={13} />
-                            {sending ? 'Sending...' : 'Send'}
-                          </motion.button>
-                        </form>
-                      )}
-                    </div>
-                  </div>
+              {/* Sidebar list */}
+              <div className="flex-1 min-h-0 overflow-y-auto p-2.5 space-y-2">
+                {selectedBusiness && !selectedRequest && (
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/80 dark:bg-blue-500/10 p-2.5">
+                    <p className="text-[10px] font-black text-blue-700 dark:text-blue-300">New chat with</p>
+                    <p className="text-[11px] text-blue-600 dark:text-blue-200">{selectedBusiness.name}</p>
+                  </motion.div>
+                )}
+                {loading ? (
+                  [1,2,3,4].map((i) => <div key={i} className="h-20 rounded-[18px] bg-white/10 dark:bg-white/[0.03] border border-white/20 animate-pulse" />)
+                ) : filteredRequests.length > 0 ? (
+                  <AnimatePresence mode="popLayout">
+                    {filteredRequests.map((request) => (
+                      <RequestCard key={request.id} request={request} selected={selectedRequest?.id === request.id} onClick={async () => { setSelectedRequest(request); setSelectedBusiness(request.businesses || null); await loadMessages(request.id) }} />
+                    ))}
+                  </AnimatePresence>
                 ) : (
-                  <div className="h-full flex items-center justify-center p-6">
-                    <div className="text-center max-w-md">
-                      <div className="w-16 h-16 bg-white/20 dark:bg-white/[0.05] rounded-full flex items-center justify-center mx-auto mb-5 border border-white/20 dark:border-white/10">
-                        <FaComments size={24} className="text-slate-400 dark:text-white/30" />
-                      </div>
-
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
-                        No conversation selected
-                      </h3>
-
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-                        Open a business page and tap chat, or choose an existing request from the left.
-                      </p>
-
-                      <a
-                        href="/user/dashboard"
-                        className="inline-block px-7 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-[0_10px_30px_rgba(59,130,246,0.24)]"
-                      >
-                        Browse Businesses
-                      </a>
-                    </div>
+                  <div className="text-center py-10 px-3 rounded-xl border border-dashed border-white/25 dark:border-white/10">
+                    <FaComments className="mx-auto mb-2 text-slate-400" size={20} />
+                    <p className="text-xs font-black text-slate-900 dark:text-white mb-1">No chats</p>
+                    <p className="text-[11px] text-slate-500">Open a business page to start chatting.</p>
                   </div>
                 )}
               </div>
-            </section>
+            </div>
+
+            {/* RIGHT: chat panel */}
+            <div className="flex flex-col min-h-0 overflow-hidden">
+              {selectedBusiness ? (
+                <>
+                  {/* Chat header */}
+                  <div className="px-4 py-3 border-b border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/[0.02] shrink-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <h2 className="text-base font-black text-slate-900 dark:text-white truncate">{selectedBusiness.name}</h2>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {selectedBusiness.type || 'Business'}{selectedBusiness.city ? ` • ${selectedBusiness.city}` : ''}{selectedBusiness.state ? `, ${selectedBusiness.state}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isPending && <span className="px-2 py-1 rounded-lg bg-blue-50/85 dark:bg-blue-500/10 border border-blue-200/70 dark:border-blue-500/20 text-[10px] text-blue-700 dark:text-blue-200">Pending</span>}
+                        {isIgnored && <span className="px-2 py-1 rounded-lg bg-red-100/85 dark:bg-red-500/10 border border-red-200/70 dark:border-red-500/20 text-[10px] text-red-700 dark:text-red-200">Ignored</span>}
+                        {isActive && <span className="px-2 py-1 rounded-lg bg-green-100/85 dark:bg-green-500/10 border border-green-200/70 dark:border-green-500/20 text-[10px] text-green-700 dark:text-green-200">Active</span>}
+                        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={() => router.back()} className="px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/22">
+                          <FaArrowLeft size={10} /> Back
+                        </motion.button>
+                      </div>
+                    </div>
+
+                    <AnimatePresence>
+                      {error && <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-2 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50/85 dark:bg-red-500/10 px-3 py-1.5 text-[11px] text-red-700 dark:text-red-300">{error}</motion.div>}
+                      {success && <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-2 rounded-xl border border-green-200 dark:border-green-500/30 bg-green-50/85 dark:bg-green-500/10 px-3 py-1.5 text-[11px] text-green-700 dark:text-green-300">{success}</motion.div>}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Messages area */}
+                  <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2">
+                    {messagesLoading ? (
+                      <div className="h-full flex items-center justify-center">
+                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity }} className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+                      </div>
+                    ) : messages.length > 0 ? (
+                      messages.map((msg, idx) => {
+                        const isUserMessage = msg.sender === 'user'
+                        return (
+                          <motion.div key={msg.id || idx} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[72%] rounded-2xl px-3 py-2 ${isUserMessage ? 'bg-blue-600 text-white' : 'bg-white/16 dark:bg-white/[0.05] border border-white/25 dark:border-white/10 text-slate-800 dark:text-slate-200 backdrop-blur-2xl'}`}>
+                              <p className="text-[13px] leading-relaxed whitespace-pre-line">{msg.text}</p>
+                              <p className={`text-[10px] mt-1 ${isUserMessage ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>{formatTime(msg.created_at)}</p>
+                            </div>
+                          </motion.div>
+                        )
+                      })
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="text-center py-8 px-6 rounded-2xl border border-dashed border-white/25 dark:border-white/10 bg-white/10 dark:bg-white/[0.02] max-w-xs w-full">
+                          <FaStore size={20} className="mx-auto mb-3 text-slate-400 dark:text-white/30" />
+                          <h3 className="text-sm font-black text-slate-900 dark:text-white mb-1">No messages yet</h3>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">Send your first message to this business.</p>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Composer */}
+                  <div className="p-3 border-t border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/[0.02] shrink-0">
+                    {canSendFirstMessage && (
+                      <form onSubmit={handleSendFirstMessage} className="flex gap-2 items-end">
+                        <textarea value={firstMessage} onChange={(e) => setFirstMessage(e.target.value)} placeholder="Write why you want to connect..." rows={2} className={`${UI.input} flex-1 resize-none py-2.5`} />
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={sending || !firstMessage.trim()} className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 disabled:opacity-50 shrink-0 ${UI.primaryBtn}`}>
+                          <FaPaperPlane size={11} />{sending ? 'Sending...' : 'Send'}
+                        </motion.button>
+                      </form>
+                    )}
+                    {isPending && <div className="px-3 py-2 rounded-xl bg-white/12 dark:bg-white/[0.03] border border-white/20 dark:border-white/10 text-[11px] text-slate-500 dark:text-slate-400">Waiting for the business to accept your request.</div>}
+                    {isIgnored && <div className="px-3 py-2 rounded-xl bg-white/12 dark:bg-white/[0.03] border border-white/20 dark:border-white/10 text-[11px] text-slate-500 dark:text-slate-400">This request is closed.</div>}
+                    {isActive && (
+                      <form onSubmit={handleSendChatMessage} className="flex gap-2 items-center">
+                        <input type="text" value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} placeholder="Type a message..." className={`${UI.input} flex-1`} />
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={sending || !chatMessage.trim()} className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 disabled:opacity-50 shrink-0 ${UI.primaryBtn}`}>
+                          <FaPaperPlane size={11} />{sending ? '...' : 'Send'}
+                        </motion.button>
+                      </form>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="h-full flex items-center justify-center p-6">
+                  <div className="text-center max-w-sm">
+                    <div className="w-14 h-14 bg-white/20 dark:bg-white/[0.04] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 dark:border-white/10">
+                      <FaComments size={20} className="text-slate-400 dark:text-white/30" />
+                    </div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white mb-2">No conversation selected</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Pick a chat from the left or open a business page.</p>
+                    <a href="/user/dashboard" className="inline-block px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all">Browse Businesses</a>
+                  </div>
+                </div>
+              )}
+            </div>
+
           </div>
         </main>
       </div>
