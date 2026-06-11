@@ -9,6 +9,7 @@ import { motion } from 'framer-motion'
 import VicinityLogo from './VicinityLogo'
 import ThemeToggle from './ThemeToggle'
 import { UI_SETTINGS } from '../lib/ui'
+import { FaUniversalAccess } from 'react-icons/fa'
 
 interface AuthNavbarProps {
     linkTo?: string
@@ -26,6 +27,15 @@ export default function AuthNavbar({ linkTo, linkText, homeText = "Home" }: Auth
                 </Link>
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
+                    <button
+                        type="button"
+                        onClick={() => window.dispatchEvent(new Event('toggle-accessibility-menu'))}
+                        title="Accessibility Options"
+                        aria-label="Accessibility Options"
+                        className="relative flex h-[42px] w-[42px] items-center justify-center rounded-2xl border transition-all duration-300 shrink-0 bg-white/80 border-blue-500/12 text-blue-600 hover:bg-blue-50 hover:border-blue-200 dark:bg-white/[0.05] dark:border-white/10 dark:text-blue-400 dark:hover:bg-white/[0.10] dark:hover:border-blue-400/30"
+                    >
+                        <FaUniversalAccess size={18} />
+                    </button>
                     {linkTo && linkText && (
                         <Link href={linkTo} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-white/[0.06] rounded-2xl transition-all">
                             {linkText}

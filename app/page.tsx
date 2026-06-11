@@ -215,7 +215,7 @@ function HeroSection({ isAdhd }: { isAdhd: boolean }) {
             <motion.a
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              href="#browse"
+              href="/browse"
               className="group inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-4 font-[var(--font-outfit)] text-sm font-bold text-blue-900 shadow-lg transition-all hover:bg-blue-50 dark:bg-white dark:text-blue-900 dark:hover:bg-blue-50"
             >
               Explore nearby
@@ -225,7 +225,7 @@ function HeroSection({ isAdhd }: { isAdhd: boolean }) {
             <motion.a
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              href="#signup"
+              href="/signup"
               className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 bg-white/10 px-8 py-4 font-[var(--font-outfit)] text-sm font-bold text-white shadow-sm backdrop-blur-md transition-all hover:bg-white/20 dark:border-white/30 dark:bg-white/5 dark:hover:bg-white/15"
             >
               Create free account

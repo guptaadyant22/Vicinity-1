@@ -19,6 +19,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { createClient } from '../../../lib/supabase'
 import BusinessLayout from '../../../components/BusinessLayout'
 import { useTheme } from '../../../context/ThemeContext'
+import AIInsightsCard from '../../../components/AIInsightsCard'
 
 const DotLottieReact = dynamic(
   () => import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
@@ -486,7 +487,7 @@ export default function BusinessDashboardPage() {
               </div>
             </motion.section>
 
-            <motion.section variants={fadeUp}>
+            {/* <motion.section variants={fadeUp}>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <StatCard label="Avg rating"    icon={FaStar}          value={avgRating}
                   delta={reviewDelta !== 0 ? `${reviewDelta > 0 ? '+' : ''}${reviewDelta} vs last month` : 'No change'}
@@ -509,7 +510,27 @@ export default function BusinessDashboardPage() {
                   delta={missingFields.length > 0 ? `${missingFields.length} fields missing` : 'Complete!'}
                   deltaType={profileCompletion === 100 ? 'up' : profileCompletion >= 70 ? 'neutral' : 'down'} />
               </div>
-            </motion.section>
+            </motion.section> */}
+
+            <motion.section variants={fadeUp}>
+  <AIInsightsCard
+    reviews={reviews}
+    deals={deals}
+    profile={businessData}
+    stats={{
+      profileCompletion,
+      missingFields,
+      totalReviews,
+      avgRating,
+      positiveRate,
+      thisMonthReviews,
+      lastMonthReviews,
+      unansweredCount,
+      activeDeals: activeDeals.length,
+      expiringDeals: expiringDeals.length,
+    }}
+  />
+</motion.section>
 
             <motion.section variants={fadeUp}>
               <div className="grid gap-6 lg:grid-cols-2">
@@ -539,64 +560,7 @@ export default function BusinessDashboardPage() {
                   </div>
                 </GlassCard>
 
-                <GlassCard className="p-6 md:p-7">
-                  <h2 className="font-[var(--font-outfit)] text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                    Rating breakdown
-                  </h2>
-                  <p className="mt-1 mb-5 text-sm text-slate-500 dark:text-slate-400">Distribution across all {totalReviews} reviews</p>
-                  <div className="space-y-3">
-                    {ratingData.map((d) => (
-                      <RatingBar key={d.star} star={d.star} count={d.count} max={maxRating} />
-                    ))}
-                  </div>
-                  <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-                    {[
-                      { label: 'Positive', val: `${positiveRate}%`, color: 'text-emerald-500' },
-                      { label: 'Neutral',  val: `${neutralRate}%`,  color: 'text-amber-500'   },
-                      { label: 'Negative', val: `${negativeRate}%`, color: 'text-red-400'      },
-                    ].map((s) => (
-                      <div key={s.label} className="rounded-2xl bg-white/60 dark:bg-white/[0.03] p-3">
-                        <p className={`font-[var(--font-outfit)] text-lg font-semibold ${s.color}`}>{s.val}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </GlassCard>
-
-              </div>
-            </motion.section>
-
-            <motion.section variants={fadeUp}>
-              <div className="grid gap-6 lg:grid-cols-2">
-
-                <GlassCard className="p-6 md:p-7">
-                  <h2 className="font-[var(--font-outfit)] text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                    Reviews by day of week
-                  </h2>
-                  <p className="mt-1 mb-5 text-sm text-slate-500 dark:text-slate-400">When customers leave feedback most often</p>
-                  <div className="h-52">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={dowData} barSize={28}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                        <XAxis dataKey="day" stroke={axisColor} fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke={axisColor} fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
-                        <Tooltip content={<BoundTooltip />} contentStyle={ttStyle} cursor={false} />
-                        <Bar dataKey="reviews" radius={[6, 6, 0, 0]}>
-                          {dowData.map((d, i) => (
-                            <Cell
-                              key={i}
-                              fill={d.reviews === maxDow
-                                ? '#2563eb'
-                                : isDark ? 'rgba(59,130,246,0.35)' : 'rgba(59,130,246,0.25)'}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </GlassCard>
-
-                <GlassCard className="p-6 md:p-7">
+                 <GlassCard className="p-6 md:p-7">
                   <h2 className="font-[var(--font-outfit)] text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
                     Sentiment split
                   </h2>
@@ -620,214 +584,6 @@ export default function BusinessDashboardPage() {
                 </GlassCard>
 
               </div>
-            </motion.section>
-
-            <motion.section variants={fadeUp}>
-              <div className="grid gap-6 lg:grid-cols-3">
-
-                <GlassCard className="p-6 md:p-7">
-                  <h2 className="font-[var(--font-outfit)] text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                    Top keywords
-                  </h2>
-                  <p className="mt-1 mb-4 text-sm text-slate-500 dark:text-slate-400">Most mentioned words in reviews</p>
-                  {keywords.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {keywords.map((k) => (
-                        <KeywordPill key={k.word} word={k.word} count={k.count} max={maxKeyword} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No review text to analyse yet.</p>
-                  )}
-                </GlassCard>
-
-                <GlassCard className="p-6 md:p-7">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-[var(--font-outfit)] text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                      Deal performance
-                    </h2>
-                    <Link href="/business/deals" className="text-xs font-semibold text-blue-600 dark:text-blue-300 flex items-center gap-1">
-                      Manage <FaArrowRight className="text-[10px]" />
-                    </Link>
-                  </div>
-                  <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">Clicks and expiry per active deal</p>
-                  {activeDeals.length > 0 ? (
-                    activeDeals.slice(0, 4).map((d) => <DealRow key={d.id} deal={d} />)
-                  ) : (
-                    <div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No active deals.</p>
-                      <Link href="/business/deals" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 dark:text-blue-300">
-                        Create a deal <FaArrowRight className="text-xs" />
-                      </Link>
-                    </div>
-                  )}
-                </GlassCard>
-
-                <GlassCard className="p-6 md:p-7">
-                  <h2 className="font-[var(--font-outfit)] text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                    Quick insights
-                  </h2>
-                  <p className="mt-1 mb-4 text-sm text-slate-500 dark:text-slate-400">Things worth acting on today</p>
-
-                  {unansweredCount > 0 && (
-                    <InsightRow icon={FaReply} iconBg="bg-red-500/10" iconColor="text-red-400"
-                      title={`${unansweredCount} unanswered review${unansweredCount > 1 ? 's' : ''}`}
-                      body="Replying within 48 hrs builds trust and improves perception." />
-                  )}
-                  {expiringDeals.map((d) => (
-                    <InsightRow key={d.id} icon={FaClock} iconBg="bg-amber-500/10" iconColor="text-amber-500"
-                      title={`"${truncateText(d.title, 28)}" expiring soon`}
-                      body={`Ends ${new Date(d.expiry_date).toLocaleDateString()} — renew or replace it.`} />
-                  ))}
-                  {thisMonthReviews > lastMonthReviews && (
-                    <InsightRow icon={FaChartLine} iconBg="bg-emerald-500/10" iconColor="text-emerald-500"
-                      title="Review momentum is up"
-                      body={`${thisMonthReviews} reviews this month vs ${lastMonthReviews} last month.`} />
-                  )}
-                  {missingFields.length > 0 && (
-                    <InsightRow icon={FaExclamationTriangle} iconBg="bg-blue-500/10" iconColor="text-blue-500"
-                      title="Profile incomplete"
-                      body={`Missing: ${missingFields.slice(0, 2).join(', ')}${missingFields.length > 2 ? ' and more' : ''}.`} />
-                  )}
-                  {unansweredCount === 0 && expiringDeals.length === 0 && missingFields.length === 0 && (
-                    <InsightRow icon={FaCheckCircle} iconBg="bg-emerald-500/10" iconColor="text-emerald-500"
-                      title="All clear!"
-                      body="No urgent actions. Keep engaging with new reviews as they come in." />
-                  )}
-                </GlassCard>
-
-              </div>
-            </motion.section>
-
-            <motion.section variants={fadeUp}>
-              <div className="grid gap-6 lg:grid-cols-2">
-
-                <GlassCard className="p-6 md:p-8">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <h2 className="font-[var(--font-outfit)] text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                        Latest review
-                      </h2>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Newest customer feedback at a glance</p>
-                    </div>
-                    <Link href="/business/reviews" className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-300">
-                      All reviews <FaArrowRight className="text-xs" />
-                    </Link>
-                  </div>
-
-                  {latestReview ? (
-                    <div className="mt-6">
-                      <div className="flex items-start gap-4">
-                        <div
-                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold"
-                          style={avatarColor(latestReview.user_name)}
-                        >
-                          {(latestReview.user_name || 'C').charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-1">
-                            <h3 className="font-semibold text-slate-900 dark:text-white">
-                              {latestReview.user_name || 'Customer'}
-                            </h3>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              {latestReview.created_at ? new Date(latestReview.created_at).toLocaleDateString() : ''}
-                            </span>
-                          </div>
-                          <div className="flex gap-1 mt-1.5">
-                            {[...Array(5)].map((_, i) => (
-                              <FaStar key={i} size={13}
-                                style={{ color: i < (latestReview.rating || 0) ? '#f59e0b' : isDark ? '#334155' : '#e2e8f0' }} />
-                            ))}
-                          </div>
-                          <p className="mt-3 text-[15px] leading-7 text-slate-600 dark:text-slate-400">
-                            {truncateText(latestReview.text || '', 260)}
-                          </p>
-                          {!latestReview.replied_at && (
-                            <Link href="/business/reviews"
-                              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white">
-                              <FaReply className="text-[10px]" /> Reply to this review
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-6 rounded-2xl border border-blue-500/10 bg-white/60 dark:bg-white/[0.03] p-5">
-                      <p className="text-sm text-slate-600 dark:text-slate-400">No reviews yet. New feedback will appear here.</p>
-                    </div>
-                  )}
-                </GlassCard>
-
-                <GlassCard className="p-6 md:p-8">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <h2 className="font-[var(--font-outfit)] text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                        Active deals
-                      </h2>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Keep your page feeling current with live offers</p>
-                    </div>
-                    <Link href="/business/deals" className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-300">
-                      Manage <FaArrowRight className="text-xs" />
-                    </Link>
-                  </div>
-                  <div className="mt-6 space-y-4">
-                    {activeDeals.length > 0 ? activeDeals.slice(0, 2).map((deal) => (
-                      <div key={deal.id} className="rounded-2xl border border-blue-500/10 bg-white/70 dark:bg-white/[0.03] p-5">
-                        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300 border border-blue-500/20">
-                          <FaTag className="text-[9px]" /> Live offer
-                        </div>
-                        <h3 className="font-semibold text-slate-900 dark:text-white">{deal.title || 'Untitled deal'}</h3>
-                        <p className="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-400">
-                          {truncateText(deal.description || '', 100)}
-                        </p>
-                        {deal.expiry_date && (
-                          <div className="mt-2.5 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                            <FaClock size={10} /> Ends {new Date(deal.expiry_date).toLocaleDateString()}
-                          </div>
-                        )}
-                      </div>
-                    )) : (
-                      <div className="rounded-2xl border border-blue-500/10 bg-white/70 dark:bg-white/[0.03] p-5">
-                        <p className="text-sm text-slate-600 dark:text-slate-400">No active deals right now.</p>
-                        <Link href="/business/deals" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-300">
-                          Create your first deal <FaArrowRight className="text-xs" />
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </GlassCard>
-
-              </div>
-            </motion.section>
-
-            <motion.section variants={fadeUp}>
-              <GlassCard className="p-6 md:p-7">
-                <h2 className="font-[var(--font-outfit)] text-xl font-semibold tracking-tight text-slate-900 dark:text-white mb-4">
-                  Keep your page active
-                </h2>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {[
-                    { href: '/business/profile', label: 'Update profile', icon: FaPen },
-                    { href: '/business/reviews', label: 'Review feedback', icon: FaCommentDots },
-                    { href: '/business/deals',   label: 'Manage deals',   icon: FaTag },
-                  ].map(({ href, label, icon: Icon }) => (
-                    <Link key={href} href={href}
-                      className="flex items-center justify-between rounded-2xl border border-blue-500/15 bg-white/70 px-4 py-4 text-sm font-semibold text-slate-900 hover:border-blue-500/35 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] transition-colors"
-                    >
-                      <span>{label}</span>
-                      <Icon className="text-xs text-blue-600 dark:text-blue-300" />
-                    </Link>
-                  ))}
-                </div>
-                <div className="mt-4 rounded-2xl border border-blue-500/15 bg-blue-500/6 p-4 dark:bg-blue-500/8">
-                  <div className="flex items-start gap-3">
-                    <FaCheckCircle className="mt-0.5 text-blue-500 shrink-0" />
-                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-400">
-                      One clear update, one active offer, and one recent review signal are usually enough to keep your page feeling current and trustworthy.
-                    </p>
-                  </div>
-                </div>
-              </GlassCard>
             </motion.section>
 
           </motion.div>

@@ -29,9 +29,9 @@ const THEME = {
 
 const UI = {
   page: 'min-h-screen text-slate-900 dark:text-slate-200 font-sans selection:bg-blue-600/25 selection:text-white relative bg-white dark:bg-[#081120] transition-colors duration-300',
-  shell: 'bg-white border border-blue-500/12 dark:bg-[#0f172a] dark:border-white/10 shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-colors duration-300',
+  shell: 'bg-white border border-blue-500/12 dark:bg-[#0f172a] dark:border-white/10 transition-colors duration-300',
   shellSoft: 'bg-white dark:bg-[#111827] border border-blue-500/10 dark:border-white/10 transition-colors duration-300',
-  input: 'w-full pl-10 pr-12 py-3.5 rounded-2xl bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all shadow-sm',
+  input: 'w-full pl-10 pr-12 py-3.5 rounded-lg bg-white dark:bg-[#0f172a] border border-blue-500/12 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all shadow-sm',
   blueBtn: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]',
   softBtn: 'bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/20',
 }
@@ -120,38 +120,9 @@ interface DashboardStatCardProps {
   delay: number;
 }
 
-// Dashboard stat card with icon, value, and hover glow
-const StatCard = ({ label, value, icon: Icon, color, delay }: DashboardStatCardProps) => {
-  const t = statTheme[color as keyof typeof statTheme] || statTheme.blue
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      whileHover={{ y: -4 }}
-      className={`group relative p-6 rounded-[24px] overflow-hidden ${UI.shell} transition-all hover:bg-slate-50 dark:hover:bg-[#162033]`}
-    >
-      <div
-        className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[70px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-multiply dark:mix-blend-normal"
-        style={{ background: `radial-gradient(circle, ${t.glow}, transparent 65%)` }}
-      />
-      <div className="relative z-10 flex items-center gap-4">
-        <div className={`p-3.5 rounded-2xl border backdrop-blur-lg ${t.iconWrap}`}>
-          <Icon size={22} />
-        </div>
-        <div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight">{value}</p>
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1.5">{label}</p>
-        </div>
-      </div>
-    </motion.div>
-  )
-}
-
-
 // Loading placeholder matching the business card layout
 const SkeletonCard = ({ viewMode }: { viewMode: string }) => (
-  <div className={`rounded-[24px] ${UI.shellSoft} overflow-hidden ${viewMode === 'list' ? 'flex h-80' : 'h-[400px]'}`}>
+  <div className={`rounded-lg ${UI.shellSoft} overflow-hidden ${viewMode === 'list' ? 'flex h-80' : 'h-[400px]'}`}>
     <div className={`${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'w-full h-56'} bg-gradient-to-br from-slate-100 to-blue-100 dark:from-slate-800 dark:to-slate-900 animate-pulse`} />
     <div className={`${viewMode === 'list' ? 'flex-1 p-6' : 'w-full'} p-5 space-y-3`}>
       <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
@@ -614,31 +585,83 @@ export default function UserDashboardPage() {
       <UserNavbar activePage="dashboard" onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
-        <section className="mb-16 text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-10">
-          <div className="max-w-2xl">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
-              Ready to explore, <br />
-              <span className={`text-transparent bg-clip-text bg-gradient-to-r ${THEME.accentGrad}`}>
-                {userData?.name || 'Traveler'}?
-              </span>
-            </motion.h1>
-            {userData?.city && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mt-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 shadow-sm">
-                  <FaMapMarkerAlt className="text-blue-600 dark:text-blue-300" size={14} />
-                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">{userData.city}</span>
-                </div>
-              </motion.div>
-            )}
-          </div>
+        <section className="mb-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8 w-full">
+  
+        <div className="flex-1 text-left">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3"
+          >
+            Ready to explore, <span className={`text-transparent bg-clip-text bg-gradient-to-r ${THEME.accentGrad}`}>
 
-          <div className="grid grid-cols-2 gap-4 w-full lg:w-auto">
-            <StatCard label="Places" value={stats.total} icon={FaStore} color="blue" delay={0.1} />
-            <StatCard label="Your Reviews" value={stats.totalReviews} icon={FaUserCheck} color="cyan" delay={0.2} />
-            <StatCard label="Your Avg Rating" value={stats.avgRating} icon={FaStar} color="amber" delay={0.3} />
-            <StatCard label="Saved" value={stats.saved} icon={FaHeart} color="rose" delay={0.4} />
-          </div>
-        </section>
+                      {userData?.name || 'Traveler'}?
+
+                    </span>
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.1 }}
+            className="text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed"
+          >
+            Find the hidden gems in your neighborhood with AI-powered personalized recommendations.
+          </motion.p>
+        </div>
+
+        <div className="flex flex-row flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} 
+            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[100px]"
+          >
+            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
+              Places
+            </span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white">
+              {stats.total}
+            </span>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} 
+            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[100px]"
+          >
+            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
+              Reviews
+            </span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white">
+              {stats.totalReviews}
+            </span>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} 
+            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[110px]"
+          >
+            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
+              Avg Rating
+            </span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-1">
+              {stats.avgRating} <FaStar className="text-[14px] text-slate-900 dark:text-indigo-300" />
+            </span>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} 
+            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[100px]"
+          >
+            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
+              Saved
+            </span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white">
+              {stats.saved}
+            </span>
+          </motion.div>
+
+        </div>
+      </section>
 
         <div className="flex flex-col lg:flex-row gap-10">
           <div className="lg:hidden">
@@ -668,7 +691,7 @@ export default function UserDashboardPage() {
                 transition={{ duration: 0.2 }}
                 className="lg:w-72 flex-shrink-0"
               >
-                <div className={`sticky top-28 rounded-[28px] p-6 ${UI.shell} space-y-6`}>
+                <div className={`sticky top-28 rounded-lg p-6 ${UI.shell} space-y-6`}>
                   <div className="flex items-center justify-between lg:block">
                     <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                       <FaFilter size={12} className="text-blue-500 dark:text-blue-300" /> Filters
@@ -804,16 +827,16 @@ export default function UserDashboardPage() {
                 </motion.button>
 
                 <h2 className="text-3xl font-black text-slate-900 dark:text-white flex-1">
-                  ✨ Discover Nearby
+                   Discover Nearby
                 </h2>
 
-                <div className={`flex gap-2 p-1.5 rounded-2xl ${UI.shell}`}>
+                <div className={`flex gap-2 p-1.5 rounded-lg ${UI.shell}`}>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setViewMode('grid')}
                     className={`p-2.5 rounded-xl transition-all ${
                       viewMode === 'grid'
-                        ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
+                        ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white '
                         : 'text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                     title="Grid view"
@@ -823,9 +846,9 @@ export default function UserDashboardPage() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setViewMode('list')}
-                    className={`p-2.5 rounded-xl transition-all ${
+                    className={`p-2.5 rounded-lg transition-all ${
                       viewMode === 'list'
-                        ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
+                        ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white '
                         : 'text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                     title="List view"
@@ -929,7 +952,7 @@ export default function UserDashboardPage() {
                               }}
                               className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${
                                 page === currentPage
-                                  ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                                  ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white '
                                   : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
                               }`}
                             >

@@ -11,7 +11,8 @@ import {
   FaStar, FaMapMarkerAlt, FaTimes, FaArrowLeft, FaPhone,
   FaEnvelope, FaGlobe, FaCheck, FaClock, FaChevronLeft, FaChevronRight,
   FaShareAlt, FaHeart, FaInfoCircle, FaImages, FaTag, FaRegHeart, FaEdit, FaTrash,
-  FaMapPin, FaExternalLinkAlt, FaCalendar, FaQuoteLeft, FaComments
+  FaMapPin, FaExternalLinkAlt, FaCalendar, FaQuoteLeft, FaComments, FaRegCommentDots,
+  FaUniversalAccess
 } from 'react-icons/fa'
 import { createClient } from '../../../lib/supabase'
 import VicinityLogo from '../../../components/VicinityLogo'
@@ -825,6 +826,15 @@ export default function BusinessDetailPage() {
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('toggle-accessibility-menu'))}
+              title="Accessibility Options"
+              aria-label="Accessibility Options"
+              className="relative flex h-[42px] w-[42px] items-center justify-center rounded-2xl border transition-all duration-300 shrink-0 bg-white/80 border-blue-500/12 text-blue-600 hover:bg-blue-50 hover:border-blue-200 dark:bg-white/[0.05] dark:border-white/10 dark:text-blue-400 dark:hover:bg-white/[0.10] dark:hover:border-blue-400/30"
+            >
+              <FaUniversalAccess size={18} />
+            </button>
             <motion.button
               onClick={() => window.history.back()}
               whileHover={{ scale: 1.05 }}
@@ -838,94 +848,91 @@ export default function BusinessDetailPage() {
         </div>
       </motion.nav>
 
-      <div className="relative h-[65vh] min-h-[500px] overflow-hidden pt-20">
-        <div className="absolute inset-0 top-0">
+      <div className="relative h-[65vh] min-h-[500px] overflow-hidden rounded-t-2xl">
+
+        <div className="absolute inset-0">
           <img
             src={coverImage}
             alt={business.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/35 dark:from-[#081120]/30 via-white/10 dark:via-[#081120]/35 to-white dark:to-[#081120]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#081120] via-white/65 dark:via-[#081120]/65 to-transparent" />
-          <div className="absolute inset-0 bg-blue-900/10 dark:bg-blue-950/20" />
+          {/* Clean dark gradient fading up from the bottom to make text legible */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1a] via-[#0a0f1a]/70 to-transparent" />
+          <div className="absolute inset-0 bg-black/20" />
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 px-6 pb-16">
-          <div className="max-w-6xl mx-auto">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+      <div className="absolute bottom-0 left-0 right-0 px-8 pb-10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.2 }}
+            className="flex flex-col gap-3"
+          >
+            <div className="flex items-center gap-4">
               {business.type && (
-                <motion.span
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="px-4 py-1.5 rounded-full bg-blue-600 text-xs font-bold uppercase tracking-widest mb-4 inline-block shadow-[0_10px_30px_rgba(59,130,246,0.24)] text-white"
-                >
+                <span className="px-3 py-1 rounded-full bg-blue-600 text-[10px] font-bold text-white uppercase tracking-wider">
                   {business.type}
-                </motion.span>
+                </span>
               )}
-
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tighter leading-tight text-slate-900 dark:text-white drop-shadow-2xl">
-                {business.name}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-5">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex items-center gap-3 bg-white/82 dark:bg-[#0d1424]/82 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-blue-500/12 dark:border-white/10 shadow-lg"
-                >
-                  <div className="flex text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar
-                        key={i}
-                        size={16}
-                        className={i < Math.round(liveStats.rating) ? 'text-yellow-400 drop-shadow-md' : 'text-slate-300 dark:text-white/20'}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-slate-900 dark:text-white text-lg leading-none">{liveStats.rating.toFixed(1)}</span>
-                    <span className="text-xs text-slate-600 dark:text-slate-300">{liveStats.count} reviews</span>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 }}
-                  className="flex items-center gap-2 bg-white/82 dark:bg-[#0d1424]/82 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-blue-500/12 dark:border-white/10 shadow-lg"
-                >
-                  <FaMapMarkerAlt className="text-blue-600 dark:text-blue-300" size={16} />
-                  <span className="text-sm text-slate-800 dark:text-slate-100">{business.fullAddress}</span>
-                </motion.div>
-
-                <div className="flex items-center gap-3 ml-auto">
-                  <ActionButton
-                    icon={FaComments}
-                    color="text-blue-600 dark:text-blue-300"
-                    onClick={handleOpenChat}
-                    label="Chat"
-                  />
-                  <ActionButton
-                    icon={FaShareAlt}
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.href)
-                      setSuccess('Link copied!')
-                      setTimeout(() => setSuccess(null), 2000)
-                    }}
-                    label="Share"
-                  />
-                  <ActionButton
-                    icon={isFavorited ? FaHeart : FaRegHeart}
-                    color={isFavorited ? 'text-red-500' : 'text-slate-700 dark:text-white'}
-                    onClick={toggleFavorite}
-                    label="Favorite"
-                  />
-                </div>
+              <div className="flex items-center gap-1.5 text-white/90 text-sm font-medium">
+                <FaStar className="text-blue-400" size={14} />
+                <span>{liveStats.rating.toFixed(1)}</span>
+                <span className="text-white/60">({liveStats.count} reviews)</span>
               </div>
-            </motion.div>
-          </div>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight drop-shadow-lg">
+              {business.name}
+            </h1>
+
+            <div className="flex items-center gap-2 text-white/80 mt-1">
+              <FaMapMarkerAlt size={14} className="text-white/60" />
+              <span className="text-sm font-medium tracking-wide">
+                {business.fullAddress}
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-3"
+          >
+            <button 
+              onClick={toggleFavorite}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/5 backdrop-blur-md text-white transition-all shadow-lg"
+              aria-label="Favorite"
+            >
+              {isFavorited ? <FaHeart className="text-red-500" size={18} /> : <FaRegHeart size={18} />}
+            </button>
+
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                setSuccess('Link copied!');
+                setTimeout(() => setSuccess(null), 2000);
+              }}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/5 backdrop-blur-md text-white transition-all shadow-lg"
+              aria-label="Share"
+            >
+              <FaShareAlt size={18} />
+            </button>
+
+            <button 
+              onClick={handleOpenChat}
+              className="px-6 h-12 flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+            >
+              <FaRegCommentDots size={18} />
+              <span>Message</span>
+            </button>
+          </motion.div>
+
         </div>
       </div>
+    </div>
 
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid lg:grid-cols-3 gap-8">
@@ -935,15 +942,15 @@ export default function BusinessDetailPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className={`${UI.card} relative p-8 overflow-hidden group hover:border-blue-500/22`}
+                className="relative px-2 py-6"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/[0.03] group-hover:to-cyan-500/[0.03] transition-all" />
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-2xl border border-blue-200 dark:border-blue-500/20">
-                      <FaInfoCircle className="text-blue-600 dark:text-blue-300" size={20} />
-                    </div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">About</h2>
+                    
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span className="w-1 h-6 rounded-full bg-blue-500 inline-block" />
+                      About
+                    </h2>
                   </div>
 
                   <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-base whitespace-pre-line mb-6">
@@ -1235,11 +1242,12 @@ export default function BusinessDetailPage() {
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
-            <div className={`${UI.card} p-6 sticky top-24 space-y-6`}>
-              <div>
-                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
-                  <span className="text-2xl">ℹ️</span> Info & Hours
-                </h3>
+            <div className="p-6 sticky top-24 space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span className="w-1 h-6 rounded-full bg-blue-500 inline-block" />
+                      Info & Hours
+                    </h2>
               </div>
 
               {business.fullAddress && (

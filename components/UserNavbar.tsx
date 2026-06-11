@@ -6,7 +6,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { FaUser } from 'react-icons/fa'
+import { FaUser, FaUniversalAccess } from 'react-icons/fa'
 import VicinityLogo from './VicinityLogo'
 import ThemeToggle from './ThemeToggle'
 
@@ -70,6 +70,15 @@ export default function UserNavbar({ activePage = '', onLogout }: UserNavbarProp
         {/* Right-side actions */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('toggle-accessibility-menu'))}
+            title="Accessibility Options"
+            aria-label="Accessibility Options"
+            className="relative flex h-[42px] w-[42px] items-center justify-center rounded-2xl border transition-all duration-300 shrink-0 bg-white/80 border-blue-500/12 text-blue-600 hover:bg-blue-50 hover:border-blue-200 dark:bg-white/[0.05] dark:border-white/10 dark:text-blue-400 dark:hover:bg-white/[0.10] dark:hover:border-blue-400/30"
+          >
+            <FaUniversalAccess size={18} />
+          </button>
 
           <motion.button
             whileHover={{ scale: 1.08 }}

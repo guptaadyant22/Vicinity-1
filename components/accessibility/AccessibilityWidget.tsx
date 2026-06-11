@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Accessibility, X, RotateCcw } from 'lucide-react';
 import { useAccessibility } from '../../hooks/useAccessibility';
 
@@ -6,19 +6,21 @@ export default function AccessibilityWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const { prefs, updatePref, reset, isMounted } = useAccessibility();
 
+  useEffect(() => {
+    const handleToggle = () => setIsOpen(prev => !prev);
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('toggle-accessibility-menu', handleToggle);
+    window.addEventListener('open-accessibility-menu', handleOpen);
+    return () => {
+      window.removeEventListener('toggle-accessibility-menu', handleToggle);
+      window.removeEventListener('open-accessibility-menu', handleOpen);
+    };
+  }, []);
+
   if (!isMounted) return null;
 
   return (
     <div className="a11y-panel-container font-sans" style={{ filter: 'none' }}>
-      {/* Floating Trigger Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-10 right-28 flex h-12 w-12 items-center justify-center rounded-full bg-[#2563eb] text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        style={{ zIndex: 100000 }}
-        aria-label="Open Accessibility Menu"
-      >
-        <Accessibility className="h-6 w-6" />
-      </button>
 
       {/* Slide-in Panel */}
       <div

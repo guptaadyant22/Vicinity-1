@@ -326,7 +326,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
       className={`
-        group relative rounded-2xl overflow-hidden
+        group relative rounded-lg overflow-hidden
         border border-blue-500/12 dark:border-white/10
         bg-white/85 dark:bg-white/[0.04] backdrop-blur-xl
         shadow-[0_8px_30px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_50px_rgba(59,130,246,0.12)] dark:shadow-[0_14px_40px_rgba(0,0,0,0.30)]
@@ -458,7 +458,7 @@ export default function BusinessCard({ business, isSaved, onSave, isTrending, vi
             onClick={handleViewClick}
             className={`
               flex items-center justify-center gap-1 py-2.5 rounded-lg
-              text-xs font-black text-white
+              text-xs font-bold text-white dark:text-[#fcfcfc]
               bg-blue-600
               hover:bg-blue-700
               shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30

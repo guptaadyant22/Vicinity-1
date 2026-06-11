@@ -23,6 +23,7 @@ import {
   FaCheck,
   FaCopy,
   FaEnvelope,
+  FaUniversalAccess,
 } from 'react-icons/fa'
 import { Inter, Outfit } from 'next/font/google'
 
@@ -225,7 +226,15 @@ function SidebarNav({ pathname, onLogout, isOpen, onClose }) {
         <div className="relative p-4 border-t border-blue-500/10 dark:border-white/10 space-y-2">
           <div className="flex items-center gap-3 px-4 py-2">
             <ThemeToggle />
-            <span className="text-sm font-[var(--font-outfit)] font-semibold text-slate-500 dark:text-slate-400">Theme</span>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('toggle-accessibility-menu'))}
+              title="Accessibility Options"
+              aria-label="Accessibility Options"
+              className="relative flex h-[42px] w-[42px] items-center justify-center rounded-2xl border transition-all duration-300 shrink-0 bg-white/80 border-blue-500/12 text-blue-600 hover:bg-blue-50 hover:border-blue-200 dark:bg-white/[0.05] dark:border-white/10 dark:text-blue-400 dark:hover:bg-white/[0.10] dark:hover:border-blue-400/30"
+            >
+              <FaUniversalAccess size={18} />
+            </button>
           </div>
           <motion.button
             onClick={onLogout}

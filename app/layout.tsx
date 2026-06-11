@@ -1,5 +1,3 @@
-// Root layout for the Next.js app providing theme and auth context to all pages.
-// Includes a pre-hydration dark mode script, global styles, and a floating AI chat widget.
 
 import { ReactNode } from 'react'
 import dynamic from 'next/dynamic'
