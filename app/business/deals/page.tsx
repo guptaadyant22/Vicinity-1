@@ -1,9 +1,5 @@
 'use client'
 
-
-// Business deals management page for creating, editing, toggling, and deleting promotional offers.
-// Uses the BusinessLayout and DealsSection components for a consistent dashboard experience.
-
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -470,49 +466,48 @@ export default function DealsPage() {
   return (
     <BusinessLayout>
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
-        <div className="relative z-10 border-b border-blue-500/10 bg-white/75 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-[#0b1322]">
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
-            <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-blue-100/50 blur-3xl dark:bg-blue-400/10" />
-          </div>
+        <div className="relative z-10 border-b border-blue-500/10 dark:border-white/10 bg-white/70 dark:bg-[#0b1322] backdrop-blur-xl transition-colors duration-300">
+  <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
+    <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-cyan-100/50 blur-3xl dark:bg-cyan-400/10" />
+  </div>
 
-          <div className="relative mx-auto flex max-w-7xl flex-col gap-6 px-6 py-7 lg:flex-row lg:items-end lg:justify-between lg:px-8">
-            <div className="max-w-2xl">
-              <h1 className="font-[var(--font-outfit)] text-[34px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
-                Deals
-              </h1>
-              <p className="mt-2 text-sm leading-7 text-slate-500 dark:text-slate-400">
-                Manage active promotions and keep your offers polished.
-              </p>
-            </div>
+  <div className="relative flex min-h-[88px] items-center justify-between px-8">
+    <div>
+      <h1 className="font-[var(--font-outfit)] text-[30px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
+        Deals
+      </h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Manage active promotions and keep your offers polished.
+      </p>
+    </div>
 
-            <div className="flex items-center gap-3">
-              <motion.button
-                onClick={() => window.location.reload()}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 rounded-2xl border border-blue-500/15 bg-white px-4 py-3 font-[var(--font-outfit)] text-xs font-semibold text-slate-600 shadow-sm transition-all hover:bg-blue-50 dark:border-white/10 dark:bg-[#13203a] dark:text-slate-300 dark:hover:bg-[#1c2b4b]"
-              >
-                <FaSync size={12} />
-                Refresh
-              </motion.button>
+    <div className="flex items-center gap-3">
+      <motion.button
+        onClick={() => window.location.reload()}
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.97 }}
+        className="inline-flex items-center gap-2 rounded-2xl border border-blue-500/15 bg-white px-4 py-3 font-[var(--font-outfit)] text-xs font-semibold text-slate-600 shadow-sm transition-all hover:bg-blue-50 dark:border-white/10 dark:bg-[#13203a] dark:text-slate-300 dark:hover:bg-[#1c2b4b]"
+      >
+        <FaSync size={12} />
+        Refresh
+      </motion.button>
 
-              <motion.button
-                onClick={() => {
-                  resetForm()
-                  setIsModalOpen(true)
-                }}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-[var(--font-outfit)] text-xs font-semibold text-white shadow-[0_12px_30px_rgba(59,130,246,0.24)]"
-              >
-                <FaPlus size={12} />
-                New Deal
-              </motion.button>
-            </div>
-          </div>
-        </div>
-
+      <motion.button
+        onClick={() => {
+          resetForm()
+          setIsModalOpen(true)
+        }}
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.97 }}
+        className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-[var(--font-outfit)] text-xs font-semibold text-white shadow-[0_12px_30px_rgba(59,130,246,0.24)]"
+      >
+        <FaPlus size={12} />
+        New Deal
+      </motion.button>
+    </div>
+  </div>
+</div>
         <AnimatePresence>
           {error && (
             <motion.div

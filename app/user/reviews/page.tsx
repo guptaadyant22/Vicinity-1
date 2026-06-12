@@ -140,17 +140,17 @@ const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      whileHover={{ y: -4 }}
-      className={`${UI.cardSoft} group relative p-6`}
+      whileHover={{ y: -2 }}
+      className={`${UI.cardSoft} group relative p-3`}
     >
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/[0.01] to-cyan-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="relative z-10 flex items-center gap-4">
-        <div className={`p-3.5 rounded-2xl border ${iconStyleMap[color] || iconStyleMap.blue}`}>
-          <Icon size={22} />
+      <div className="relative z-10 flex items-center gap-3">
+        <div className={`p-2 rounded-xl border ${iconStyleMap[color] || iconStyleMap.blue}`}>
+          <Icon size={15} />
         </div>
         <div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight">{value}</p>
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1.5">{label}</p>
+          <p className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight">{value}</p>
+          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">{label}</p>
         </div>
       </div>
     </motion.div>
@@ -663,7 +663,6 @@ export default function ReviewsPage() {
 
   return (
     <div className={UI.page}>
-      <Background />
 
       <UserNavbar activePage="reviews" onLogout={handleLogout} />
 
@@ -681,76 +680,82 @@ export default function ReviewsPage() {
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-10 pt-32">
         <section className="mb-16">
 
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 mb-10">
+  {/* Header row */}
+  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
-              <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
-                Your Voice, <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-                  Your Reviews
-                </span>
-              </h1>
+    {/* Left — title */}
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
+  <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
+    Your Voice,{' '}
+    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+      Your Reviews
+    </span>
+  </h1>
+  <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+    Every review you write helps others discover amazing places.
+  </p>
+</motion.div>
 
-              <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl leading-relaxed">
-                Every review you write helps others discover amazing places.
-              </p>
-            </motion.div>
+    {/* Right — stats */}
+    <div className="flex flex-row gap-3 flex-shrink-0 lg:pt-2">
+      <StatCard label="Total Reviews" value={stats.total} icon={FaPencilAlt} color="blue" delay={0.1} />
+      <StatCard label="Avg Rating" value={stats.avgRating} icon={FaChartLine} color="indigo" delay={0.2} />
+    </div>
 
-            <div className="flex flex-col gap-4 w-full lg:w-[280px] flex-shrink-0">
-              <StatCard label="Total Reviews" value={stats.total} icon={FaPencilAlt} color="blue" delay={0.1} />
-              <StatCard label="Avg Rating" value={stats.avgRating} icon={FaChartLine} color="indigo" delay={0.2} />
-            </div>
+  </div>
 
-          </div>
+  {/* Search + Filter — one row */}
+  <div className="flex items-center gap-3 pb-8 border-b border-slate-200 dark:border-white/8">
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <FaSearch className="text-slate-400 dark:text-slate-500 text-sm" />
-              </div>
+    {/* Search */}
+    <div className="relative flex-1">
+      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+        <FaSearch className="text-slate-400 dark:text-slate-500 text-sm" />
+      </div>
+      <input
+        type="text"
+        placeholder="Search your reviews..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className={`${UI.input} pl-11 pr-12`}
+      />
+      {searchQuery && (
+        <motion.button
+          whileHover={{ scale: 1.08 }}
+          onClick={() => setSearchQuery('')}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+        >
+          <FaTimes size={14} />
+        </motion.button>
+      )}
+    </div>
 
-              <input
-                type="text"
-                placeholder="Search your reviews by business name, type, or comment..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`${UI.input} pl-11 pr-12`}
-              />
+    {/* Divider */}
+    <div className="h-8 w-px bg-slate-200 dark:bg-white/8 flex-shrink-0" />
 
-              {searchQuery && (
-                <motion.button
-                  whileHover={{ scale: 1.08 }}
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
-                >
-                  <FaTimes size={14} />
-                </motion.button>
-              )}
-            </div>
-          </motion.div>
+    {/* Filter */}
+    <div className="flex items-center gap-2 flex-shrink-0">
+      <FaFilter className="text-slate-400 dark:text-slate-500 text-sm flex-shrink-0" />
+      <div className="flex gap-2">
+        {[0, 5, 4, 3].map((rating) => (
+          <button
+            key={rating}
+            onClick={() => setFilterRating(rating)}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold border transition-all ${
+              filterRating === rating
+                ? 'bg-blue-600 text-white border-blue-600 shadow-[0_10px_30px_rgba(59,130,246,0.24)]'
+                : 'bg-white dark:bg-[#162033] text-slate-600 dark:text-slate-300 border-blue-500/12 dark:border-white/10 hover:bg-blue-50 dark:hover:bg-[#1c2940] hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            {rating === 0 ? 'All' : `${rating}+ ★`}
+          </button>
+        ))}
+      </div>
+    </div>
 
-          <div className={`${UI.cardSoft} flex flex-wrap items-center gap-4 p-4`}>
-            <FaFilter className="text-slate-400 dark:text-slate-500" />
-            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Filter by Rating:</span>
+  </div>
 
-            <div className="flex gap-2 flex-wrap">
-              {[0, 5, 4, 3].map((rating) => (
-                <button
-                  key={rating}
-                  onClick={() => setFilterRating(rating)}
-                  className={`px-4 py-2 rounded-2xl text-xs font-bold border transition-all ${
-                    filterRating === rating
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-[0_10px_30px_rgba(59,130,246,0.24)]'
-                      : 'bg-white dark:bg-[#162033] text-slate-600 dark:text-slate-300 border-blue-500/12 dark:border-white/10 hover:bg-blue-50 dark:hover:bg-[#1c2940] hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  {rating === 0 ? 'All' : `${rating}+ ★`}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
+</section>
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}

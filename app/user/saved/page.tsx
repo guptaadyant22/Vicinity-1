@@ -22,10 +22,10 @@ import { FogBackground } from '@/components/ui/fog'
 
 
 const UI = {
-  page: 'relative min-h-screen bg-transparent text-slate-900 dark:text-white font-sans selection:bg-blue-600 selection:text-white overflow-x-hidden transition-colors duration-300',
+  page: 'min-h-screen text-slate-900 dark:text-slate-200 font-sans selection:bg-blue-600/25 selection:text-white relative bg-white dark:bg-[#081120] transition-colors duration-300',
   card: 'bg-white/20 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/30 dark:border-white/10 rounded-[28px] shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition-colors duration-300',
   cardSoft: 'bg-white/12 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/25 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.08)] transition-colors duration-300',
-  input: 'w-full px-4 py-3 rounded-2xl bg-white/14 dark:bg-white/[0.04] backdrop-blur-2xl border border-white/25 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-blue-400/60 focus:bg-white/20 dark:focus:bg-white/[0.06] transition-all text-sm',
+    input: 'w-full px-4 py-3 rounded-2xl bg-white dark:bg-[#111827] border border-blue-500/15 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#162033] transition-all text-sm',
   primaryButton: 'bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]',
   secondaryButton: 'bg-white/14 dark:bg-white/[0.04] backdrop-blur-2xl hover:bg-white/22 dark:hover:bg-white/[0.07] text-slate-700 dark:text-white border border-white/25 dark:border-white/10',
 }
@@ -44,21 +44,21 @@ const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      whileHover={{ y: -4 }}
-      className={`${UI.cardSoft} group relative p-6`}
+      whileHover={{ y: -2 }}
+      className={`${UI.cardSoft} group relative p-3`}
     >
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/[0.03] to-cyan-500/[0.05] opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      <div className="relative z-10 flex items-center gap-4">
-        <div className={`p-3.5 rounded-2xl border ${iconStyleMap[color] || iconStyleMap.blue}`}>
-          <Icon size={22} />
+      <div className="relative z-10 flex items-center gap-3">
+        <div className={`p-2 rounded-xl border ${iconStyleMap[color] || iconStyleMap.blue}`}>
+          <Icon size={15} />
         </div>
 
         <div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight truncate max-w-[160px]">
+          <p className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight truncate max-w-[120px]">
             {value}
           </p>
-          <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest mt-1.5">
+          <p className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest mt-1">
             {label}
           </p>
         </div>
@@ -66,7 +66,6 @@ const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
     </motion.div>
   )
 }
-
 // Saved businesses page with search, sort, and remove actions
 export default function SavedPage() {
   const { user, loading: authLoading } = useAuth()
@@ -220,79 +219,84 @@ export default function SavedPage() {
 
   return (
     <div className={UI.page}>
-      <FogBackground
-        className="fixed inset-0 z-0"
-        color="#60a5fa"
-        darkColor="#2563eb"
-        opacity={0.32}
-        speed={1}
-      />
 
       <div className="relative z-10">
         <UserNavbar activePage="saved" onLogout={handleLogout} />
 
         <main className="max-w-7xl mx-auto px-6 py-10 pt-32">
           <section className="mb-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-              <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-[0.9]">
-                Your Favorite <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-500 dark:from-blue-300 dark:to-cyan-300">
-                  Spots
-                </span>
-              </h1>
 
-              <p className="text-slate-700 dark:text-slate-300 text-lg max-w-2xl leading-relaxed">
-                All the places you&apos;ve saved, ready for your next adventure.
-              </p>
-            </motion.div>
+  {/* Header row */}
+  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-              <StatCard label="Saved Places" value={stats.total} icon={FaHeart} color="blue" delay={0.1} />
-              <StatCard label="Favorite Category" value={stats.topCategory} icon={FaFire} color="indigo" delay={0.2} />
-              <StatCard label="Categories" value={stats.categories} icon={FaMapMarked} color="cyan" delay={0.3} />
-            </div>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
+      <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
+        Your Favorite{' '}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-500 dark:from-blue-300 dark:to-cyan-300">
+          Spots
+        </span>
+      </h1>
+      <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+        All the places you&apos;ve saved, ready for your next adventure.
+      </p>
+    </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col md:flex-row gap-4"
-            >
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <FaSearch className="text-slate-500 dark:text-slate-400 text-sm" />
-                </div>
+    <div className="flex flex-row gap-3 flex-shrink-0 lg:pt-2">
+      <StatCard label="Saved Places"       value={stats.total}       icon={FaHeart}     color="blue"   delay={0.1} />
+      <StatCard label="Categories"         value={stats.categories}  icon={FaMapMarked} color="cyan"   delay={0.3} />
+    </div>
 
-                <input
-                  type="text"
-                  placeholder="Search saved places..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`${UI.input} pl-11 pr-12`}
-                />
+  </div>
 
-                {searchTerm && (
-                  <motion.button
-                    whileHover={{ scale: 1.08 }}
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 transition-colors"
-                  >
-                    <FaTimes size={14} />
-                  </motion.button>
-                )}
-              </div>
+  {/* Search + sort — one row + bottom border */}
+  <div className="flex items-center gap-3 pb-8 border-b border-slate-200 dark:border-white/8">
 
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className={`${UI.secondaryButton} px-5 py-3.5 rounded-2xl font-bold text-sm transition-all cursor-pointer outline-none min-w-[200px]`}
-              >
-                <option value="recent">Recently Saved</option>
-                <option value="rating">Highest Rated</option>
-                <option value="name">A to Z</option>
-              </select>
-            </motion.div>
-          </section>
+    <div className="relative flex-1">
+      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+        <FaSearch className="text-slate-500 dark:text-slate-400 text-sm" />
+      </div>
+      <input
+        type="text"
+        placeholder="Search saved places..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className={`${UI.input} pl-11 pr-12`}
+      />
+      {searchTerm && (
+        <motion.button
+          whileHover={{ scale: 1.08 }}
+          onClick={() => setSearchTerm('')}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 transition-colors"
+        >
+          <FaTimes size={14} />
+        </motion.button>
+      )}
+    </div>
+
+    <div className="h-8 w-px bg-slate-200 dark:bg-white/8 flex-shrink-0" />
+
+    <select
+  value={sortBy}
+  onChange={(e) => setSortBy(e.target.value)}
+  className={`${UI.secondaryButton} px-4 py-2 rounded-2xl font-bold text-sm cursor-pointer outline-none flex-shrink-0 bg-white dark:bg-gray-800 text-black dark:text-white`}
+>
+  <option value="" className="bg-white dark:bg-[#111827] text-slate-700 dark:text-white">
+    Sort By
+  </option>
+  <option value="recent" className="bg-white dark:bg-[#111827] text-slate-700 dark:text-white">
+    Recently Saved
+  </option>
+  <option value="rating" className="bg-white dark:bg-[#111827] text-slate-700 dark:text-white">
+    Highest Rated
+  </option>
+  <option value="name" className="bg-white dark:bg-[#111827] text-slate-700 dark:text-white">
+    A to Z
+  </option>
+</select>
+
+  </div>
+
+</section>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

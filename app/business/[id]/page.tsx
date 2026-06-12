@@ -29,7 +29,7 @@ const UI = {
   cardSoft: 'bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl border border-blue-500/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none',
 
 
-  modal: 'bg-white dark:bg-[#0d1424]/96 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[30px] p-8 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)]',
+  modal: 'bg-white dark:bg-[#0d1b2e] backdrop-blur-2xl border border-slate-200 dark:border-white/8 rounded-[30px] p-8 shadow-[0_20px_70px_rgba(15,23,42,0.16)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.45)]',
 
 
   input: 'w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-white/[0.06] transition-all text-sm',
@@ -376,6 +376,12 @@ export default function BusinessDetailPage() {
 
   const [deals, setDeals] = useState([])
   const [copiedCode, setCopiedCode] = useState(null)
+
+  const [aiSummary, setAiSummary] = useState('')
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryError, setSummaryError] = useState(false)
+  const lastSummaryCount = useRef(0)
+  const [isDraftingReview, setIsDraftingReview] = useState(false)
 
 
   useEffect(() => {
@@ -795,6 +801,56 @@ export default function BusinessDetailPage() {
     }
   }
 
+  const generateSummary = async () => {
+    if (!user || reviews.length < 2) return
+
+    try {
+      setSummaryLoading(true)
+      setSummaryError(false)
+      setAiSummary('')
+
+      const { data: { session } } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/reviews-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          reviews,
+          businessName: business.name,
+          businessType: business.type,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to generate summary')
+
+      const reader = response.body!.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value)
+        const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
+
+        for (const line of lines) {
+          try {
+            const json = JSON.parse(line.replace('data: ', ''))
+            const delta = json?.delta?.text
+            if (delta) setAiSummary(prev => prev + delta)
+          } catch { /* skip malformed */ }
+        }
+      }
+    } catch {
+      setSummaryError(true)
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
+
   if (loading) return <LoadingSpinner />
   if (error || !business) return <ErrorDisplay error={error || 'Business not found'} />
 
@@ -1106,134 +1162,222 @@ export default function BusinessDetailPage() {
             )}
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="pt-4"
-            >
-              <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-2xl border border-blue-200 dark:border-blue-500/20">
-                    <FaQuoteLeft className="text-blue-600 dark:text-blue-300" size={20} />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reviews</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{liveStats.count} total</p>
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+  className="pt-4"
+>
+  {/* Header */}
+  <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+    <div className="flex items-center gap-3">
+      <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-2xl border border-blue-200 dark:border-blue-500/20">
+        <FaQuoteLeft className="text-blue-600 dark:text-blue-300" size={20} />
+      </div>
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reviews</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{liveStats.count} total</p>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-3">
+      {user && reviews.length >= 2 && (
+        <motion.button
+          onClick={generateSummary}
+          disabled={summaryLoading}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold
+            bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20
+            text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/20
+            disabled:opacity-60 transition-all"
+        >
+          {summaryLoading ? (
+            <>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 dark:border-blue-500 dark:border-t-blue-200 rounded-full"
+              />
+              Summarizing...
+            </>
+          ) : (
+            <>
+               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M9 3l1.5 3.5L14 8l-3.5 1.5L9 13l-1.5-3.5L4 8l3.5-1.5L9 3zm9 9l.75 1.75L20.5 14l-1.75.75L18 16.5l-.75-1.75L15.5 14l1.75-.75L18 12zm-4 5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z" />
+                </svg>
+              {aiSummary ? 'Regenerate Summary' : 'AI Reviews Summary'}
+            </>
+          )}
+        </motion.button>
+      )}
+
+      <motion.button
+        onClick={() => setIsReviewModalOpen(true)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="px-6 py-3 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)] transition-all text-sm"
+      >
+        Write Review
+      </motion.button>
+    </div>
+  </div>
+
+  {/* AI Summary result */}
+{user && (aiSummary || (summaryLoading && !aiSummary)) && (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    className={`${UI.cardSoft} mb-6 p-5`}
+  >
+    <div className="flex items-center gap-2 mb-3">
+      <div className="p-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg">
+        <svg className="w-3.5 h-3.5 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+        </svg>
+      </div>
+      <span className="text-xs font-bold text-blue-600 dark:text-blue-300 uppercase tracking-widest">
+        AI Summary
+      </span>
+    </div>
+
+    {summaryLoading && !aiSummary && (
+      <div className="flex items-center gap-2">
+        {[0, 1, 2].map(i => (
+          <motion.div
+            key={i}
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+            className="w-1.5 h-1.5 rounded-full bg-blue-400 dark:bg-blue-300"
+          />
+        ))}
+        <span className="text-xs text-slate-500 dark:text-slate-400">Reading reviews...</span>
+      </div>
+    )}
+
+    {summaryError && (
+      <p className="text-xs text-red-500 dark:text-red-400">
+        Could not generate summary.{' '}
+        <button onClick={generateSummary} className="underline">Retry</button>
+      </p>
+    )}
+
+    {aiSummary && (
+      <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        {aiSummary}
+        {summaryLoading && (
+          <span className="inline-block w-0.5 h-3.5 bg-blue-400 ml-0.5 animate-pulse align-middle" />
+        )}
+      </p>
+    )}
+  </motion.div>
+)}
+
+  {/* Reviews list */}
+  <div className="space-y-4">
+    {reviews.length === 0 ? (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="p-16 rounded-[28px] bg-white/70 dark:bg-white/[0.03] border border-dashed border-blue-200 dark:border-white/10 text-center flex flex-col items-center justify-center"
+      >
+        <div className="text-5xl text-slate-300 dark:text-white/20 mb-4">★</div>
+        <p className="text-slate-500 dark:text-slate-400 font-medium">No reviews yet</p>
+        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Be the first to share your experience!</p>
+      </motion.div>
+    ) : (
+      reviews.map((review, idx) => (
+        <motion.div
+          key={review.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.05 }}
+          className={`${UI.cardSoft} p-6 hover:border-blue-500/18 dark:hover:border-white/20 transition-all`}
+        >
+          {editingReviewId === review.id ? (
+            <div className="space-y-4">
+              <div className="flex gap-2 justify-center mb-4">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setEditReviewRating(star)}
+                    className={`text-3xl transition-all cursor-pointer ${star <= editReviewRating ? 'text-yellow-400 scale-110' : 'text-slate-300 dark:text-white/20'}`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={editReviewText}
+                onChange={(e) => setEditReviewText(e.target.value)}
+                className={`${UI.input} h-24 resize-none`}
+                placeholder="Edit your review..."
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSaveEditedReview}
+                  disabled={isEditingReview}
+                  className="flex-1 py-2.5 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400/70 transition-all text-sm"
+                >
+                  {isEditingReview ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => setEditingReviewId(null)}
+                  className="flex-1 py-2.5 rounded-2xl font-bold bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.10] text-slate-700 dark:text-white transition-all text-sm border border-blue-500/10 dark:border-white/10"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                    {review.user_name || 'Anonymous'}
+                  </h4>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <FaCalendar size={10} />
+                    <span>{formatReviewDate(review.created_at)}</span>
                   </div>
                 </div>
-                <motion.button
-                  onClick={() => setIsReviewModalOpen(true)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-6 py-3 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)] transition-all text-sm"
-                >
-                  Write Review
-                </motion.button>
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar
+                      key={i}
+                      size={14}
+                      className={i < (review.rating || 0) ? 'text-yellow-400 drop-shadow-sm' : 'text-slate-300 dark:text-white/20'}
+                    />
+                  ))}
+                </div>
               </div>
 
-              <div className="space-y-4">
-                {reviews.length === 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-16 rounded-[28px] bg-white/70 dark:bg-white/[0.03] border border-dashed border-blue-200 dark:border-white/10 text-center flex flex-col items-center justify-center"
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
+                {review.comment || review.text}
+              </p>
+
+              {user && user.id === review.user_id && (
+                <div className="flex gap-2 pt-4 border-t border-blue-500/10 dark:border-white/10">
+                  <button
+                    onClick={() => handleEditReview(review)}
+                    className="flex-1 py-2 rounded-2xl font-bold transition-all text-xs flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20"
                   >
-                    <div className="text-5xl text-slate-300 dark:text-white/20 mb-4">★</div>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">No reviews yet</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Be the first to share your experience!</p>
-                  </motion.div>
-                ) : (
-                  reviews.map((review, idx) => (
-                    <motion.div
-                      key={review.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className={`${UI.cardSoft} p-6 hover:border-blue-500/18 dark:hover:border-white/20 transition-all`}
-                    >
-                      {editingReviewId === review.id ? (
-                        <div className="space-y-4">
-                          <div className="flex gap-2 justify-center mb-4">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                onClick={() => setEditReviewRating(star)}
-                                className={`text-3xl transition-all cursor-pointer ${star <= editReviewRating ? 'text-yellow-400 scale-110' : 'text-slate-300 dark:text-white/20'}`}
-                              >
-                                ★
-                              </button>
-                            ))}
-                          </div>
-                          <textarea
-                            value={editReviewText}
-                            onChange={(e) => setEditReviewText(e.target.value)}
-                            className={`${UI.input} h-24 resize-none`}
-                            placeholder="Edit your review..."
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              onClick={handleSaveEditedReview}
-                              disabled={isEditingReview}
-                              className="flex-1 py-2.5 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400/70 transition-all text-sm"
-                            >
-                              {isEditingReview ? 'Saving...' : 'Save'}
-                            </button>
-                            <button
-                              onClick={() => setEditingReviewId(null)}
-                              className="flex-1 py-2.5 rounded-2xl font-bold bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.10] text-slate-700 dark:text-white transition-all text-sm border border-blue-500/10 dark:border-white/10"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h4 className="font-bold text-slate-900 dark:text-white text-base">{review.user_name || 'Anonymous'}</h4>
-                              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                <FaCalendar size={10} />
-                                <span>{formatReviewDate(review.created_at)}</span>
-                              </div>
-                            </div>
-                            <div className="flex gap-0.5">
-                              {[...Array(5)].map((_, i) => (
-                                <FaStar
-                                  key={i}
-                                  size={14}
-                                  className={i < (review.rating || 0) ? 'text-yellow-400 drop-shadow-sm' : 'text-slate-300 dark:text-white/20'}
-                                />
-                              ))}
-                            </div>
-                          </div>
-
-                          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
-                            {review.comment || review.text}
-                          </p>
-
-                          {user && user.id === review.user_id && (
-                            <div className="flex gap-2 pt-4 border-t border-blue-500/10 dark:border-white/10">
-                              <button
-                                onClick={() => handleEditReview(review)}
-                                className="flex-1 py-2 rounded-2xl font-bold transition-all text-xs flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20"
-                              >
-                                <FaEdit size={12} /> Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteReview(review.id)}
-                                className="flex-1 py-2 rounded-2xl font-bold transition-all text-xs flex items-center justify-center gap-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-500/20"
-                              >
-                                <FaTrash size={12} /> Delete
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </motion.div>
-                  ))
-                )}
-              </div>
-            </motion.div>
+                    <FaEdit size={12} /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteReview(review.id)}
+                    className="flex-1 py-2 rounded-2xl font-bold transition-all text-xs flex items-center justify-center gap-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-500/20"
+                  >
+                    <FaTrash size={12} /> Delete
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </motion.div>
+      ))
+    )}
+  </div>
+</motion.div>
           </div>
 
           <motion.div
@@ -1360,12 +1504,89 @@ export default function BusinessDetailPage() {
               ))}
             </div>
 
+            <div className="mb-6">
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="What's your experience been like?"
-              className={`${UI.input} h-32 mb-6 resize-none`}
+              className={`${UI.input} h-32 resize-none`}
             />
+            {user && (
+              <motion.button
+                onClick={async () => {
+                  try {
+                    setIsDraftingReview(true)
+                    setReviewText('')
+
+                    const { data: { session } } = await supabase.auth.getSession()
+
+                    const response = await fetch('/api/generate-review', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session?.access_token}`,
+                      },
+                      body: JSON.stringify({
+                        businessName: business.name,
+                        businessType: business.type,
+                        rating: reviewRating,
+                      }),
+                    })
+
+                    if (!response.ok) throw new Error('Failed')
+
+                    const reader = response.body!.getReader()
+                    const decoder = new TextDecoder()
+
+                    while (true) {
+                      const { done, value } = await reader.read()
+                      if (done) break
+
+                      const chunk = decoder.decode(value)
+                      const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
+
+                      for (const line of lines) {
+                        try {
+                          const json = JSON.parse(line.replace('data: ', ''))
+                          const delta = json?.delta?.text
+                          if (delta) setReviewText(prev => prev + delta)
+                        } catch { /* skip */ }
+                      }
+                    }
+                  } catch {
+                    // silently fail — user can still type manually
+                  } finally {
+                    setIsDraftingReview(false)
+                  }
+                }}
+                disabled={isDraftingReview}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="mt-2 w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2
+                  bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20
+                  text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/20
+                  disabled:opacity-60 transition-all"
+              >
+                {isDraftingReview ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 dark:border-blue-500 dark:border-t-blue-200 rounded-full"
+                      />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M9 3l1.5 3.5L14 8l-3.5 1.5L9 13l-1.5-3.5L4 8l3.5-1.5L9 3zm9 9l.75 1.75L20.5 14l-1.75.75L18 16.5l-.75-1.75L15.5 14l1.75-.75L18 12zm-4 5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z" />
+                        </svg>
+                      Generate with AI
+                    </>
+                  )}
+              </motion.button>
+            )}
+          </div>
 
             <motion.button
               onClick={handleSubmitReview}

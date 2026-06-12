@@ -217,29 +217,46 @@ export default function BusinessMessagesPage() {
       <div className={PAGE_WRAP} style={{ fontFamily: 'var(--font-inter)' }}>
 
         {/* Page header */}
-        <div className="relative z-10 border-b border-blue-500/10 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-[#0b1322]">
-          <div className="relative mx-auto flex max-w-7xl flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
+        <div className="relative z-10 border-b border-blue-500/10 dark:border-white/10 bg-white/70 dark:bg-[#0b1322] backdrop-blur-xl transition-colors duration-300">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
+            <div className="absolute right-20 top-0 h-20 w-20 rounded-full bg-cyan-100/50 blur-3xl dark:bg-cyan-400/10" />
+          </div>
+
+          <div className="relative flex min-h-[88px] items-center justify-between px-8">
             <div>
-              <h1 className="font-[var(--font-outfit)] text-2xl font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">Messages</h1>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Review requests and chat with customers</p>
+              <h1 className="font-[var(--font-outfit)] text-[30px] font-semibold tracking-[-0.05em] text-slate-900 dark:text-white">
+                Messages
+              </h1>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Review requests and chat with customers
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+
+            <div className="flex items-center gap-2">
               {[
                 { key: 'pending', label: 'Pending', icon: <FaEnvelope size={11} /> },
-                { key: 'active', label: 'Active', icon: <FaComments size={11} /> },
+                { key: 'active',  label: 'Active',  icon: <FaComments size={11} /> },
                 { key: 'ignored', label: 'Ignored', icon: <FaTimesCircle size={11} /> },
               ].map((f) => (
-                <button key={f.key} onClick={() => setFilterType(f.key)}
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                <button
+                  key={f.key}
+                  onClick={() => setFilterType(f.key)}
+                  className={`inline-flex items-center gap-1.5 rounded-2xl px-4 py-2.5 font-[var(--font-outfit)] text-xs font-semibold transition-all ${
                     filterType === f.key
-                      ? 'bg-blue-600 text-white shadow-[0_8px_20px_rgba(59,130,246,0.22)]'
-                      : 'border border-blue-500/15 bg-white text-slate-600 hover:bg-blue-50 dark:border-white/10 dark:bg-[#162033] dark:text-slate-300 dark:hover:bg-[#1d2a44]'
-                  }`}>
+                      ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)]'
+                      : 'border border-blue-500/15 bg-white text-slate-600 hover:bg-blue-50 dark:border-white/10 dark:bg-[#13203a] dark:text-slate-300 dark:hover:bg-[#1c2b4b]'
+                  }`}
+                >
                   {f.icon}{f.label}
                 </button>
               ))}
-              <button onClick={() => loadRequests()} className="inline-flex items-center gap-1.5 rounded-xl border border-blue-500/15 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 dark:border-white/10 dark:bg-[#162033] dark:text-slate-300 dark:hover:bg-[#1d2a44]">
-                <FaSync size={11} />Refresh
+              <button
+                onClick={() => loadRequests()}
+                className="inline-flex items-center gap-2 rounded-2xl border border-blue-500/15 bg-white px-4 py-2.5 font-[var(--font-outfit)] text-xs font-semibold text-slate-600 shadow-sm transition-all hover:bg-blue-50 dark:border-white/10 dark:bg-[#13203a] dark:text-slate-300 dark:hover:bg-[#1c2b4b]"
+              >
+                <FaSync size={12} />
+                Refresh
               </button>
             </div>
           </div>

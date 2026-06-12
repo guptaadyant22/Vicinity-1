@@ -491,7 +491,7 @@ export default function BusinessProfilePage() {
                   className="space-y-6"
                 >
                   <div className="grid lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-2">
+                    <div className="lg:col-span-3 space-y-2">
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}

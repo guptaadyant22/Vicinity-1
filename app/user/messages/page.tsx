@@ -252,7 +252,6 @@ export default function UserMessagesPage() {
 
   return (
     <div className={UI.page}>
-      <FogBackground className="fixed inset-0 z-0" color="#60a5fa" darkColor="#2563eb" opacity={0.32} speed={1} />
       <div className="relative z-10 h-screen overflow-hidden">
         <UserNavbar activePage="messages" onLogout={handleLogout} />
 

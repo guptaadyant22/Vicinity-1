@@ -165,6 +165,54 @@ const FilterSection = ({ title, icon: Icon, children }: { title: string; icon?: 
   )
 }
 
+const CAROUSEL_IMAGES = [
+  'https://images.unsplash.com/photo-1514190051997-0f6f39ca5cde?w=1400&fit=crop', // restaurant
+  'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=1400&fit=crop', // cafe
+  'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1400&fit=crop', // food
+  'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=1400&fit=crop', // city
+]
+
+function ImageCarousel() {
+  const [current, setCurrent] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % CAROUSEL_IMAGES.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <div className="absolute inset-0 rounded-3xl overflow-hidden z-0">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={current}
+          src={CAROUSEL_IMAGES[current]}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </AnimatePresence>
+
+      {/* Dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+        {CAROUSEL_IMAGES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className={`rounded-full transition-all duration-300 ${i === current
+                ? 'w-5 h-1.5 bg-white'
+                : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60'
+              }`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // User browse dashboard page with filters and favorites
 export default function UserDashboardPage() {
   const { user, loading: authLoading } = useAuth()
@@ -195,6 +243,16 @@ export default function UserDashboardPage() {
   const PAGE_SIZE = 9
 
   const [availableCategories, setAvailableCategories] = useState([])
+
+  const [activeTab, setActiveTab] = useState<'discover' | 'foryou'>('discover')
+
+  const [forYouLoading, setForYouLoading] = useState(false)
+
+  const [forYouData, setForYouData] = useState({
+    favorites: [],
+    similar: [],
+    better: [],
+  })
 
   const debounceTimer = useRef(null)
 
@@ -567,6 +625,44 @@ export default function UserDashboardPage() {
     setCurrentPage(1)
   }
 
+  const loadForYou = async () => {
+    if (forYouData.favorites.length > 0) return
+
+    setForYouLoading(true)
+
+    try {
+      const savedBusinesses = businessesWithRatings.filter(b =>
+        savedIds.has(b.id)
+      )
+
+      const res = await fetch("/api/for-you", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          savedBusinesses,
+          businesses: businessesWithRatings,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        const filterSaved = (list: any[]) => (list || []).filter((b: any) => !savedIds.has(b.id))
+        setForYouData({
+          favorites: filterSaved(data.favorites),
+          similar: [],
+          better: [],
+        })
+      }
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setForYouLoading(false)
+    }
+  }
+
   const activeFilterCount = (categoryFilter ? 1 : 0) + (openNowFilter ? 1 : 0) + (aiSearchResults !== null ? 1 : 0) + (hasDealsFilter ? 1 : 0)
 
   const stats = {
@@ -585,83 +681,61 @@ export default function UserDashboardPage() {
       <UserNavbar activePage="dashboard" onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-6 py-10 pt-32 relative z-10">
-        <section className="mb-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8 w-full">
-  
-        <div className="flex-1 text-left">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3"
-          >
-            Ready to explore, <span className={`text-transparent bg-clip-text bg-gradient-to-r ${THEME.accentGrad}`}>
+        <section className="mb-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8 w-full relative overflow-hidden rounded-3xl px-8 py-10 min-h-[320px]">
 
-                      {userData?.name || 'Traveler'}?
+          {/* Background carousel */}
+          <ImageCarousel />
 
-                    </span>
-          </motion.h1>
-          
-          <motion.p
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ delay: 0.1 }}
-            className="text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed"
-          >
-            Find the hidden gems in your neighborhood with AI-powered personalized recommendations.
-          </motion.p>
-        </div>
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#081120]/90 via-[#081120]/70 to-transparent dark:from-[#081120]/95 dark:via-[#081120]/75 dark:to-transparent rounded-3xl z-0" />
 
-        <div className="flex flex-row flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
-          
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} 
-            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[100px]"
-          >
-            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
-              Places
-            </span>
-            <span className="text-xl font-bold text-slate-900 dark:text-white">
-              {stats.total}
-            </span>
-          </motion.div>
+          <div className="flex-1 text-left relative z-10">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-3"
+            >
+              Ready to explore,{' '}
+              <span className={`text-transparent bg-clip-text bg-gradient-to-r ${THEME.accentGrad}`}>
+                {userData?.name || 'Traveler'}?
+              </span>
+            </motion.h1>
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} 
-            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[100px]"
-          >
-            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
-              Reviews
-            </span>
-            <span className="text-xl font-bold text-slate-900 dark:text-white">
-              {stats.totalReviews}
-            </span>
-          </motion.div>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-base md:text-lg text-white/70 max-w-xl leading-relaxed"
+            >
+              Find the hidden gems in your neighborhood with AI-powered personalized recommendations.
+            </motion.p>
+          </div>
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} 
-            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[110px]"
-          >
-            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
-              Avg Rating
-            </span>
-            <span className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-1">
-              {stats.avgRating} <FaStar className="text-[14px] text-slate-900 dark:text-indigo-300" />
-            </span>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} 
-            className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-slate-100 dark:bg-[#181a20] border border-slate-200 dark:border-slate-800 rounded-lg min-w-[100px]"
-          >
-            <span className="text-[11px] font-bold tracking-widest text-indigo-600 dark:text-indigo-300 uppercase mb-1">
-              Saved
-            </span>
-            <span className="text-xl font-bold text-slate-900 dark:text-white">
-              {stats.saved}
-            </span>
-          </motion.div>
-
-        </div>
-      </section>
+          <div className="flex flex-row flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto relative z-10">
+            {[
+              { label: 'Places', value: stats.total, delay: 0.1 },
+              { label: 'Reviews', value: stats.totalReviews, delay: 0.2 },
+              { label: 'Avg Rating', value: stats.avgRating, delay: 0.3, star: true },
+              { label: 'Saved', value: stats.saved, delay: 0.4 },
+            ].map(({ label, value, delay, star }) => (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay }}
+                className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl min-w-[100px]"
+              >
+                <span className="text-[11px] font-bold tracking-widest text-blue-300 uppercase mb-1">
+                  {label}
+                </span>
+                <span className="text-xl font-bold text-white flex items-center gap-1">
+                  {value}
+                  {star && <FaStar className="text-[13px] text-blue-300" />}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </section>
 
         <div className="flex flex-col lg:flex-row gap-10">
           <div className="lg:hidden">
@@ -730,11 +804,10 @@ export default function UserDashboardPage() {
                           <button
                             key={type}
                             onClick={() => setCategoryFilter(categoryFilter === type ? null : type)}
-                            className={`px-2 py-2.5 rounded-xl text-xs font-bold transition-all text-center ${
-                              categoryFilter === type
+                            className={`px-2 py-2.5 rounded-xl text-xs font-bold transition-all text-center ${categoryFilter === type
                                 ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
                                 : 'bg-slate-50 dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-blue-500/20 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white'
-                            }`}
+                              }`}
                           >
                             {formatBusinessType(type)}
                           </button>
@@ -754,11 +827,10 @@ export default function UserDashboardPage() {
                         <button
                           key={opt.id}
                           onClick={() => setSortOption(opt.id)}
-                          className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                            sortOption === opt.id
+                          className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${sortOption === opt.id
                               ? 'bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300'
                               : 'bg-slate-50 dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-blue-500/20 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white'
-                          }`}
+                            }`}
                         >
                           {opt.label}
                         </button>
@@ -769,11 +841,10 @@ export default function UserDashboardPage() {
                   <FilterSection title="Availability">
                     <button
                       onClick={() => setOpenNowFilter(!openNowFilter)}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
-                        openNowFilter
+                      className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${openNowFilter
                           ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-300'
                           : 'bg-slate-50 dark:bg-[#162033] border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-blue-500/20 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white'
-                      }`}
+                        }`}
                     >
                       <span className="text-sm font-bold flex items-center gap-2">
                         <FaClock size={14} /> Open Now
@@ -791,11 +862,10 @@ export default function UserDashboardPage() {
                   <FilterSection title="Deals">
                     <button
                       onClick={() => setHasDealsFilter(!hasDealsFilter)}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
-                        hasDealsFilter
+                      className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${hasDealsFilter
                           ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-300'
                           : 'bg-slate-50 dark:bg-[#162033] border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-blue-500/20 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white'
-                      }`}
+                        }`}
                     >
                       <span className="text-sm font-bold flex items-center gap-2">
                         <FaTag size={14} /> Has Deals
@@ -826,19 +896,41 @@ export default function UserDashboardPage() {
                   <FaFilter size={14} />
                 </motion.button>
 
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white flex-1">
-                   Discover Nearby
-                </h2>
+                <div className="flex items-center gap-3 flex-1">
+
+                  <button
+                    onClick={() => setActiveTab("discover")}
+                    className={`px-5 py-2 rounded-xl font-bold transition-all ${activeTab === "discover"
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
+                        : "bg-slate-100 dark:bg-[#162033]"
+                      }`}
+                  >
+                    Discover Nearby
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab("foryou")
+                      loadForYou()
+                    }}
+                    className={`px-5 py-2 rounded-xl font-bold transition-all ${activeTab === "foryou"
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
+                        : "bg-slate-100 dark:bg-[#162033]"
+                      }`}
+                  >
+                    ✨ For You
+                  </button>
+
+                </div>
 
                 <div className={`flex gap-2 p-1.5 rounded-lg ${UI.shell}`}>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setViewMode('grid')}
-                    className={`p-2.5 rounded-xl transition-all ${
-                      viewMode === 'grid'
+                    className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid'
                         ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white '
                         : 'text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                      }`}
                     title="Grid view"
                   >
                     <FaGripHorizontal size={14} />
@@ -846,11 +938,10 @@ export default function UserDashboardPage() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setViewMode('list')}
-                    className={`p-2.5 rounded-lg transition-all ${
-                      viewMode === 'list'
+                    className={`p-2.5 rounded-lg transition-all ${viewMode === 'list'
                         ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white '
                         : 'text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                      }`}
                     title="List view"
                   >
                     <FaListUl size={14} />
@@ -858,196 +949,255 @@ export default function UserDashboardPage() {
                 </div>
               </div>
 
-              <form onSubmit={handleAiSearch} className="relative">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search by taste, mood, cuisine... (try 'tacos', 'cozy coffee', 'healthy breakfast')"
-                    value={searchQuery}
-                    onChange={handleSearchInputChange}
-                    className={UI.input}
-                  />
-                  {aiSearchLoading ? (
-                    <FaSpinner className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500 animate-spin" size={16} />
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={!searchQuery.trim() || aiSearchLoading}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FaSearch size={16} />
-                    </button>
-                  )}
-                </div>
-
-                {aiSearchResults !== null && (
-                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                    <span>🤖 AI Search: Found <span className="text-blue-600 dark:text-blue-300 font-bold">{filteredBusinesses.length}</span> results</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAiSearchResults(null)
-                        setSearchQuery('')
-                      }}
-                      className="text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 font-bold"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                )}
-              </form>
-
-              <div className="flex items-center justify-between px-1">
-                <div className="text-sm">
-                  <span className="text-slate-500 dark:text-slate-300 font-medium">
-                    Showing <span className="text-blue-600 dark:text-blue-300 font-bold">{startIndex}–{endIndex}</span> of <span className="text-slate-900 dark:text-white font-bold">{filteredBusinesses.length}</span>
-                  </span>
-                </div>
-              </div>
-
-              {loading ? (
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
-                  {[1, 2, 3, 4, 5, 6].map((i) => <SkeletonCard key={i} viewMode={viewMode} />)}
-                </div>
-              ) : filteredBusinesses.length > 0 ? (
+              {activeTab === "discover" && (
                 <>
-                  <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
-                    {paginatedBusinesses.map((business) => (
-                      <div key={business.id} className="contents">
-                        <BusinessCard
-                          business={business}
-                          isSaved={savedIds.has(business.id)}
-                          onSave={handleSave}
-                          viewMode={viewMode}
-                        />
+                  <form onSubmit={handleAiSearch} className="relative">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search by taste, mood, cuisine... (try 'tacos', 'cozy coffee', 'healthy breakfast')"
+                        value={searchQuery}
+                        onChange={handleSearchInputChange}
+                        className={UI.input}
+                      />
+                      {aiSearchLoading ? (
+                        <FaSpinner className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500 animate-spin" size={16} />
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={!searchQuery.trim() || aiSearchLoading}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <FaSearch size={16} />
+                        </button>
+                      )}
+                    </div>
+
+                    {aiSearchResults !== null && (
+                      <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                        <span>🤖 AI Search: Found <span className="text-blue-600 dark:text-blue-300 font-bold">{filteredBusinesses.length}</span> results</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAiSearchResults(null)
+                            setSearchQuery('')
+                          }}
+                          className="text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 font-bold"
+                        >
+                          Clear
+                        </button>
                       </div>
-                    ))}
+                    )}
+                  </form>
+
+                  <div className="flex items-center justify-between px-1">
+                    <div className="text-sm">
+                      <span className="text-slate-500 dark:text-slate-300 font-medium">
+                        Showing <span className="text-blue-600 dark:text-blue-300 font-bold">{startIndex}–{endIndex}</span> of <span className="text-slate-900 dark:text-white font-bold">{filteredBusinesses.length}</span>
+                      </span>
+                    </div>
                   </div>
 
-                  {totalPages > 1 && (
-                    <div className="mt-12 flex items-center justify-between px-2">
-                      <button
-                        onClick={() => {
-                          setCurrentPage((p) => Math.max(1, p - 1))
-                          window.scrollTo({ top: 0, behavior: 'smooth' })
-                        }}
-                        disabled={currentPage === 1}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                          currentPage === 1
-                            ? 'bg-slate-100 dark:bg-[#162033] border border-slate-200 dark:border-white/[0.04] text-slate-400 dark:text-slate-600 cursor-not-allowed'
-                            : `${UI.shell} text-slate-600 dark:text-slate-300 hover:border-blue-500/30 hover:text-slate-900 dark:hover:text-white`
-                        }`}
-                      >
-                        <FaChevronLeft size={12} /> Previous
-                      </button>
+                  {loading ? (
+                    <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
+                      {[1, 2, 3, 4, 5, 6].map((i) => <SkeletonCard key={i} viewMode={viewMode} />)}
+                    </div>
+                  ) : filteredBusinesses.length > 0 ? (
+                    <>
+                      <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
+                        {paginatedBusinesses.map((business) => (
+                          <div key={business.id} className="contents">
+                            <BusinessCard
+                              business={business}
+                              isSaved={savedIds.has(business.id)}
+                              onSave={handleSave}
+                              viewMode={viewMode}
+                            />
+                          </div>
+                        ))}
+                      </div>
 
-                      <div className="flex items-center gap-1.5">
-                        {totalPages <= 7 ? (
-                          Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                            <button
-                              key={page}
-                              onClick={() => {
-                                setCurrentPage(page)
-                                window.scrollTo({ top: 0, behavior: 'smooth' })
-                              }}
-                              className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${
-                                page === currentPage
-                                  ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white '
-                                  : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
+                      {totalPages > 1 && (
+                        <div className="mt-12 flex items-center justify-between px-2">
+                          <button
+                            onClick={() => {
+                              setCurrentPage((p) => Math.max(1, p - 1))
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }}
+                            disabled={currentPage === 1}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${currentPage === 1
+                                ? 'bg-slate-100 dark:bg-[#162033] border border-slate-200 dark:border-white/[0.04] text-slate-400 dark:text-slate-600 cursor-not-allowed'
+                                : `${UI.shell} text-slate-600 dark:text-slate-300 hover:border-blue-500/30 hover:text-slate-900 dark:hover:text-white`
                               }`}
-                            >
-                              {page}
-                            </button>
-                          ))
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => {
-                                setCurrentPage(1)
-                                window.scrollTo({ top: 0, behavior: 'smooth' })
-                              }}
-                              className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${
-                                currentPage === 1
-                                  ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
-                                  : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
-                              }`}
-                            >
-                              1
-                            </button>
-                            {currentPage > 3 && (
-                              <span className="px-2 text-slate-400">…</span>
-                            )}
+                          >
+                            <FaChevronLeft size={12} /> Previous
+                          </button>
 
-                            {Array.from(
-                              { length: 3 },
-                              (_, i) => currentPage - 1 + i
-                            )
-                              .filter((page) => page > 1 && page < totalPages)
-                              .map((page) => (
+                          <div className="flex items-center gap-1.5">
+                            {totalPages <= 7 ? (
+                              Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <button
                                   key={page}
                                   onClick={() => {
                                     setCurrentPage(page)
                                     window.scrollTo({ top: 0, behavior: 'smooth' })
                                   }}
-                                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${
-                                    page === currentPage
-                                      ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${page === currentPage
+                                      ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white '
                                       : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
-                                  }`}
+                                    }`}
                                 >
                                   {page}
                                 </button>
-                              ))}
+                              ))
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setCurrentPage(1)
+                                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                                  }}
+                                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${currentPage === 1
+                                      ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                                      : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                  1
+                                </button>
+                                {currentPage > 3 && (
+                                  <span className="px-2 text-slate-400">…</span>
+                                )}
 
-                            {currentPage < totalPages - 2 && (
-                              <span className="px-2 text-slate-400">…</span>
+                                {Array.from(
+                                  { length: 3 },
+                                  (_, i) => currentPage - 1 + i
+                                )
+                                  .filter((page) => page > 1 && page < totalPages)
+                                  .map((page) => (
+                                    <button
+                                      key={page}
+                                      onClick={() => {
+                                        setCurrentPage(page)
+                                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                                      }}
+                                      className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${page === currentPage
+                                          ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                                          : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
+                                        }`}
+                                    >
+                                      {page}
+                                    </button>
+                                  ))}
+
+                                {currentPage < totalPages - 2 && (
+                                  <span className="px-2 text-slate-400">…</span>
+                                )}
+
+                                <button
+                                  onClick={() => {
+                                    setCurrentPage(totalPages)
+                                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                                  }}
+                                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${currentPage === totalPages
+                                      ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                                      : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                  {totalPages}
+                                </button>
+                              </>
                             )}
+                          </div>
 
-                            <button
-                              onClick={() => {
-                                setCurrentPage(totalPages)
-                                window.scrollTo({ top: 0, behavior: 'smooth' })
-                              }}
-                              className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${
-                                currentPage === totalPages
-                                  ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
-                                  : 'bg-white dark:bg-[#162033] border border-blue-500/10 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:border-blue-500/20 hover:text-slate-900 dark:hover:text-white'
+                          <button
+                            onClick={() => {
+                              setCurrentPage((p) => Math.min(totalPages, p + 1))
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }}
+                            disabled={currentPage === totalPages}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${currentPage === totalPages
+                                ? 'bg-slate-100 dark:bg-[#162033] border border-slate-200 dark:border-white/[0.04] text-slate-400 dark:text-slate-600 cursor-not-allowed'
+                                : `${UI.shell} text-slate-600 dark:text-slate-300 hover:border-blue-500/30 hover:text-slate-900 dark:hover:text-white`
                               }`}
-                            >
-                              {totalPages}
-                            </button>
-                          </>
-                        )}
-                      </div>
-
+                          >
+                            Next <FaChevronRight size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-20">
+                      <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">No businesses found</p>
                       <button
-                        onClick={() => {
-                          setCurrentPage((p) => Math.min(totalPages, p + 1))
-                          window.scrollTo({ top: 0, behavior: 'smooth' })
-                        }}
-                        disabled={currentPage === totalPages}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                          currentPage === totalPages
-                            ? 'bg-slate-100 dark:bg-[#162033] border border-slate-200 dark:border-white/[0.04] text-slate-400 dark:text-slate-600 cursor-not-allowed'
-                            : `${UI.shell} text-slate-600 dark:text-slate-300 hover:border-blue-500/30 hover:text-slate-900 dark:hover:text-white`
-                        }`}
+                        onClick={clearAllFilters}
+                        className="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl font-bold hover:scale-105 transition-transform shadow-lg shadow-blue-500/25"
                       >
-                        Next <FaChevronRight size={12} />
+                        Clear Filters
                       </button>
                     </div>
                   )}
                 </>
-              ) : (
-                <div className="text-center py-20">
-                  <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">No businesses found</p>
-                  <button
-                    onClick={clearAllFilters}
-                    className="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl font-bold hover:scale-105 transition-transform shadow-lg shadow-blue-500/25"
-                  >
-                    Clear Filters
-                  </button>
+              )}
+
+              {activeTab === "foryou" && (
+
+                <div className="space-y-10">
+
+                  {forYouLoading ? (
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {[1, 2, 3].map(i => (
+                        <SkeletonCard
+                          key={i}
+                          viewMode={viewMode}
+                        />
+                      ))}
+                    </div>
+
+                  ) : (
+
+                    <>
+
+                      {/* Saved */}
+
+                      {forYouData.favorites.length > 0 && (
+
+                        <div>
+
+                          <h3 className="text-2xl font-bold mb-5">
+
+                            {savedIds.size > 0 ? "❤️ Based on Your Saved Places" : "📍 Suggestions Nearby"}
+
+                          </h3>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                            {forYouData.favorites.map(b => (
+                              <div key={b.id}>
+
+                                <BusinessCard
+                                  business={b}
+                                  isSaved={savedIds.has(b.id)}
+                                  onSave={handleSave}
+                                  viewMode={viewMode}
+                                />
+
+                              </div>
+                            ))}
+
+                          </div>
+
+                        </div>
+
+                      )}
+
+
+                    </>
+
+                  )}
+
                 </div>
+
               )}
             </div>
           </div>
