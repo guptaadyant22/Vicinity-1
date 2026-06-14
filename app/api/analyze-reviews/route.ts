@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       .join('\n---\n')
 
 
-    const context = `You are BizHub's intelligent review analyzer. Analyze customer reviews and provide insights in valid JSON format ONLY.
+    const context = `You are Vicinity's intelligent review analyzer. Analyze customer reviews and provide insights in valid JSON format ONLY.
 
 Your task:
 1. Analyze sentiment (positive/neutral/negative)
