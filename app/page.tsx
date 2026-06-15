@@ -322,19 +322,20 @@ function HeroSection({ isAdhd }: { isAdhd: boolean }) {
               </div>
 
               <div className="border-l border-slate-100 p-4 flex items-center justify-center bg-slate-50/50 dark:border-white/8 dark:bg-white/[0.02] dark:border-blue-500/30">
-                <div className="relative rounded-[18px] border border-blue-100 dark:border-blue-500/30 bg-white p-3 shadow-sm w-full dark:border-white/8 dark:bg-[#0f1b2d]">
+                <div className="relative rounded-[18px] border border-blue-100 dark:border-blue-500/30 bg-white shadow-sm w-full dark:border-white/8 dark:bg-[#0f1b2d]">
                   <motion.div
                     animate={{ x: ["-130%", "130%"] }}
                     transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                     className="absolute top-0 h-full w-16 bg-blue-50/50 blur-xl dark:bg-blue-400/10"
                   />
                   <div className="relative z-10 flex items-center justify-center rounded-[14px] bg-white dark:bg-[#0f1b2d]">
-                    <div className="h-[180px] w-[180px]">
+                    <div style={{ overflow: "hidden", height: "220px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <DotLottieReact
                         key={isAdhd ? "lottie-hero-paused" : "lottie-hero-playing"}
                         src="https://lottie.host/33802768-1bbb-4a7b-a3cc-6c6151c8a4b5/tLoA9BEj41.lottie"
                         loop
                         autoplay={!isAdhd}
+                        style={{ width: "300px", height: "300px", flexShrink: 0, marginLeft: "-35px", marginRight: "-40px", marginTop: "20px" }}
                       />
                     </div>
                   </div>

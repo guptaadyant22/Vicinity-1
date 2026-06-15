@@ -223,7 +223,7 @@ export default function SavedPage() {
       <div className="relative z-10">
         <UserNavbar activePage="saved" onLogout={handleLogout} />
 
-        <main className="max-w-7xl mx-auto px-6 py-10 pt-32">
+        <main className="max-w-7xl mx-auto px-6 py-10 pt-28">
           <section className="mb-12">
 
   {/* Header row */}
