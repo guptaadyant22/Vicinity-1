@@ -677,7 +677,7 @@ export default function ReviewsPage() {
         onUpdate={handleUpdateReview}
       />
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-10 pt-32">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-10 pt-28">
         <section className="mb-16">
 
   {/* Header row */}
@@ -685,16 +685,16 @@ export default function ReviewsPage() {
 
     {/* Left — title */}
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
-  <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
-    Your Voice,{' '}
-    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-      Your Reviews
-    </span>
-  </h1>
-  <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
-    Every review you write helps others discover amazing places.
-  </p>
-</motion.div>
+      <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
+        Your Voice,{' '}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+          Your Reviews
+        </span>
+      </h1>
+      <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+        Every review you write helps others discover amazing places.
+      </p>
+    </motion.div>
 
     {/* Right — stats */}
     <div className="flex flex-row gap-3 flex-shrink-0 lg:pt-2">

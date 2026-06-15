@@ -44,16 +44,15 @@ const RequestCard = ({ request, selected, onClick }) => {
       whileHover={{ y: -1 }}
       whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className={`w-full text-left rounded-[18px] border overflow-hidden transition-all backdrop-blur-2xl ${
-        selected
+      className={`w-full text-left rounded-[18px] border overflow-hidden transition-all backdrop-blur-2xl ${selected
           ? 'border-blue-300/50 dark:border-blue-500/30 bg-white/30 dark:bg-white/[0.06] shadow-md'
           : 'border-white/25 dark:border-white/10 bg-white/14 dark:bg-white/[0.03] hover:bg-white/20 dark:hover:bg-white/[0.06]'
-      }`}
+        }`}
     >
       <div className="p-3">
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="min-w-0">
-            <h3 className="text-xs font-black text-slate-900 dark:text-white truncate">{request.businesses?.name || 'Business'}</h3>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white truncate">{request.businesses?.name || 'Business'}</h3>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase mt-0.5 truncate">{request.businesses?.type || 'Business'}</p>
           </div>
           <div className={`shrink-0 px-2 py-0.5 rounded-lg border text-[9px] font-bold uppercase flex items-center gap-1 ${statusStyles.wrap}`}>
@@ -70,6 +69,30 @@ const RequestCard = ({ request, selected, onClick }) => {
         </div>
       </div>
     </motion.button>
+  )
+}
+
+const StatCard = ({ label, value, icon: Icon, color = 'blue', delay }) => {
+  const iconStyleMap = {
+    blue: 'bg-blue-500/10 border-blue-400/20 text-blue-600 dark:text-blue-300',
+    green: 'bg-green-500/10 border-green-400/20 text-green-600 dark:text-green-300',
+  }
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
+      whileHover={{ y: -2 }}
+      className="bg-white/12 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/25 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.08)] group relative p-3"
+    >
+      <div className="relative z-10 flex items-center gap-3">
+        <div className={`p-2 rounded-xl border ${iconStyleMap[color] || iconStyleMap.blue}`}>
+          <Icon size={15} />
+        </div>
+        <div>
+          <p className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight">{value}</p>
+          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">{label}</p>
+        </div>
+      </div>
+    </motion.div>
   )
 }
 
@@ -255,10 +278,29 @@ export default function UserMessagesPage() {
       <div className="relative z-10 h-screen overflow-hidden">
         <UserNavbar activePage="messages" onLogout={handleLogout} />
 
-        <main className="max-w-6xl mx-auto h-[calc(100vh-5.5rem)] px-4 md:px-6 pt-24 pb-4 overflow-hidden">
-          {/* Single unified shell — WhatsApp style */}
-          <div className={`${UI.shell} h-full grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)] overflow-hidden`}>
+        <main className="max-w-7xl mx-auto h-[calc(100vh-1.5rem)] px-6 pt-28 pb-4 overflow-hidden">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
+                Your{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+                  Messages
+                </span>
+              </h1>
+              <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+                Chat with local businesses, track your requests.
+              </p>
+            </motion.div>
 
+            <div className="flex flex-row gap-3 flex-shrink-0 lg:pt-2">
+              <StatCard label="Active" value={requests.filter(r => r.status === 'active').length} icon={FaCheck} color="green" delay={0.1} />
+              <StatCard label="Total" value={requests.length} icon={FaComments} color="blue" delay={0.2} />
+            </div>
+          </div>
+
+          {/* existing shell */}
+          <div className={`${UI.shell} h-[calc(100%-7.5rem)] grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)] overflow-hidden`}>
             {/* LEFT: sidebar */}
             <div className="flex flex-col border-r border-white/20 dark:border-white/10 min-h-0 overflow-hidden">
 
@@ -282,11 +324,10 @@ export default function UserMessagesPage() {
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
-                        statusFilter === s
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${statusFilter === s
                           ? 'bg-blue-600 text-white border-transparent'
                           : 'bg-white/14 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border-white/25 dark:border-white/10 hover:bg-white/22'
-                      }`}
+                        }`}
                     >
                       {s.charAt(0).toUpperCase() + s.slice(1)}
                     </button>
@@ -303,7 +344,7 @@ export default function UserMessagesPage() {
                   </motion.div>
                 )}
                 {loading ? (
-                  [1,2,3,4].map((i) => <div key={i} className="h-20 rounded-[18px] bg-white/10 dark:bg-white/[0.03] border border-white/20 animate-pulse" />)
+                  [1, 2, 3, 4].map((i) => <div key={i} className="h-20 rounded-[18px] bg-white/10 dark:bg-white/[0.03] border border-white/20 animate-pulse" />)
                 ) : filteredRequests.length > 0 ? (
                   <AnimatePresence mode="popLayout">
                     {filteredRequests.map((request) => (

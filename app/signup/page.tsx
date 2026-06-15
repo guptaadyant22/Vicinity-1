@@ -88,6 +88,10 @@ const US_STATES = [
   'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
 ]
 
+const EMPLOYEE_RANGES = ['1-10', '11-25', '26-50', '51-100']
+
+const REVENUE_RANGES = ['Under $10K', '$10K - $25K', '$25K - $50K', '$50K - $100K']
+
 const INTEREST_OPTIONS = [
   'Restaurants & Food',
   'Shopping & Retail',
@@ -127,6 +131,8 @@ export default function SignupPage() {
     email: '',
     website: '',
     phone: '',
+    employeeCount: '',
+    annualRevenue: '',
     businessType: '',
     customBusinessType: '',
     streetAddress: '',
@@ -211,6 +217,8 @@ export default function SignupPage() {
         errors.customBusinessType = 'Please specify your business type'
       }
       if (!businessForm.phone.trim()) errors.phone = 'Required'
+      if (!businessForm.employeeCount) errors.employeeCount = 'Required'
+      if (!businessForm.annualRevenue) errors.annualRevenue = 'Required'
     } else if (step === 3) {
       if (!businessForm.streetAddress.trim()) errors.streetAddress = 'Required'
       if (!businessForm.city.trim()) errors.city = 'Required'
@@ -353,6 +361,8 @@ export default function SignupPage() {
           email: businessForm.email,
           phone: businessForm.phone,
           website: businessForm.website || null,
+          employee_count: businessForm.employeeCount,
+          annual_revenue: businessForm.annualRevenue,
           address: businessForm.streetAddress,
           city: businessForm.city,
           state: businessForm.state,
@@ -714,6 +724,8 @@ interface BusinessFormData {
   email: string;
   website: string;
   phone: string;
+  employeeCount: string;
+  annualRevenue: string;
   businessType: string;
   customBusinessType: string;
   streetAddress: string;
@@ -820,6 +832,25 @@ const BusinessStepForm = ({
 
             <Input label="Phone Number" placeholder='+1 212 555 1234' type="tel" required value={form.phone} onChange={(e) => onInputChange('phone', e.target.value)} error={errors.phone} icon={FaPhone} />
             <Input label="Website (Optional)" value={form.website} onChange={(e) => onInputChange('website', e.target.value)} error={errors.website} placeholder="www.24fitness.com.us" icon={FaGlobe} />
+            <Select
+              label="Number of Employees"
+              required
+              value={form.employeeCount}
+              onChange={(e) => onInputChange('employeeCount', e.target.value)}
+              error={errors.employeeCount}
+              options={EMPLOYEE_RANGES}
+              placeholder="Select range..."
+            />
+
+            <Select
+              label="Annual Revenue"
+              required
+              value={form.annualRevenue}
+              onChange={(e) => onInputChange('annualRevenue', e.target.value)}
+              error={errors.annualRevenue}
+              options={REVENUE_RANGES}
+              placeholder="Select range..."
+            />
           </div>
         )}
 

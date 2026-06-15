@@ -290,111 +290,93 @@ export default function UserDashboardPage() {
     if (!user) return
 
     const fetchData = async () => {
-      try {
-        setLoading(true)
+  try {
+    setLoading(true)
 
-        const { data: bData, error: bError } = await supabase.from('businesses').select('*').limit(100)
-        if (bError) throw bError
+    // 3 parallel requests instead of N sequential
+    const [
+      { data: bData, error: bError },
+      { data: fData, error: fError },
+      { data: userReviewsData, error: rError },
+    ] = await Promise.all([
+      supabase.from('businesses').select('*').limit(100),
+      supabase.from('favorites').select('business_id').eq('user_id', user.id),
+      supabase.from('reviews').select('*').eq('user_id', user.id),
+    ])
 
-        const { data: fData, error: fError } = await supabase.from('favorites').select('business_id').eq('user_id', user.id)
-        if (fError) throw fError
+    if (bError) throw bError
+    if (fError) throw fError
+    if (rError) throw rError
 
-        const { data: userReviewsData, error: rError } = await supabase.from('reviews').select('*').eq('user_id', user.id)
-        if (rError) throw rError
+    setUserReviews(userReviewsData || [])
 
-        setUserReviews(userReviewsData || [])
+    const formattedBusinesses = (bData || []).map((b) => ({
+      ...b,
+      rating: parseFloat(b.rating) || 0,
+      review_count: parseInt(b.review_count) || 0,
+      is_open: b.is_open ?? true,
+      image_url: b.image_url || b.imageUrl || null,
+      type: (b.type || 'Other').trim(),
+      created_at: b.created_at || new Date().toISOString(),
+    }))
 
-        const formattedBusinesses = (bData || []).map((b) => (
-          {
-            ...b,
-            rating: parseFloat(b.rating) || 0,
-            review_count: parseInt(b.review_count) || 0,
-            is_open: b.is_open ?? true,
-            image_url: b.image_url || b.imageUrl || null,
-            type: (b.type || 'Other').trim(),
-            created_at: b.created_at || new Date().toISOString(),
-          }
-        ))
+    setSavedIds(new Set((fData || []).map((f) => f.business_id)))
 
-        setBusinesses(formattedBusinesses)
-        setSavedIds(new Set((fData || []).map((f) => f.business_id)))
+    const categoryCount: Record<string, number> = {}
+    formattedBusinesses.forEach(b => {
+      categoryCount[b.type] = (categoryCount[b.type] || 0) + 1
+    })
+    setAvailableCategories(
+      Object.entries(categoryCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([type]) => type)
+    )
 
-        const categoryCount: Record<string, number> = {}
-        formattedBusinesses.forEach(b => {
-          const type = b.type
-          categoryCount[type] = (categoryCount[type] || 0) + 1
-        })
+    // Batch fetch all reviews for ratings in one query
+    const { data: allReviews } = await supabase
+      .from('reviews')
+      .select('business_id, rating')
 
-        const topCategories = Object.entries(categoryCount)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 10)
-          .map(([type]) => type)
+    const reviewMap: Record<string, number[]> = {}
+    ;(allReviews || []).forEach(r => {
+      if (!reviewMap[r.business_id]) reviewMap[r.business_id] = []
+      reviewMap[r.business_id].push(r.rating)
+    })
 
-        setAvailableCategories(topCategories)
-
-
-        const dealsWithBusinesses = new Set()
-
-        for (const business of formattedBusinesses) {
-          try {
-            const { data: deals, error: dealsError } = await supabase
-              .from('deals')
-              .select('id, title, discount_type, discount_value, is_active, expiry_date')
-              .eq('business_id', business.id)
-              .eq('is_active', true)
-              .order('created_at', { ascending: false })
-              .limit(1)
-
-            if (!dealsError && deals && deals.length > 0) {
-              const deal = deals[0]
-
-
-              if (!isDealExpired(deal.expiry_date)) {
-                dealsWithBusinesses.add(business.id)
-              }
-            }
-          } catch (error) {
-            console.error(`Error fetching deals for business ${business.id}:`, error)
-          }
+    const businessesWithUpdatedRatings = formattedBusinesses.map(business => {
+      const ratings = reviewMap[business.id]
+      if (ratings && ratings.length > 0) {
+        return {
+          ...business,
+          rating: ratings.reduce((s, r) => s + r, 0) / ratings.length,
+          review_count: ratings.length,
         }
-
-        setBusinessesWithDeals(dealsWithBusinesses)
-
-        const businessesWithUpdatedRatings = await Promise.all(
-          formattedBusinesses.map(async (business) => {
-            try {
-              const { data: allReviews } = await supabase
-                .from('reviews')
-                .select('rating')
-                .eq('business_id', business.id)
-
-              if (allReviews && allReviews.length > 0) {
-                const totalRating = allReviews.reduce((sum, r) => sum + (r.rating || 0), 0)
-                const newAverage = totalRating / allReviews.length
-                const newCount = allReviews.length
-
-                return {
-                  ...business,
-                  rating: newAverage,
-                  review_count: newCount,
-                }
-              }
-              return business
-            } catch (error) {
-              console.error(`Error fetching reviews for business ${business.id}:`, error)
-              return business
-            }
-          })
-        )
-
-        setBusinessesWithRatings(businessesWithUpdatedRatings)
-      } catch (err) {
-        console.error('Data fetch error:', err)
-        setBusinessesWithRatings(businesses)
-      } finally {
-        setLoading(false)
       }
-    }
+      return business
+    })
+
+    setBusinessesWithRatings(businessesWithUpdatedRatings)
+    setBusinesses(businessesWithUpdatedRatings)
+    setLoading(false) // ← clear skeleton early, before deals
+
+    // Fetch deals separately after skeleton clears
+    const { data: allDeals } = await supabase
+      .from('deals')
+      .select('business_id, expiry_date')
+      .eq('is_active', true)
+
+    setBusinessesWithDeals(new Set(
+      (allDeals || [])
+        .filter(d => !isDealExpired(d.expiry_date))
+        .map(d => d.business_id)
+    ))
+
+  } catch (err) {
+    console.error('Data fetch error:', err)
+    setLoading(false)
+  }
+}
 
     fetchData()
 
@@ -723,7 +705,7 @@ export default function UserDashboardPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay }}
-                className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl min-w-[100px]"
+                className="flex-1 sm:flex-none flex flex-col items-center justify-center px-5 py-4 bg-black/30 backdrop-blur-md border border-white/15 rounded-2xl min-w-[100px]"
               >
                 <span className="text-[11px] font-bold tracking-widest text-blue-300 uppercase mb-1">
                   {label}
