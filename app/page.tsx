@@ -1155,8 +1155,8 @@ function CTASection() {
 
             <div className="flex flex-wrap items-center justify-center gap-10">
               {[
-                { value: "500+", label: "Businesses" },
-                { value: "10k+", label: "Reviews" },
+                { value: "50+", label: "Businesses" },
+                { value: "1k+", label: "Reviews" },
                 { value: "100%", label: "Free" },
               ].map((stat, i) => (
                 <motion.div
