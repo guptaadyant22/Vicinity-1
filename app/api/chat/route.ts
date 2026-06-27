@@ -8,17 +8,23 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Check if a user message falls within the chatbot's domain
+// Check if a user message is clearly outside the chatbot's domain
 function isWithinScope(message: string): boolean {
-  const lowerMessage = message.toLowerCase();
-  const scopePatterns = [
-    /\b(business|restaurant|shop|store|cafe|service|place|location|address|phone|hours|rating|review|recommend|find|search|best|top|near|nearby|open|closed|highest|lowest|how|what|where)\b/i,
-    /\b(account|profile|email|favorite|saved|member|my\s+(activity|reviews|favorites)|history|stats|contributions)\b/i,
-    /\b(review|rate|rating|feedback|comment|star)\b/i,
-    /\b(vicinity|directory|local|discover|can|do)\b/i,
+  const lowerMessage = message.toLowerCase().trim();
+
+  // Allow short messages (greetings, simple questions)
+  if (lowerMessage.length < 60) return true;
+
+  // Block only clearly off-topic requests
+  const offTopicPatterns = [
+    /\b(write\s+(me\s+)?(a\s+)?(code|essay|poem|story|script|homework|assignment))\b/i,
+    /\b(solve\s+(this\s+)?(math|equation|calculus|algebra|physics))\b/i,
+    /\b(translate\s+(this\s+)?(to|into)\s+(french|spanish|german|chinese|japanese|korean|arabic|hindi))\b/i,
+    /\b(medical\s+advice|diagnos|prescri|symptom.{0,10}(mean|caus))\b/i,
+    /\b(legal\s+advice|sue\s+|lawsuit|attorney)\b/i,
   ];
 
-  return scopePatterns.some(pattern => pattern.test(lowerMessage));
+  return !offTopicPatterns.some(pattern => pattern.test(lowerMessage));
 }
 
 // Handle AI chat messages with context-aware responses
@@ -391,21 +397,28 @@ async function callGroqAPI(systemPrompt: string, message: string) {
             role: "system",
             content: `${systemPrompt}
 
-**CRITICAL:**
-- ONLY use data from above
+**CRITICAL RESPONSE RULES:**
+- ONLY use data provided above — never invent businesses or stats
 - When asked for a type (coffee, cafe, restaurant), SEARCH the list for matching type
 - Match "coffee" with type="coffee" or type="cafe"
-- For "best" questions, recommend highest rated
-- If type not found, say "We don't have that available"
-- Use bullet points
-- Max 120 words`,
+- For "best" questions, recommend the highest rated
+- If type not found, say "We don't have that category yet" and suggest top businesses instead
+- For greetings (hi, hello, hey), respond warmly and offer to help
+- Keep responses under 250 words
+
+**FORMATTING RULES:**
+- Use **bold** for business names and key info
+- Use bullet points (- ) for lists
+- Use numbered lists (1. ) for rankings or steps
+- Keep paragraphs short (2-3 sentences max)
+- Be friendly and conversational`,
           },
           {
             role: "user",
             content: message,
           },
         ],
-        max_tokens: 200,
+        max_tokens: 500,
         temperature: 0.7,
       }),
     });

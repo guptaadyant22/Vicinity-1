@@ -429,55 +429,113 @@ export default function AIChat() {
 
 
 function FormattedText({ content, isDarkMode }: { content: string; isDarkMode: boolean }) {
-
   const accentPrimary = isDarkMode ? '#60a5fa' : '#2563eb'
   const accentSecondary = isDarkMode ? '#93c5fd' : '#1d4ed8'
+  const subtleBg = isDarkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)'
 
-  const sections = content.split(/(?=\*\*[^*]+\*\*:|###|^-\s)/m).filter((s) => s.trim())
+  // Render inline bold (**text**) within a string
+  function renderInline(text: string) {
+    const parts = text.split(/(\*\*[^*]+\*\*)/)
+    return parts.map((part, i) => {
+      const boldMatch = part.match(/^\*\*([^*]+)\*\*$/)
+      if (boldMatch) {
+        return (
+          <span key={i} style={{ fontWeight: 700, color: accentPrimary }}>
+            {boldMatch[1]}
+          </span>
+        )
+      }
+      return <span key={i}>{part}</span>
+    })
+  }
+
+  const lines = content.split('\n').filter((l) => l.trim() !== '')
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {sections.map((section, idx) => {
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      {lines.map((line, idx) => {
+        const trimmed = line.trim()
 
-        if (section.match(/\*\*[^*]+\*\*:/)) {
-          const match = section.match(/\*\*([^*]+)\*\*:(.*)/)
+        // Heading: ### text
+        if (trimmed.startsWith('###')) {
           return (
-            <div key={idx}>
-              <span style={{ color: accentPrimary, fontWeight: 'bold' }}>
-                {match?.[1]}:
+            <div
+              key={idx}
+              style={{
+                color: accentSecondary,
+                fontWeight: 700,
+                fontSize: '14px',
+                marginTop: idx > 0 ? '6px' : '0',
+              }}
+            >
+              {renderInline(trimmed.replace(/^###\s*/, ''))}
+            </div>
+          )
+        }
+
+        // Bold header line: **Something:** rest
+        if (/^\*\*[^*]+\*\*:/.test(trimmed)) {
+          const match = trimmed.match(/^\*\*([^*]+)\*\*:\s*(.*)/)
+          return (
+            <div key={idx} style={{ marginTop: idx > 0 ? '4px' : '0' }}>
+              <span style={{ color: accentPrimary, fontWeight: 700 }}>{match?.[1]}:</span>
+              {match?.[2] && <span style={{ marginLeft: '4px' }}>{renderInline(match[2])}</span>}
+            </div>
+          )
+        }
+
+        // Numbered list: 1. text or 1) text
+        if (/^\d+[.)]\s/.test(trimmed)) {
+          const match = trimmed.match(/^(\d+)[.)]\s+(.*)/)
+          return (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                gap: '8px',
+                marginLeft: '4px',
+                padding: '3px 0',
+              }}
+            >
+              <span
+                style={{
+                  color: accentPrimary,
+                  fontWeight: 700,
+                  minWidth: '18px',
+                  fontSize: '12px',
+                }}
+              >
+                {match?.[1]}.
               </span>
-              <span style={{ marginLeft: '4px' }}>
-                {match?.[2]?.trim()}
-              </span>
+              <span style={{ flex: 1 }}>{renderInline(match?.[2] || '')}</span>
             </div>
           )
         }
 
-
-        if (section.trim().startsWith('###')) {
+        // Bullet point: - text, * text, • text
+        if (/^[-*•]\s/.test(trimmed)) {
           return (
-            <div key={idx} style={{ color: accentSecondary, fontWeight: '600', marginTop: '4px' }}>
-              {section.replace(/^###\s*/, '').trim()}
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                gap: '8px',
+                marginLeft: '4px',
+                padding: '2px 0',
+              }}
+            >
+              <span style={{ color: accentPrimary, minWidth: '12px', fontWeight: 700 }}>•</span>
+              <span style={{ flex: 1 }}>{renderInline(trimmed.replace(/^[-*•]\s+/, ''))}</span>
             </div>
           )
         }
 
-
-        if (section.trim().startsWith('-')) {
-          return (
-            <div key={idx} style={{ display: 'flex', gap: '6px', marginLeft: '4px' }}>
-              <span style={{ color: accentPrimary, minWidth: '12px' }}>•</span>
-              <span>{section.replace(/^-\s*/, '').trim()}</span>
-            </div>
-          )
-        }
-
-
-        return section.trim() ? (
-          <div key={idx} style={{ lineHeight: '1.4' }}>
-            {section.trim()}
+        // Regular paragraph
+        return (
+          <div key={idx} style={{ lineHeight: '1.55' }}>
+            {renderInline(trimmed)}
           </div>
-        ) : null
+        )
       })}
     </div>
   )
