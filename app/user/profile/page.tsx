@@ -170,8 +170,8 @@ export default function UserProfilePage() {
           authMetadata.full_name ||
           authUser.email?.split('@')[0] ||
           'User'
-        const city = authMetadata.city || ''
-        const zip = authMetadata.zip || authMetadata.zipCode || ''
+        const city = 'Phoenix'
+        const zip = '85027'
         const interests = authMetadata.interests || []
 
         setUserData({

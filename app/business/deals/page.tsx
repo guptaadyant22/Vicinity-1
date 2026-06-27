@@ -43,10 +43,10 @@ const GLASS_CARD =
   'bg-white/88 dark:bg-[#0f172a]/94 backdrop-blur-xl border border-blue-500/10 dark:border-white/10 rounded-[30px] p-6 shadow-[0_16px_50px_rgba(15,23,42,0.06)] dark:shadow-[0_20px_55px_rgba(0,0,0,0.35)] transition-all duration-300'
 
 const MODAL_CARD =
-  'bg-white/98 dark:bg-[#0c1424]/98 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 text-slate-900 dark:text-white rounded-[30px] p-6 shadow-[0_30px_90px_rgba(15,23,42,0.14)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.55)] transition-all duration-300'
+  'bg-white dark:bg-[#0c1424] backdrop-blur-2xl border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-[30px] p-6 shadow-[0_30px_90px_rgba(15,23,42,0.18)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.55)] transition-all duration-300'
 
 const GLASS_INPUT =
-  'w-full px-4 py-3 bg-white dark:bg-[#111a2e] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:bg-blue-50/60 dark:focus:bg-[#16233d] focus:outline-none transition-all'
+  'w-full px-4 py-3 bg-slate-50 dark:bg-[#111a2e] border border-slate-200 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:bg-blue-50 dark:focus:bg-[#16233d] focus:outline-none transition-all'
 
 
 const DEFAULT_DEAL_TYPES = [
@@ -660,7 +660,7 @@ export default function DealsPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-md dark:bg-black/70"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-md dark:bg-black/70"
               onClick={closeModal}
             >
               <motion.div
@@ -670,7 +670,7 @@ export default function DealsPage() {
                 className={`${MODAL_CARD} max-h-[90vh] w-full max-w-md overflow-y-auto`}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="mb-6 flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-white/10">
+                <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4 dark:border-white/10">
                   <div>
                     <p className="text-[11px] font-[var(--font-outfit)] font-semibold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">
                       {editingDeal ? 'Update offer' : 'Create offer'}
@@ -730,7 +730,7 @@ export default function DealsPage() {
                             discount_value: '',
                           })
                         }
-                        className={`${GLASS_INPUT} appearance-none cursor-pointer font-[var(--font-outfit)] font-semibold`}
+                        className={`${GLASS_INPUT} appearance-none cursor-pointer font-[var(--font-outfit)] font-semibold [color-scheme:light] dark:[color-scheme:dark]`}
                       >
                         {dealTypes.map((type) => (
                           <option
@@ -863,7 +863,7 @@ export default function DealsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, expiry_date: e.target.value })
                       }
-                      className={GLASS_INPUT}
+                      className={`${GLASS_INPUT} [color-scheme:light] dark:[color-scheme:dark]`}
                       min={new Date().toISOString().split('T')[0]}
                       required
                     />

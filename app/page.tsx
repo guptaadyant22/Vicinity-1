@@ -749,7 +749,7 @@ function AudienceSection({ isAdhd }: { isAdhd: boolean }) {
             <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-400/0 blur-[50px] transition-all duration-500 group-hover:bg-blue-400/15" />
 
             <h3 className="relative z-10 font-[var(--font-outfit)] text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-              For Personal
+              For Community
             </h3>
             <p className="relative z-10 mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-slate-500 dark:text-slate-400">
               Discover nearby restaurants, shops, and services. Read real reviews, find deals, and save your favorite spots.
