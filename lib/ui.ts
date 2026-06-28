@@ -48,11 +48,10 @@ export const LANDING_NAV_ITEMS: NavItem[] = [
 // Footer column links
 export const FOOTER_LINKS: FooterLinksType = {
     company: [
-        { name: 'About Us', href: '#' },
-        { name: 'Contact', href: '#' },
+        { name: 'Help', href: '/help' },
+        { name: 'Contact', href: '/help#contact' },
     ],
     legal: [
-        { name: 'Privacy', href: '#' },
-        { name: 'Terms', href: '#' },
+        { name: 'Terms & Conditions', href: '/terms' },
     ]
 }
