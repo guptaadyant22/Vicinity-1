@@ -145,13 +145,10 @@ function FeatureCard({ icon, title, text, badge, delay = 0 }) {
   );
 }
 
-// Landing page hero section containing cycling category names and animated Lottie graphics
-function HeroSection({ isAdhd }: { isAdhd: boolean }) {
-  // Array of rotating search terms used in the title typing animation
+function RotatingWord({ isAdhd }: { isAdhd: boolean }) {
   const words = ["spas", "cafes", "shops", "salons", "gyms"];
   const [currentWord, setCurrentWord] = useState(0);
 
-  // Interval loop to rotate the current search term word; paused when ADHD/reduced-motion mode is active
   useEffect(() => {
     if (isAdhd) return;
     const interval = setInterval(() => {
@@ -159,6 +156,34 @@ function HeroSection({ isAdhd }: { isAdhd: boolean }) {
     }, 2400);
     return () => clearInterval(interval);
   }, [isAdhd]);
+
+  return (
+    <span className="relative inline-block min-w-[1.15em]">
+      {/* AnimatePresence mode="wait" ensures the exit transition completes before the next word enters */}
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={words[currentWord]}
+          initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -18, filter: "blur(6px)" }}
+          transition={{ duration: 0.4 }}
+          className="inline-block bg-white bg-clip-text text-transparent drop-shadow-md"
+        >
+          {words[currentWord]}
+        </motion.span>
+      </AnimatePresence>
+      {/* Decorative underline with subtle scale pulse */}
+      <motion.div
+        animate={{ scaleX: [0.75, 1, 0.75], opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-2 left-0 right-0 h-[4px] rounded-full bg-white/80"
+      />
+    </span>
+  );
+}
+
+// Landing page hero section containing cycling category names and animated Lottie graphics
+function HeroSection({ isAdhd }: { isAdhd: boolean }) {
 
   return (
     <section className="relative overflow-hidden px-6 pb-20 pt-32 md:pb-24 md:pt-40 h-screen max-h-screen flex flex-col justify-center">
@@ -181,27 +206,7 @@ function HeroSection({ isAdhd }: { isAdhd: boolean }) {
             className="font-[var(--font-outfit)] text-[clamp(2.4rem,4.5vw,4rem)] font-bold leading-[1.1] tracking-tight text-white drop-shadow-sm dark:text-white"
           >
             Find the best local{" "}
-            <span className="relative inline-block min-w-[1.15em]">
-              {/* AnimatePresence mode="wait" ensures the exit transition completes before the next word enters */}
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={words[currentWord]}
-                  initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -18, filter: "blur(6px)" }}
-                  transition={{ duration: 0.4 }}
-                  className="inline-block bg-white bg-clip-text text-transparent drop-shadow-md"
-                >
-                  {words[currentWord]}
-                </motion.span>
-              </AnimatePresence>
-              {/* Decorative underline with subtle scale pulse */}
-              <motion.div
-                animate={{ scaleX: [0.75, 1, 0.75], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-2 left-0 right-0 h-[4px] rounded-full bg-white/80"
-              />
-            </span>{" "}
+            <RotatingWord isAdhd={isAdhd} />{" "}
             around you
           </motion.h1>
 
