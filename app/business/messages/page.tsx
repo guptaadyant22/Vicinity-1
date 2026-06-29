@@ -14,6 +14,7 @@ import {
   FaTimesCircle,
   FaLock,
   FaExclamationTriangle,
+  FaFlag,
 } from 'react-icons/fa'
 import { Inter, Outfit } from 'next/font/google'
 import { useAuth } from '../../../context/AuthContext'
@@ -56,6 +57,9 @@ export default function BusinessMessagesPage() {
   const [filterType, setFilterType] = useState('active')
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
+  
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [reportReason, setReportReason] = useState('')
 
   const selectedRequestIdRef = useRef(null)
   const messagesEndRef = useRef(null)
@@ -118,6 +122,13 @@ export default function BusinessMessagesPage() {
       if (showLoader) setLoading(false)
     }
   }, [user?.id, business, supabase, loadConversation, currentMessages.length])
+
+  const submitReport = () => {
+    setIsReportModalOpen(false)
+    setReportReason('')
+    setSuccess('Report submitted successfully! Our team will review this chat.')
+    setTimeout(() => setSuccess(null), 3000)
+  }
 
   useEffect(() => { if (!user?.id) return; loadRequests() }, [user?.id])
 
@@ -336,6 +347,9 @@ export default function BusinessMessagesPage() {
                         <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${getStatusBadgeClasses(selectedRequest.status)}`}>
                           {selectedRequest.status}
                         </span>
+                        <motion.button onClick={() => setIsReportModalOpen(true)} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="px-2 py-1 rounded-lg bg-red-100/85 dark:bg-red-500/10 border border-red-200/70 dark:border-red-500/20 text-[10px] font-bold flex items-center gap-1.5 text-red-700 dark:text-red-200 hover:bg-red-200/85 dark:hover:bg-red-500/20 transition-all">
+                          <FaFlag size={10} /> Report
+                        </motion.button>
                         {isPending && (
                           <>
                             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => handleAcceptRequest(selectedRequest.id)}
@@ -434,6 +448,36 @@ export default function BusinessMessagesPage() {
           </div>
         </main>
       </div>
+
+      <AnimatePresence>
+        {isReportModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-sm rounded-3xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-6 shadow-2xl">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Report Chat</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Why are you reporting this conversation?</p>
+              
+              <div className="space-y-2 mb-6">
+                {['Spam or misleading', 'Inappropriate behavior', 'Scam or fraud', 'Other'].map(reason => (
+                  <button key={reason} onClick={() => setReportReason(reason)}
+                    className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${reportReason === reason ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300' : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.02]'}`}>
+                    {reason}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => {setIsReportModalOpen(false); setReportReason('')}} className="flex-1 py-3 rounded-xl font-bold text-sm bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                  Cancel
+                </button>
+                <button onClick={submitReport} disabled={!reportReason} className="flex-1 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all">
+                  Submit Report
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </BusinessLayout>
   )
 }

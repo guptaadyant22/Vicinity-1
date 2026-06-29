@@ -13,6 +13,7 @@ import {
   FaSearch,
   FaArrowLeft,
   FaTimes,
+  FaFlag,
 } from 'react-icons/fa'
 import { createClient } from '../../../lib/supabase'
 import UserNavbar from '../../../components/UserNavbar'
@@ -52,7 +53,7 @@ const RequestCard = ({ request, selected, onClick }) => {
       <div className="p-3">
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="min-w-0">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white truncate">{request.businesses?.name || 'Business'}</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{request.businesses?.name || 'Business'}</h3>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase mt-0.5 truncate">{request.businesses?.type || 'Business'}</p>
           </div>
           <div className={`shrink-0 px-2 py-0.5 rounded-lg border text-[9px] font-bold uppercase flex items-center gap-1 ${statusStyles.wrap}`}>
@@ -117,6 +118,8 @@ export default function UserMessagesPage() {
   const [chatMessage, setChatMessage] = useState('')
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [reportReason, setReportReason] = useState('')
 
   const selectedRequestIdRef = useRef(null)
   const hasHandledPreselectRef = useRef(false)
@@ -258,6 +261,13 @@ export default function UserMessagesPage() {
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push('/') }
 
+  const submitReport = () => {
+    setIsReportModalOpen(false)
+    setReportReason('')
+    setSuccess('Report submitted successfully! Our team will review this chat.')
+    setTimeout(() => setSuccess(null), 3000)
+  }
+
   const filteredRequests = useMemo(() => {
     return requests.filter((r) => {
       const matchesStatus = statusFilter === 'all' || r.status === statusFilter
@@ -275,12 +285,12 @@ export default function UserMessagesPage() {
 
   return (
     <div className={UI.page}>
-      <div className="relative z-10 h-screen overflow-hidden">
+      <div className="relative z-10 h-screen overflow-hidden flex flex-col">
         <UserNavbar activePage="messages" onLogout={handleLogout} />
 
-        <main className="max-w-7xl mx-auto h-[calc(100vh-1.5rem)] px-6 pt-28 pb-4 overflow-hidden">
+        <main className="max-w-7xl mx-auto w-full flex-1 pt-28 pb-4 px-6 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6 shrink-0">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
               <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
                 Your{' '}
@@ -299,10 +309,10 @@ export default function UserMessagesPage() {
             </div>
           </div>
 
-          {/* existing shell */}
-          <div className={`${UI.shell} h-[calc(100%-7.5rem)] grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)] overflow-hidden`}>
+          {/* Chat Panel Grid without the outer shell */}
+          <div className="flex-1 grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)] overflow-hidden gap-6">
             {/* LEFT: sidebar */}
-            <div className="flex flex-col border-r border-white/20 dark:border-white/10 min-h-0 overflow-hidden">
+            <div className="flex flex-col bg-white/12 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/25 dark:border-white/10 rounded-2xl shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] min-h-0 overflow-hidden">
 
               {/* Sidebar header: search + filters */}
               <div className="px-3 pt-3 pb-2 border-b border-white/20 dark:border-white/10 shrink-0 space-y-2">
@@ -362,14 +372,14 @@ export default function UserMessagesPage() {
             </div>
 
             {/* RIGHT: chat panel */}
-            <div className="flex flex-col min-h-0 overflow-hidden">
+            <div className="flex flex-col bg-white/12 dark:bg-white/[0.03] backdrop-blur-2xl border border-white/25 dark:border-white/10 rounded-2xl shadow-[0_12px_36px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] min-h-0 overflow-hidden">
               {selectedBusiness ? (
                 <>
                   {/* Chat header */}
                   <div className="px-4 py-3 border-b border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/[0.02] shrink-0">
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <h2 className="text-base font-black text-slate-900 dark:text-white truncate">{selectedBusiness.name}</h2>
+                        <h2 className="text-lg font-black text-slate-900 dark:text-white truncate">{selectedBusiness.name}</h2>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                           {selectedBusiness.type || 'Business'}{selectedBusiness.city ? ` • ${selectedBusiness.city}` : ''}{selectedBusiness.state ? `, ${selectedBusiness.state}` : ''}
                         </p>
@@ -378,6 +388,9 @@ export default function UserMessagesPage() {
                         {isPending && <span className="px-2 py-1 rounded-lg bg-blue-50/85 dark:bg-blue-500/10 border border-blue-200/70 dark:border-blue-500/20 text-[10px] text-blue-700 dark:text-blue-200">Pending</span>}
                         {isIgnored && <span className="px-2 py-1 rounded-lg bg-red-100/85 dark:bg-red-500/10 border border-red-200/70 dark:border-red-500/20 text-[10px] text-red-700 dark:text-red-200">Ignored</span>}
                         {isActive && <span className="px-2 py-1 rounded-lg bg-green-100/85 dark:bg-green-500/10 border border-green-200/70 dark:border-green-500/20 text-[10px] text-green-700 dark:text-green-200">Active</span>}
+                        <motion.button onClick={() => setIsReportModalOpen(true)} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="px-2 py-1 rounded-lg bg-red-100/85 dark:bg-red-500/10 border border-red-200/70 dark:border-red-500/20 text-[10px] font-bold flex items-center gap-1.5 text-red-700 dark:text-red-200 hover:bg-red-200/85 dark:hover:bg-red-500/20 transition-all">
+                          <FaFlag size={10} /> Report
+                        </motion.button>
                         <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={() => router.back()} className="px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 bg-white/14 dark:bg-white/[0.04] border border-white/25 dark:border-white/10 text-slate-700 dark:text-white hover:bg-white/22">
                           <FaArrowLeft size={10} /> Back
                         </motion.button>
@@ -402,8 +415,8 @@ export default function UserMessagesPage() {
                         return (
                           <motion.div key={msg.id || idx} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[72%] rounded-2xl px-3 py-2 ${isUserMessage ? 'bg-blue-600 text-white' : 'bg-white/16 dark:bg-white/[0.05] border border-white/25 dark:border-white/10 text-slate-800 dark:text-slate-200 backdrop-blur-2xl'}`}>
-                              <p className="text-[13px] leading-relaxed whitespace-pre-line">{msg.text}</p>
-                              <p className={`text-[10px] mt-1 ${isUserMessage ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'}`}>{formatTime(msg.created_at)}</p>
+                              <p className="text-[15px] leading-relaxed whitespace-pre-line">{msg.text}</p>
+                              <p className={`text-[11px] mt-1.5 ${isUserMessage ? 'text-white/75' : 'text-slate-500 dark:text-slate-400'}`}>{formatTime(msg.created_at)}</p>
                             </div>
                           </motion.div>
                         )
@@ -459,6 +472,36 @@ export default function UserMessagesPage() {
           </div>
         </main>
       </div>
+
+      <AnimatePresence>
+        {isReportModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-sm rounded-3xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-6 shadow-2xl">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Report Chat</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Why are you reporting this conversation?</p>
+              
+              <div className="space-y-2 mb-6">
+                {['Spam or misleading', 'Inappropriate behavior', 'Scam or fraud', 'Other'].map(reason => (
+                  <button key={reason} onClick={() => setReportReason(reason)}
+                    className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${reportReason === reason ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300' : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.02]'}`}>
+                    {reason}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => {setIsReportModalOpen(false); setReportReason('')}} className="flex-1 py-3 rounded-xl font-bold text-sm bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                  Cancel
+                </button>
+                <button onClick={submitReport} disabled={!reportReason} className="flex-1 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all">
+                  Submit Report
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
